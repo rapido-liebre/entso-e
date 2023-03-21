@@ -3,6 +3,7 @@ package main
 import (
 	"entso-e_reports/pkg/api"
 	"entso-e_reports/pkg/common/config"
+	"entso-e_reports/pkg/db_connector"
 	"entso-e_reports/pkg/parser"
 	"entso-e_reports/pkg/processor"
 	"flag"
@@ -38,6 +39,7 @@ func main() {
 	// initialize services
 	parser := parser.NewService(cfg, &channels)
 	processor := processor.NewService(cfg, &channels)
+	dbConnector := db_connector.NewService(cfg, &channels)
 	//if *runGeneratorPtr {
 	//	go generator.RunGenerator(cfg, &channels)
 	//}
@@ -50,9 +52,10 @@ func main() {
 	api.RegisterRoutes(app, &channels)
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 	go parser.Run(&wg)
 	go processor.Run(&wg)
+	go dbConnector.Run(&wg)
 
 	//start listening on port
 	go func() {

@@ -31,6 +31,8 @@ func RegisterRoutes(app *fiber.App, ch *config.Channels) {
 	routes.Get("/config", h.GetConfig)
 
 	routes.Get("/quit", h.QuitServices)
+
+	routes.Get("/connect", h.ConnectToDB)
 }
 
 func (h handler) ChannelIsClosed(ch <-chan bool) bool {

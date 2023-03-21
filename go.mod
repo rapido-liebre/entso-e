@@ -7,6 +7,7 @@ require (
 	github.com/gookit/validate v1.4.4
 	github.com/minio/minio-go/v7 v7.0.44
 	github.com/onsi/ginkgo/v2 v2.2.0
+	github.com/sijms/go-ora/v2 v2.6.3
 	github.com/spf13/viper v1.11.0
 )
 

@@ -15,6 +15,7 @@ func (h handler) RunServices(ctx *fiber.Ctx) error {
 	// send confirmation all services are running up
 	h.channels.ProcessorIsRunning <- true
 	h.channels.ParserIsRunning <- true
+	h.channels.DBConnectorIsRunning <- true
 
 	h.channels.RunParse <- true
 
@@ -24,10 +25,12 @@ func (h handler) RunServices(ctx *fiber.Ctx) error {
 func (h handler) StopServices(ctx *fiber.Ctx) error {
 	h.channels.ParserIsRunning <- false
 	h.channels.ProcessorIsRunning <- false
+	h.channels.DBConnectorIsRunning <- false
 	return ctx.SendStatus(fiber.StatusOK)
 }
 
 func (h handler) QuitServices(ctx *fiber.Ctx) error {
+	h.channels.Quit <- false
 	h.channels.Quit <- false
 	h.channels.Quit <- false
 

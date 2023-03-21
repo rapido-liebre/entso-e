@@ -18,6 +18,11 @@ type params struct {
 	OutputDir   string `mapstructure:"OUTPUT_DIR"     validate:"required|minLen:5"`   // Directory for holding output archive data
 	DownloadDir string `mapstructure:"DOWNLOAD_DIR"   validate:"required|minLen:5"`   // Directory for downloaded files from minIO
 	Port        string `mapstructure:"PORT"           validate:"customPortValidator"` // The localhost port on which HTTP requests are listened
+	DBService   string `mapstructure:"ORA_SERVICE"    validate:"required|minLen:3"`   //
+	DBUser      string `mapstructure:"ORA_USERNAME"   validate:"required|minLen:3"`   //
+	DBPassword  string `mapstructure:"ORA_PASSWORD"   validate:"required|minLen:3"`   //
+	DBServer    string `mapstructure:"ORA_SERVER"     validate:"required|minLen:5"`   //
+	DBPort      string `mapstructure:"ORA_PORT"       validate:"required|minLen:3"`   //
 }
 
 type Config struct {
