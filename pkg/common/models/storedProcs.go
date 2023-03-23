@@ -7,28 +7,56 @@ import (
 	"time"
 )
 
-type reportType int
+type ReportType int
 
 const (
-	kjcz reportType = iota
-	pzrr
-	pzfrr
+	Kjcz ReportType = iota
+	Pzrr
+	Pzfrr
 )
 
-func (rt reportType) String() string {
+func (rt ReportType) String() string {
 	return []string{"kjcz", "pzrr", "pzfrr"}[rt]
 }
 
+type Ekstrakt int
+
+const (
+	PD_BI_PZFRR Ekstrakt = iota
+	PD_BI_PZRR
+	PR_SO_KJCZ
+)
+
+func (e Ekstrakt) String() string {
+	return []string{"PD_BI_PZFRR", "PD_BI_PZRR", "PR_SO_KJCZ"}[e]
+}
+
+type Resolution int
+
+const (
+	P1Y Resolution = iota
+	P1M
+	P1D
+	PT60M
+	PT30M
+	PT15M
+	PT1M
+)
+
+func (r Resolution) String() string {
+	return []string{"P1Y", "P1M", "P1D", "PT60M", "PT30M", "PT15M", "PT1M"}[r]
+}
+
 func GetPutKjczReportBody(data ReportData) string {
-	return GetPutReportBody(data, kjcz)
+	return GetPutReportBody(data, Kjcz)
 }
 
 func GetPutPzrrReportBody(data ReportData) string {
-	return GetPutReportBody(data, pzrr)
+	return GetPutReportBody(data, Pzrr)
 }
 
 func GetPutPzfrrReportBody(data ReportData) string {
-	return GetPutReportBody(data, pzfrr)
+	return GetPutReportBody(data, Pzfrr)
 }
 
 func GetAddPayloadEntryBody(payload ReportPayload) string {
@@ -47,7 +75,14 @@ func GetAddPayloadEntryBody(payload ReportPayload) string {
 	return s
 }
 
-func GetPutReportBody(data ReportData, rt reportType) string {
+func getSecondaryQuantityString(secondaryQuantity *int) string {
+	if secondaryQuantity == nil {
+		return "null"
+	}
+	return strconv.Itoa(*secondaryQuantity)
+}
+
+func GetPutReportBody(data ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf(":1 := hl_entsoe_reports_pk.put_%s_report("+
 		"p_creator => '%s', "+
 		"p_report_start => date '%s', "+
@@ -56,9 +91,17 @@ func GetPutReportBody(data ReportData, rt reportType) string {
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
 
-func getSecondaryQuantityString(secondaryQuantity *int) string {
-	if secondaryQuantity == nil {
-		return "null"
-	}
-	return strconv.Itoa(*secondaryQuantity)
+func GetInicjujPozyskanie(rt ReportType, rd ReportData) string {
+	rdata := fmt.Sprintf("inicjujPozyskanie("+
+		"p_ekstrakt => '%s', "+
+		"p_zakresOd => null, "+
+		"p_zakresDo => null, "+
+		"p_ziarno => '%s', "+
+		"p_dataOd => ad_czas.podajCzasUTC(to_date('%s','yyyy-mm-dd'),'N'), "+
+		"p_dataDo => ad_czas.podajCzasUTC(to_date('%s','yyyy-mm-dd'),'N'), "+
+		"p_zrodlo => null, "+
+		"p_obiekt_danych => null);", PR_SO_KJCZ.String(), P1M.String(), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
+
+	s := strings.Join([]string{"begin", rdata, "end;"}, " ")
+	return s
 }

@@ -30,7 +30,8 @@ type dbConnector struct {
 	config    config.Config
 	channels  *config.Channels
 	errch     chan error
-	data      map[models.Year]map[time.Month][]models.LfcAce
+	data      config.DBAction
+	db        *sql.DB
 }
 
 // NewService returns new DBConnector instance
@@ -54,7 +55,7 @@ func (dbc *dbConnector) Run(wg *sync.WaitGroup) {
 		//		p.filenames[filename] = true
 		//		log.Printf("Queued: %s", filename)
 		//	}
-		case <-dbc.channels.RunDBConn:
+		case dbc.data = <-dbc.channels.RunDBConn:
 			if dbc.isRunning { //TODO check if dbConnector is ready
 				if dbc.status == Ready {
 					dbc.status = Processing
@@ -86,50 +87,128 @@ func (dbc *dbConnector) Run(wg *sync.WaitGroup) {
 }
 
 func (dbc *dbConnector) connect() {
-
 	fmt.Println("*** Using only go_ora package (no additional client software)")
 	fmt.Println("Local Database, simple connect string ")
-	t := time.Now()
-	dbc.connectToDB()
-	fmt.Println("Time Elapsed", time.Now().Sub(t).Milliseconds())
 
-	//if len(p.data) == 0 {
-	//	p.errch <- errors.New("no data for processing")
-	//}
-
-	dbc.status = Ready
-	dbc.errch <- nil
-}
-
-func (p *dbConnector) connectToDB() {
-	cfg := p.config.Params
-	connectionString := "oracle://" + cfg.DBUser + ":" + cfg.DBPassword + "@" + cfg.DBServer + ":" + cfg.DBPort + "/" + cfg.DBService
-	//if val, ok := dbParams["walletLocation"]; ok && val != "" {
-	//	connectionString += "?TRACE FILE=trace.log&SSL=enable&SSL Verify=false&WALLET=" + url.QueryEscape(dbParams["walletLocation"])
-	//}
-	fmt.Println(connectionString)
-	db, err := sql.Open("oracle", connectionString)
-	if err != nil {
-		panic(fmt.Errorf("error in sql.Open: %w", err))
-	}
 	defer func() {
-		err = db.Close()
+		err := dbc.db.Close()
 		if err != nil {
 			fmt.Println("Can't close connection: ", err)
 		}
 	}()
 
-	err = db.Ping()
+	t := time.Now()
+	if dbc.data.ConnectionOnly {
+		dbc.connectToDB()
+		goto end
+	}
+	if dbc.data.TestData {
+		if dbc.data.Publish {
+			err := dbc.testDataAndPublish()
+			if err != nil {
+				dbc.errch <- err
+			}
+			goto end
+		}
+		err := dbc.testData()
+		if err != nil {
+			dbc.errch <- err
+		}
+	}
+	//if len(p.data) == 0 {
+	//	p.errch <- errors.New("no data for processing")
+	//}
+end:
+	fmt.Println("Time Elapsed", time.Now().Sub(t).Milliseconds())
+	dbc.status = Ready
+	dbc.errch <- nil
+}
+
+func (dbc *dbConnector) connectToDB() {
+	cfg := dbc.config.Params
+	connectionString := "oracle://" + cfg.DBUser + ":" + cfg.DBPassword + "@" + cfg.DBServer + ":" + cfg.DBPort + "/" + cfg.DBService
+	//if val, ok := dbParams["walletLocation"]; ok && val != "" {
+	//	connectionString += "?TRACE FILE=trace.log&SSL=enable&SSL Verify=false&WALLET=" + url.QueryEscape(dbParams["walletLocation"])
+	//}
+	fmt.Println(connectionString)
+	var err error
+	dbc.db, err = sql.Open("oracle", connectionString)
+	if err != nil {
+		panic(fmt.Errorf("error in sql.Open: %w", err))
+	}
+	//defer func() {
+	//	err = db.Close()
+	//	if err != nil {
+	//		fmt.Println("Can't close connection: ", err)
+	//	}
+	//}()
+
+	err = dbc.db.Ping()
 	if err != nil {
 		panic(fmt.Errorf("error pinging db: %w", err))
 	}
-
-	someAdditionalActions(db)
 }
 
 //const createTableStatement = "CREATE TABLE TEMP_TABLE ( NAME VARCHAR2(100), CREATION_TIME TIMESTAMP DEFAULT SYSTIMESTAMP, VALUE  NUMBER(5))"
 //const dropTableStatement = "DROP TABLE TEMP_TABLE PURGE"
 //const insertStatement = "INSERT INTO TEMP_TABLE ( NAME , VALUE) VALUES (:name, :value)"
+
+func (dbc *dbConnector) testData() error {
+	dbc.connectToDB()
+	_, err := dbc.callPutKjczReport()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (dbc *dbConnector) testDataAndPublish() error {
+	dbc.connectToDB()
+	rdata, err := dbc.callPutKjczReport()
+	if err != nil {
+		return err
+	}
+	return dbc.callInicjujPozyskanie(rdata)
+}
+
+func (dbc *dbConnector) callPutKjczReport() (models.ReportData, error) {
+	t := time.Now()
+
+	data := config.TestReportData()
+
+	var reportId int64
+	_, err := dbc.db.Exec(models.GetPutKjczReportBody(data), sql.Out{Dest: &reportId})
+
+	if err != nil {
+		return data, err
+	}
+
+	kjczReport := config.TestKjczReportBody(reportId, data)
+
+	for _, payload := range kjczReport.GetAllPayloads() {
+		_, err := dbc.db.Exec(models.GetAddPayloadEntryBody(payload))
+		if err != nil {
+			return data, err
+		}
+	}
+
+	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
+
+	return data, nil
+}
+
+func (dbc *dbConnector) callInicjujPozyskanie(rdata models.ReportData) error {
+	t := time.Now()
+
+	_, err := dbc.db.Exec(models.GetInicjujPozyskanie(dbc.data.ReportType, rdata))
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
+
+	return nil
+}
 
 func someAdditionalActions(db *sql.DB) {
 
@@ -181,31 +260,6 @@ func someAdditionalActions(db *sql.DB) {
 	//}
 	//err = theRows.Err()
 	//handleError("next row in multiple rows", err)
-	_ = callPutKjczReport(db)
-}
 
-func callPutKjczReport(db *sql.DB) error {
-	t := time.Now()
-
-	data := config.TestReportData()
-
-	var reportId int64
-	_, err := db.Exec(models.GetPutKjczReportBody(data), sql.Out{Dest: &reportId})
-
-	if err != nil {
-		return err
-	}
-
-	kjczReport := config.TestKjczReportBody(reportId, data)
-
-	for _, payload := range kjczReport.GetAllPayloads() {
-		_, err := db.Exec(models.GetAddPayloadEntryBody(payload))
-		if err != nil {
-			return err
-		}
-	}
-
-	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
-
-	return nil
+	//_ = callPutKjczReport(db)
 }

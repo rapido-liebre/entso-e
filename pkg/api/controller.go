@@ -32,7 +32,11 @@ func RegisterRoutes(app *fiber.App, ch *config.Channels) {
 
 	routes.Get("/quit", h.QuitServices)
 
-	routes.Get("/connect", h.ConnectToDB)
+	routes.Get("/test_conn", h.ConnectToDB)
+
+	routes.Get("/test_kjcz", h.SendTestKjcz)
+
+	routes.Get("/test_kjcz_publish", h.SendTestKjczAndPublish)
 }
 
 func (h handler) ChannelIsClosed(ch <-chan bool) bool {

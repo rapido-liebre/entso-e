@@ -17,7 +17,7 @@ type DataChannels struct {
 	RunParse chan bool
 	//RunGenerate chan bool
 	RunProcess chan map[models.Year]map[time.Month][]models.LfcAce
-	RunDBConn  chan bool
+	RunDBConn  chan DBAction
 	Filename   chan string
 }
 
@@ -39,7 +39,7 @@ func GetChannels() Channels {
 			RunParse: make(chan bool),
 			//RunGenerate: make(chan bool),
 			RunProcess: make(chan map[models.Year]map[time.Month][]models.LfcAce),
-			RunDBConn:  make(chan bool),
+			RunDBConn:  make(chan DBAction),
 			Filename:   make(chan string),
 		},
 	}
