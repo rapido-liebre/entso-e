@@ -107,6 +107,7 @@ func (p *dbConnector) connectToDB() {
 	//if val, ok := dbParams["walletLocation"]; ok && val != "" {
 	//	connectionString += "?TRACE FILE=trace.log&SSL=enable&SSL Verify=false&WALLET=" + url.QueryEscape(dbParams["walletLocation"])
 	//}
+	fmt.Println(connectionString)
 	db, err := sql.Open("oracle", connectionString)
 	if err != nil {
 		panic(fmt.Errorf("error in sql.Open: %w", err))
@@ -186,54 +187,18 @@ func someAdditionalActions(db *sql.DB) {
 func callPutKjczReport(db *sql.DB) error {
 	t := time.Now()
 
-	tStart, _ := time.Parse(time.DateOnly, "2023-01-01")
-	tEnd, _ := time.Parse(time.DateOnly, "2023-03-01")
+	data := config.TestReportData()
 
-	rdata := models.ReportData{
-		Creator: "Janko Muzykant",
-		Start:   tStart,
-		End:     tEnd,
-	}
 	var reportId int64
-	_, err := db.Exec(models.GetPutKjczReportBody(rdata), sql.Out{Dest: &reportId})
+	_, err := db.Exec(models.GetPutKjczReportBody(data), sql.Out{Dest: &reportId})
 
 	if err != nil {
 		return err
 	}
 
-	var rpayloads []models.ReportPayload
-	rpayloads = append(rpayloads, models.ReportPayload{
-		ReportId:            reportId,
-		MrId:                1,
-		BusinessType:        "C66",
-		FlowDirection:       "A03",
-		QuantityMeasureunit: "MAW",
-		Position:            1,
-		Quantity:            3.309,
-		SecondaryQuantity:   nil,
-	})
-	rpayloads = append(rpayloads, models.ReportPayload{
-		ReportId:            reportId,
-		MrId:                1,
-		BusinessType:        "C66",
-		FlowDirection:       "A03",
-		QuantityMeasureunit: "MAW",
-		Position:            2,
-		Quantity:            1.388,
-		SecondaryQuantity:   nil,
-	})
-	rpayloads = append(rpayloads, models.ReportPayload{
-		ReportId:            reportId,
-		MrId:                1,
-		BusinessType:        "C66",
-		FlowDirection:       "A03",
-		QuantityMeasureunit: "MAW",
-		Position:            2,
-		Quantity:            1.941,
-		SecondaryQuantity:   nil,
-	})
+	kjczReport := config.TestKjczReportBody(reportId, data)
 
-	for _, payload := range rpayloads {
+	for _, payload := range kjczReport.GetAllPayloads() {
 		_, err := db.Exec(models.GetAddPayloadEntryBody(payload))
 		if err != nil {
 			return err

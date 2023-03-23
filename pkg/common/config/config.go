@@ -21,7 +21,7 @@ type params struct {
 	DBService   string `mapstructure:"ORA_SERVICE"    validate:"required|minLen:3"`   //
 	DBUser      string `mapstructure:"ORA_USERNAME"   validate:"required|minLen:3"`   //
 	DBPassword  string `mapstructure:"ORA_PASSWORD"   validate:"required|minLen:3"`   //
-	DBServer    string `mapstructure:"ORA_SERVER"     validate:"required|minLen:5"`   //
+	DBServer    string `mapstructure:"ORA_SERVER"     validate:"required|minLen:3"`   //
 	DBPort      string `mapstructure:"ORA_PORT"       validate:"required|minLen:3"`   //
 }
 

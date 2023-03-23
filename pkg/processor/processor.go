@@ -3,7 +3,6 @@ package processor
 import (
 	"entso-e_reports/pkg/common/config"
 	"entso-e_reports/pkg/common/models"
-	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -93,7 +92,11 @@ func (p *processor) Run(wg *sync.WaitGroup) {
 
 func (p *processor) process() {
 	if len(p.data) == 0 {
-		p.errch <- errors.New("no data for processing")
+		//TODO uncomment if ready for processing
+		//p.errch <- errors.New("no data for processing")
+
+		p.status = Ready
+		p.errch <- nil
 	}
 
 	var (
