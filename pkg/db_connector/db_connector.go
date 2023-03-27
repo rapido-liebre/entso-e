@@ -127,9 +127,17 @@ end:
 func (dbc *dbConnector) connectToDB() {
 	cfg := dbc.config.Params
 	connectionString := "oracle://" + cfg.DBUser + ":" + cfg.DBPassword + "@" + cfg.DBServer + ":" + cfg.DBPort + "/" + cfg.DBService
-	//if val, ok := dbParams["walletLocation"]; ok && val != "" {
-	//	connectionString += "?TRACE FILE=trace.log&SSL=enable&SSL Verify=false&WALLET=" + url.QueryEscape(dbParams["walletLocation"])
+	//if cfg.DBDSN != "" {
+	//	connectionString += "?TRACE FILE=trace.log&SSL=enable&SSL Verify=false&WALLET=" + cfg.DBDSN //url.QueryEscape(dbParams["walletLocation"])
 	//}
+
+	if len(cfg.ConnString) > 0 {
+		connectionString = cfg.ConnString
+	}
+
+	//"oracle://10.69.9.32:1522/OSP&&wallet=/usr/lib/oracle/18.3/client64/network/wallet"
+	//"oracle://10.69.9.32:1522:OSP&&wallet=/usr/lib/oracle/18.3/client64/network/wallet"
+
 	fmt.Println(connectionString)
 	var err error
 	dbc.db, err = sql.Open("oracle", connectionString)
@@ -210,56 +218,56 @@ func (dbc *dbConnector) callInicjujPozyskanie(rdata models.ReportData) error {
 	return nil
 }
 
-func someAdditionalActions(db *sql.DB) {
+//func someAdditionalActions(_ *sql.DB) {
 
-	//var queryResultColumnOne string
-	//row := db.QueryRow("SELECT systimestamp FROM dual")
-	//err := row.Scan(&queryResultColumnOne)
-	//if err != nil {
-	//	panic(fmt.Errorf("error scanning db: %w", err))
-	//}
-	//fmt.Println("The time in the database ", queryResultColumnOne)
-	//_, err = db.Exec(createTableStatement)
-	//handleError("create table", err)
-	//defer db.Exec(dropTableStatement)
-	//stmt, err := db.Prepare(insertStatement)
-	//handleError("prepare insert statement", err)
-	//sqlresult, err := stmt.Exec("John", 42)
-	//handleError("execute insert statement", err)
-	//rowCount, _ := sqlresult.RowsAffected()
-	//fmt.Println("Inserted number of rows = ", rowCount)
-	//
-	//var queryResultName string
-	//var queryResultTimestamp string
-	//var queryResultValue int32
-	//row = db.QueryRow("SELECT name, creation_time, value FROM temp_table")
-	//err = row.Scan(&queryResultName, &queryResultTimestamp, &queryResultValue)
-	//handleError("query single row", err)
-	//if err != nil {
-	//	panic(fmt.Errorf("error scanning db: %w", err))
-	//}
-	//fmt.Println(fmt.Sprintf("The name: %s, time: %s, value:%d ", queryResultName, queryResultTimestamp, queryResultValue))
-	//
-	//_, err = stmt.Exec("Jane", 69)
-	//handleError("execute insert statement", err)
-	//_, err = stmt.Exec("Malcolm", 13)
-	//handleError("execute insert statement", err)
-	//
-	//// fetching multiple rows
-	//theRows, err := db.Query("select name, value from TEMP_TABLE")
-	//handleError("Query for multiple rows", err)
-	//defer theRows.Close()
-	//var (
-	//	name  string
-	//	value int32
-	//)
-	//for theRows.Next() {
-	//	err := theRows.Scan(&name, &value)
-	//	handleError("next row in multiple rows", err)
-	//	fmt.Println(fmt.Sprintf("The name: %s and value:%d ", name, value))
-	//}
-	//err = theRows.Err()
-	//handleError("next row in multiple rows", err)
+//var queryResultColumnOne string
+//row := db.QueryRow("SELECT systimestamp FROM dual")
+//err := row.Scan(&queryResultColumnOne)
+//if err != nil {
+//	panic(fmt.Errorf("error scanning db: %w", err))
+//}
+//fmt.Println("The time in the database ", queryResultColumnOne)
+//_, err = db.Exec(createTableStatement)
+//handleError("create table", err)
+//defer db.Exec(dropTableStatement)
+//stmt, err := db.Prepare(insertStatement)
+//handleError("prepare insert statement", err)
+//sqlresult, err := stmt.Exec("John", 42)
+//handleError("execute insert statement", err)
+//rowCount, _ := sqlresult.RowsAffected()
+//fmt.Println("Inserted number of rows = ", rowCount)
+//
+//var queryResultName string
+//var queryResultTimestamp string
+//var queryResultValue int32
+//row = db.QueryRow("SELECT name, creation_time, value FROM temp_table")
+//err = row.Scan(&queryResultName, &queryResultTimestamp, &queryResultValue)
+//handleError("query single row", err)
+//if err != nil {
+//	panic(fmt.Errorf("error scanning db: %w", err))
+//}
+//fmt.Println(fmt.Sprintf("The name: %s, time: %s, value:%d ", queryResultName, queryResultTimestamp, queryResultValue))
+//
+//_, err = stmt.Exec("Jane", 69)
+//handleError("execute insert statement", err)
+//_, err = stmt.Exec("Malcolm", 13)
+//handleError("execute insert statement", err)
+//
+//// fetching multiple rows
+//theRows, err := db.Query("select name, value from TEMP_TABLE")
+//handleError("Query for multiple rows", err)
+//defer theRows.Close()
+//var (
+//	name  string
+//	value int32
+//)
+//for theRows.Next() {
+//	err := theRows.Scan(&name, &value)
+//	handleError("next row in multiple rows", err)
+//	fmt.Println(fmt.Sprintf("The name: %s and value:%d ", name, value))
+//}
+//err = theRows.Err()
+//handleError("next row in multiple rows", err)
 
-	//_ = callPutKjczReport(db)
-}
+//_ = callPutKjczReport(db)
+//}

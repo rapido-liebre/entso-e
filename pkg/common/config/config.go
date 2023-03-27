@@ -23,6 +23,7 @@ type params struct {
 	DBPassword  string `mapstructure:"ORA_PASSWORD"   validate:"required|minLen:3"`   //
 	DBServer    string `mapstructure:"ORA_SERVER"     validate:"required|minLen:3"`   //
 	DBPort      string `mapstructure:"ORA_PORT"       validate:"required|minLen:3"`   //
+	ConnString  string `mapstructure:"ORA_CONN_STRING"`                               // Oracle connection string with wallet
 }
 
 type Config struct {
