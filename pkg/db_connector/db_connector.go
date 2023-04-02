@@ -5,7 +5,9 @@ import (
 	"entso-e_reports/pkg/common/config"
 	"entso-e_reports/pkg/common/models"
 	"fmt"
+	go_ora "github.com/sijms/go-ora/v2"
 	"log"
+	"strconv"
 	"sync"
 	"time"
 
@@ -126,12 +128,24 @@ end:
 
 func (dbc *dbConnector) connectToDB() {
 	cfg := dbc.config.Params
-	connectionString := "oracle://" + cfg.DBUser + ":" + cfg.DBPassword + "@" + cfg.DBServer + ":" + cfg.DBPort + "/" + cfg.DBService
+	//connectionString := "oracle://" + cfg.DBUser + ":" + cfg.DBPassword + "@" + cfg.DBServer + ":" + cfg.DBPort + "/" + cfg.DBService
 	//if cfg.DBDSN != "" {
 	//	connectionString += "?TRACE FILE=trace.log&SSL=enable&SSL Verify=false&WALLET=" + cfg.DBDSN //url.QueryEscape(dbParams["walletLocation"])
 	//}
 
+	port, _ := strconv.Atoi(cfg.DBPort)
+
+	urlOptions := map[string]string{
+		"TRACE FILE": "trace.log",
+		"AUTH TYPE":  "TCPS",
+		"SSL":        "TRUE",
+		"SSL VERIFY": "FALSE",
+		"WALLET":     cfg.DBWallet,
+	}
+	connectionString := go_ora.BuildUrl(cfg.DBServer, port, cfg.DBService, "", "", urlOptions)
+
 	if len(cfg.ConnString) > 0 {
+		fmt.Println("Using provided connection string")
 		connectionString = cfg.ConnString
 	}
 
@@ -150,7 +164,7 @@ func (dbc *dbConnector) connectToDB() {
 	//		fmt.Println("Can't close connection: ", err)
 	//	}
 	//}()
-
+	dbc.db.SetConnMaxLifetime(time.Minute * 5)
 	err = dbc.db.Ping()
 	if err != nil {
 		panic(fmt.Errorf("error pinging db: %w", err))
@@ -163,40 +177,59 @@ func (dbc *dbConnector) connectToDB() {
 
 func (dbc *dbConnector) testData() error {
 	dbc.connectToDB()
-	_, err := dbc.callPutKjczReport()
-	if err != nil {
+
+	if _, err := dbc.callPutReport(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
 func (dbc *dbConnector) testDataAndPublish() error {
 	dbc.connectToDB()
-	rdata, err := dbc.callPutKjczReport()
+	rdata, err := dbc.callPutReport()
 	if err != nil {
 		return err
 	}
 	return dbc.callInicjujPozyskanie(rdata)
 }
 
-func (dbc *dbConnector) callPutKjczReport() (models.ReportData, error) {
+func (dbc *dbConnector) callPutReport() (models.ReportData, error) {
 	t := time.Now()
 
-	data := config.TestReportData()
+	data := models.TestReportData(dbc.data.ReportType)
 
 	var reportId int64
-	_, err := dbc.db.Exec(models.GetPutKjczReportBody(data), sql.Out{Dest: &reportId})
+	_, err := dbc.db.Exec(models.GetPutReportBody(data, dbc.data.ReportType), sql.Out{Dest: &reportId})
 
 	if err != nil {
 		return data, err
 	}
 
-	kjczReport := config.TestKjczReportBody(reportId, data)
-
-	for _, payload := range kjczReport.GetAllPayloads() {
-		_, err := dbc.db.Exec(models.GetAddPayloadEntryBody(payload))
-		if err != nil {
-			return data, err
+	switch dbc.data.ReportType {
+	case models.PR_SO_KJCZ:
+		report := models.GetTestKjczReportBody(reportId, data)
+		for _, payload := range report.GetAllPayloads() {
+			_, err := dbc.db.Exec(models.GetAddPayloadEntryBody(payload))
+			if err != nil {
+				return data, err
+			}
+		}
+	case models.PD_BI_PZRR:
+		report := models.GetTestPzrrReportBody(reportId, data)
+		for _, payload := range report.GetAllPayloads() {
+			_, err := dbc.db.Exec(models.GetAddPayloadEntryBody(payload))
+			if err != nil {
+				return data, err
+			}
+		}
+	case models.PD_BI_PZFRR:
+		report := models.GetTestPzfrrReportBody(reportId, data)
+		for _, payload := range report.GetAllPayloads() {
+			_, err := dbc.db.Exec(models.GetAddPayloadEntryBody(payload))
+			if err != nil {
+				return data, err
+			}
 		}
 	}
 

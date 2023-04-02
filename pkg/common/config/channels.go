@@ -26,6 +26,12 @@ type Channels struct {
 	DataChannels
 }
 
+func (ch *Channels) Run() {
+	ch.ProcessorIsRunning <- true
+	ch.ParserIsRunning <- true
+	ch.DBConnectorIsRunning <- true
+}
+
 func GetChannels() Channels {
 	return Channels{
 		APIChannels: APIChannels{

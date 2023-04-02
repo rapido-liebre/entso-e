@@ -2,7 +2,6 @@ package api
 
 import (
 	"entso-e_reports/pkg/common/config"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -37,6 +36,14 @@ func RegisterRoutes(app *fiber.App, ch *config.Channels) {
 	routes.Get("/test_kjcz", h.SendTestKjcz)
 
 	routes.Get("/test_kjcz_publish", h.SendTestKjczAndPublish)
+
+	routes.Get("/test_pzrr", h.SendTestPzrr)
+
+	routes.Get("/test_pzrr_publish", h.SendTestPzrrAndPublish)
+
+	routes.Get("/test_pzfrr", h.SendTestPzfrr)
+
+	routes.Get("/test_pzfrr_publish", h.SendTestPzfrrAndPublish)
 }
 
 func (h handler) ChannelIsClosed(ch <-chan bool) bool {

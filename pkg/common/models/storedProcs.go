@@ -7,34 +7,38 @@ import (
 	"time"
 )
 
+//type ReportType int
+//
+//const (
+//	Kjcz ReportType = iota
+//	Pzrr
+//	Pzfrr
+//)
+//
+//func (rt ReportType) String() string {
+//	return []string{"kjcz", "pzrr", "pzfrr"}[rt]
+//}
+
 type ReportType int
 
 const (
-	Kjcz ReportType = iota
-	Pzrr
-	Pzfrr
-)
-
-func (rt ReportType) String() string {
-	return []string{"kjcz", "pzrr", "pzfrr"}[rt]
-}
-
-type Ekstrakt int
-
-const (
-	PD_BI_PZFRR Ekstrakt = iota
+	PD_BI_PZFRR ReportType = iota
 	PD_BI_PZRR
 	PR_SO_KJCZ
 )
 
-func (e Ekstrakt) String() string {
-	return []string{"PD_BI_PZFRR", "PD_BI_PZRR", "PR_SO_KJCZ"}[e]
+func (rt ReportType) String() string {
+	return []string{"PD_BI_PZFRR", "PD_BI_PZRR", "PR_SO_KJCZ"}[rt]
+}
+func (rt ReportType) shortly() string {
+	return []string{"pzfrr", "pzrr", "kjcz"}[rt]
 }
 
 type Resolution int
 
 const (
 	P1Y Resolution = iota
+	P3M
 	P1M
 	P1D
 	PT60M
@@ -44,19 +48,7 @@ const (
 )
 
 func (r Resolution) String() string {
-	return []string{"P1Y", "P1M", "P1D", "PT60M", "PT30M", "PT15M", "PT1M"}[r]
-}
-
-func GetPutKjczReportBody(data ReportData) string {
-	return GetPutReportBody(data, Kjcz)
-}
-
-func GetPutPzrrReportBody(data ReportData) string {
-	return GetPutReportBody(data, Pzrr)
-}
-
-func GetPutPzfrrReportBody(data ReportData) string {
-	return GetPutReportBody(data, Pzfrr)
+	return []string{"P1Y", "P3M", "P1M", "P1D", "PT60M", "PT30M", "PT15M", "PT1M"}[r]
 }
 
 func GetAddPayloadEntryBody(payload ReportPayload) string {
@@ -86,7 +78,7 @@ func GetPutReportBody(data ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf(":1 := hl_entsoe_reports_pk.put_%s_report("+
 		"p_creator => '%s', "+
 		"p_report_start => date '%s', "+
-		"p_report_end   => date '%s');", rt.String(), data.Creator, data.Start.Format(time.DateOnly), data.End.Format(time.DateOnly))
+		"p_report_end   => date '%s');", rt.shortly(), data.Creator, data.Start.Format(time.DateOnly), data.End.Format(time.DateOnly))
 
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
@@ -100,8 +92,15 @@ func GetInicjujPozyskanie(rt ReportType, rd ReportData) string {
 		"p_dataOd => ad_czas.podajCzasUTC(to_date('%s','yyyy-mm-dd'),'N'), "+
 		"p_dataDo => ad_czas.podajCzasUTC(to_date('%s','yyyy-mm-dd'),'N'), "+
 		"p_zrodlo => null, "+
-		"p_obiekt_danych => null);", PR_SO_KJCZ.String(), P1M.String(), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
+		"p_obiekt_danych => null);", rt.String(), getResolution(rt), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
 
 	s := strings.Join([]string{"begin", rdata, "end;"}, " ")
 	return s
+}
+
+func getResolution(rt ReportType) string {
+	if rt == PR_SO_KJCZ {
+		return P1M.String()
+	}
+	return P3M.String()
 }

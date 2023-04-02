@@ -17,24 +17,37 @@ func (h handler) ConnectToDB(ctx *fiber.Ctx) error {
 	return ctx.SendStatus(fiber.StatusOK)
 }
 
-func (h handler) SendTestKjcz(ctx *fiber.Ctx) error {
+func (h handler) SendTest(ctx *fiber.Ctx, rt models.ReportType, publish bool) error {
 	h.channels.RunDBConn <- config.DBAction{
-		Publish:        false,
+		Publish:        publish,
 		TestData:       true,
 		ConnectionOnly: false,
-		ReportType:     models.Kjcz,
+		ReportType:     rt,
 		Payload:        "",
 	}
 	return ctx.SendStatus(fiber.StatusOK)
 }
 
+func (h handler) SendTestKjcz(ctx *fiber.Ctx) error {
+	return h.SendTest(ctx, models.PR_SO_KJCZ, false)
+}
+
+func (h handler) SendTestPzrr(ctx *fiber.Ctx) error {
+	return h.SendTest(ctx, models.PD_BI_PZRR, false)
+}
+
+func (h handler) SendTestPzfrr(ctx *fiber.Ctx) error {
+	return h.SendTest(ctx, models.PD_BI_PZFRR, false)
+}
+
 func (h handler) SendTestKjczAndPublish(ctx *fiber.Ctx) error {
-	h.channels.RunDBConn <- config.DBAction{
-		Publish:        true,
-		TestData:       true,
-		ConnectionOnly: false,
-		ReportType:     models.Kjcz,
-		Payload:        "",
-	}
-	return ctx.SendStatus(fiber.StatusOK)
+	return h.SendTest(ctx, models.PR_SO_KJCZ, true)
+}
+
+func (h handler) SendTestPzrrAndPublish(ctx *fiber.Ctx) error {
+	return h.SendTest(ctx, models.PD_BI_PZRR, true)
+}
+
+func (h handler) SendTestPzfrrAndPublish(ctx *fiber.Ctx) error {
+	return h.SendTest(ctx, models.PD_BI_PZFRR, true)
 }

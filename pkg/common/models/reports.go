@@ -1,9 +1,12 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Reporter interface {
 	GetAllPayloads() []ReportPayload
+	//GetTestReport(reportId int64, data ReportData) any
 }
 
 type ReportData struct {
@@ -60,6 +63,10 @@ func (r KjczReport) GetAllPayloads() (payloads []ReportPayload) {
 	return
 }
 
+//func (r KjczReport) GetTestReport(reportId int64, data ReportData) any {
+//	return GetTestKjczReportBody(reportId, data)
+//}
+
 type PzrrReport struct {
 	Data                   ReportData
 	ForecastedCapacityUp   []ReportPayload
@@ -73,6 +80,10 @@ func (r PzrrReport) GetAllPayloads() (payloads []ReportPayload) {
 	return
 }
 
+//func (r PzrrReport) GetTestReport(reportId int64, data ReportData) any {
+//	return GetTestPzrrReportBody(reportId, data)
+//}
+
 type PzfrrReport struct {
 	Data                   ReportData
 	ForecastedCapacityUp   []ReportPayload
@@ -85,6 +96,10 @@ func (r PzfrrReport) GetAllPayloads() (payloads []ReportPayload) {
 
 	return
 }
+
+//func (r PzfrrReport) GetTestReport(reportId int64, data ReportData) any {
+//	return GetTestPzfrrReportBody(reportId, data)
+//}
 
 type FlowDirection int
 
