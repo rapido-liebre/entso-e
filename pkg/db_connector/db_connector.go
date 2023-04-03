@@ -7,6 +7,7 @@ import (
 	"fmt"
 	go_ora "github.com/sijms/go-ora/v2"
 	"log"
+	"runtime"
 	"strconv"
 	"sync"
 	"time"
@@ -69,8 +70,7 @@ func (dbc *dbConnector) Run(wg *sync.WaitGroup) {
 
 		case err := <-dbc.errch:
 			if err != nil {
-				log.Fatalf("Connect to DB failed, err: %v\n", err)
-				return
+				log.Printf("Database connection failed, err: %v\n", err)
 			}
 			//
 			log.Printf("Connect to DB successful isRunning:%v  status:%v", dbc.isRunning, dbc.status)
@@ -92,6 +92,21 @@ func (dbc *dbConnector) connect() {
 	fmt.Println("*** Using only go_ora package (no additional client software)")
 	fmt.Println("Local Database, simple connect string ")
 
+	os := runtime.GOOS
+	switch os {
+	case "windows":
+		fmt.Println("This service is not dedicated to running on Windows")
+	case "darwin":
+		fmt.Println("This service can be run on Mac but then connection to oracle db is skipped")
+		dbc.getReport()
+		return
+	case "linux":
+		fallthrough
+	default:
+		goto linux
+	}
+
+linux:
 	defer func() {
 		err := dbc.db.Close()
 		if err != nil {
@@ -101,7 +116,10 @@ func (dbc *dbConnector) connect() {
 
 	t := time.Now()
 	if dbc.data.ConnectionOnly {
-		dbc.connectToDB()
+		err := dbc.connectToDB()
+		if err != nil {
+			dbc.errch <- err
+		}
 		goto end
 	}
 	if dbc.data.TestData {
@@ -116,7 +134,11 @@ func (dbc *dbConnector) connect() {
 		if err != nil {
 			dbc.errch <- err
 		}
+	} else {
+		//normal usage
+		dbc.getReport()
 	}
+
 	//if len(p.data) == 0 {
 	//	p.errch <- errors.New("no data for processing")
 	//}
@@ -126,7 +148,7 @@ end:
 	dbc.errch <- nil
 }
 
-func (dbc *dbConnector) connectToDB() {
+func (dbc *dbConnector) connectToDB() error {
 	cfg := dbc.config.Params
 	//connectionString := "oracle://" + cfg.DBUser + ":" + cfg.DBPassword + "@" + cfg.DBServer + ":" + cfg.DBPort + "/" + cfg.DBService
 	//if cfg.DBDSN != "" {
@@ -156,7 +178,7 @@ func (dbc *dbConnector) connectToDB() {
 	var err error
 	dbc.db, err = sql.Open("oracle", connectionString)
 	if err != nil {
-		panic(fmt.Errorf("error in sql.Open: %w", err))
+		return fmt.Errorf("error in sql.Open: %w", err)
 	}
 	//defer func() {
 	//	err = db.Close()
@@ -167,8 +189,9 @@ func (dbc *dbConnector) connectToDB() {
 	dbc.db.SetConnMaxLifetime(time.Minute * 5)
 	err = dbc.db.Ping()
 	if err != nil {
-		panic(fmt.Errorf("error pinging db: %w", err))
+		return fmt.Errorf("error pinging db: %w", err)
 	}
+	return nil
 }
 
 //const createTableStatement = "CREATE TABLE TEMP_TABLE ( NAME VARCHAR2(100), CREATION_TIME TIMESTAMP DEFAULT SYSTIMESTAMP, VALUE  NUMBER(5))"
@@ -176,8 +199,9 @@ func (dbc *dbConnector) connectToDB() {
 //const insertStatement = "INSERT INTO TEMP_TABLE ( NAME , VALUE) VALUES (:name, :value)"
 
 func (dbc *dbConnector) testData() error {
-	dbc.connectToDB()
-
+	if err := dbc.connectToDB(); err != nil {
+		return err
+	}
 	if _, err := dbc.callPutReport(); err != nil {
 		return err
 	}
@@ -186,7 +210,9 @@ func (dbc *dbConnector) testData() error {
 }
 
 func (dbc *dbConnector) testDataAndPublish() error {
-	dbc.connectToDB()
+	if err := dbc.connectToDB(); err != nil {
+		return err
+	}
 	rdata, err := dbc.callPutReport()
 	if err != nil {
 		return err
@@ -249,6 +275,30 @@ func (dbc *dbConnector) callInicjujPozyskanie(rdata models.ReportData) error {
 	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
 
 	return nil
+}
+
+func (dbc *dbConnector) getReport() {
+	data := models.TestReportData(dbc.data.ReportType)
+	data.MonthsDuration = dbc.data.ReportData.MonthsDuration
+
+	var reportId int64
+	reportId = 0
+
+	dbc.status = Ready
+
+	switch dbc.data.ReportType {
+	case models.PR_SO_KJCZ:
+		report := models.GetTestKjczReportBody(reportId, data)
+		dbc.channels.KjczReport <- report
+	case models.PD_BI_PZRR:
+		report := models.GetTestPzrrReportBody(reportId, data)
+		dbc.channels.PzrrReport <- report
+	case models.PD_BI_PZFRR:
+		report := models.GetTestPzfrrReportBody(reportId, data)
+		dbc.channels.PzfrrReport <- report
+	default:
+		fmt.Println("getReport() fatal error! Unknown report type")
+	}
 }
 
 //func someAdditionalActions(_ *sql.DB) {

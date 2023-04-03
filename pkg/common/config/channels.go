@@ -16,9 +16,11 @@ type APIChannels struct {
 type DataChannels struct {
 	RunParse chan bool
 	//RunGenerate chan bool
-	RunProcess chan map[models.Year]map[time.Month][]models.LfcAce
-	RunDBConn  chan DBAction
-	Filename   chan string
+	RunProcess  chan map[models.Year]map[time.Month][]models.LfcAce
+	RunDBConn   chan DBAction
+	KjczReport  chan models.KjczReport
+	PzrrReport  chan models.PzrrReport
+	PzfrrReport chan models.PzfrrReport
 }
 
 type Channels struct {
@@ -44,9 +46,11 @@ func GetChannels() Channels {
 		DataChannels: DataChannels{
 			RunParse: make(chan bool),
 			//RunGenerate: make(chan bool),
-			RunProcess: make(chan map[models.Year]map[time.Month][]models.LfcAce),
-			RunDBConn:  make(chan DBAction),
-			Filename:   make(chan string),
+			RunProcess:  make(chan map[models.Year]map[time.Month][]models.LfcAce),
+			RunDBConn:   make(chan DBAction),
+			KjczReport:  make(chan models.KjczReport),
+			PzrrReport:  make(chan models.PzrrReport),
+			PzfrrReport: make(chan models.PzfrrReport),
 		},
 	}
 }

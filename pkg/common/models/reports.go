@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 )
 
@@ -10,9 +11,19 @@ type Reporter interface {
 }
 
 type ReportData struct {
-	Creator string
-	Start   time.Time
-	End     time.Time
+	Creator        string
+	Start          time.Time
+	End            time.Time
+	MonthsDuration int64
+}
+
+func (rd ReportData) GetDurationInMonths() (int64, error) {
+	duration := rd.End.Sub(rd.Start)
+	difference := int64(duration.Hours() / 24 / 30)
+	if difference <= 0 {
+		return 0, errors.New("invalid date range")
+	}
+	return difference, nil
 }
 
 type ReportPayload struct {

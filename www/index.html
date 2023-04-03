@@ -1,95 +1,147 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Dashboard - Brand</title>
+    <title>Raporty ENTSO-E - PSEI</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&amp;display=swap">
     <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
-    <link rel="stylesheet" href="assets/css/untitled.css">
+    <link rel="stylesheet" href="assets/css/Navbar-With-Button-icons.css">
 </head>
 
 <body id="page-top">
     <div id="wrapper">
-        <nav class="navbar navbar-dark align-items-start sidebar sidebar-dark accordion bg-gradient-primary p-0">
-            <div class="container-fluid d-flex flex-column p-0"><a class="navbar-brand text-center d-flex justify-content-center align-items-center sidebar-brand m-0" href="#">
-                    <picture><img src="assets/img/PSE_nowe_logo.jpeg" width="130" height="69"></picture>
-                </a>
-                <hr class="sidebar-divider my-0">
-                <ul class="navbar-nav text-light" id="accordionSidebar" style="margin-top: 25px;">
-                    <li class="nav-item"><a class="nav-link active" href="index.html"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href="configuration.html"><i class="fas fa-wrench"></i><span>Configuration</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href="files.html"><i class="far fa-file-archive"></i><span>Files</span></a></li>
-                </ul>
-                <div class="text-center d-none d-md-inline"><button class="btn rounded-circle border-0" id="sidebarToggle" type="button"></button></div>
-            </div>
-        </nav>
         <div class="d-flex flex-column" id="content-wrapper">
             <div id="content">
                 <nav class="navbar navbar-light navbar-expand bg-white shadow mb-4 topbar static-top">
-                    <div class="container-fluid"><button class="btn btn-link d-md-none rounded-circle me-3" id="sidebarToggleTop" type="button"><i class="fas fa-bars"></i></button>
-                        <form class="d-none d-sm-inline-block me-auto ms-md-3 my-2 my-md-0 mw-100 navbar-search">
-                            <div class="input-group"><input class="bg-light form-control border-0 small" type="text" placeholder="Search for ..."><button class="btn btn-primary py-0" type="button"><i class="fas fa-search"></i></button></div>
-                        </form>
-                    </div>
+                    <div class="container-fluid"><button class="btn btn-link d-md-none rounded-circle me-3" id="sidebarToggleTop" type="button"><i class="fas fa-bars"></i></button></div>
                 </nav>
                 <div class="container-fluid">
-                    <div class="d-sm-flex justify-content-between align-items-center mb-4">
-                        <h3 class="text-dark mb-0">Dashboard</h3><a class="btn btn-primary btn-sm d-none d-sm-inline-block" role="button" href="#"><i class="fas fa-download fa-sm text-white-50"></i>&nbsp;Generate Report</a>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="card shadow border-start-warning py-2">
-                                <div class="card-body">
-                                    <div class="row align-items-center no-gutters">
-                                        <div class="col me-2">
-                                            <div class="text-uppercase text-dark fw-bold text-xs mb-1"><span>Start Service</span></div>
-                                            <div class="text-center text-dark fw-bold h5 mb-0"><button class="btn btn-success" id="start" type="submit" style="padding-right: 40px;padding-left: 40px;" onclick="startService()">Run</button></div>
-                                        </div>
-                                        <div class="col-auto"><i class="fas fa-play fa-2x text-gray-300"></i></div>
+                    <div>
+                        <ul class="nav nav-pills nav-justified" role="tablist" style="width: 500px;">
+                            <li class="nav-item" role="presentation"><a class="nav-link active" role="tab" data-bs-toggle="pill" href="#tab-1">KJCZ</a></li>
+                            <li class="nav-item" role="presentation"><a class="nav-link" role="tab" data-bs-toggle="pill" href="#tab-2">PZRR</a></li>
+                            <li class="nav-item" role="presentation"><a class="nav-link" role="tab" data-bs-toggle="pill" href="#tab-3">PZFRR</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane active" role="tabpanel" id="tab-1">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p>Content for tab 1.</p>
+                                        <h4 class="card-title">Title</h4>
+                                        <h6 class="text-muted card-subtitle mb-2">Subtitle</h6>
+                                        <p class="card-text">Nullam id dolor id nibh ultricies vehicula ut id elit. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus.</p>
+                                        <fieldset>
+                                            <legend>Raport KJCZ</legend>
+                                            <div class="btn-toolbar" style="margin-bottom: 10px;">
+                                                <div class="btn-group" role="group"><button class="btn btn-primary" type="button" style="margin-right: 5px;">Utwórz nowy</button></div>
+                                                <div class="btn-group" role="group"><button class="btn btn-primary" type="button" style="margin-right: 5px;" onclick="getKjczReport()">Wygeneruj wartości z bazy</button></div>
+                                                <div class="btn-group" role="group"><button class="btn btn-primary" type="button" style="margin-right: 5px;">Zapisz</button></div>
+                                                <div class="btn-group" role="group"><button class="btn btn-primary" type="button" style="margin-right: 5px;">Publikuj</button></div>
+                                            </div>
+                                            <div class="row" style="margin-bottom: 12px;">
+                                                <div class="col col-6">
+                                                    <fieldset>
+                                                        <legend style="font-size: 12px;">Autor i wersja</legend>
+                                                        <div class="input-group"><span class="input-group-text" style="width: 65px;">Autor</span><input class="form-control" type="text" style="margin-right: 10px;"><span class="input-group-text" style="width: 65px;">Rev.</span><input class="form-control" type="number"></div>
+                                                    </fieldset>
+                                                </div>
+                                                <div class="col col-2">
+                                                    <fieldset>
+                                                        <legend style="font-size: 12px;">Rodzaj</legend>
+                                                        <div class="form-check"><input class="form-check-input" type="radio" id="formCheck-1" checked=""><label class="form-check-label" for="formCheck-1">ace pl</label></div>
+                                                    </fieldset>
+                                                </div>
+                                                <div class="col">
+                                                    <fieldset>
+                                                        <legend style="font-size: 12px;">Daty (Rok - Miesiąc)</legend>
+                                                        <div class="input-group"><span class="input-group-text" style="width: 65px;">Od</span><input class="form-control" type="text" id="kjcz_date_from" style="margin-right: 10px;" placeholder="YYYY-MM"><span class="input-group-text" style="width: 65px;">Do</span><input class="form-control" type="text" id="kjcz_date_to" style="margin-right: 10px;" placeholder="YYYY-MM"></div>
+                                                    </fieldset>
+                                                </div>
+                                            </div>
+                                            <div class="row" style="margin-bottom: 12px;">
+                                                <div class="col" id="kjcz_table1_col">
+                                                    <div class="table-responsive table-bordered" id="table_kjcz">
+                                                        <table class="table">
+                                                            <thead id="table_kjcz_header">
+                                                                <tr id="table_kjcz_header_row">
+                                                                    <th>#</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody id="table_kjcz_body">
+                                                                <tr>
+                                                                    <td>Mean Value</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Standard Deviation</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>1 - Percentile</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>5 - Percentile</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>10 - Percentile</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>90 - Percentile</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>95 - Percentile</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>99 - Percentile</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row" style="margin-bottom: 12px;">
+                                                <div class="col" id="kjcz_table2_col">
+                                                    <div class="table-responsive table-bordered">
+                                                        <table class="table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>No. of Time Intervals</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td><span style="color: rgb(153, 153, 153); background-color: rgb(251, 251, 251);">FRCE Outside Level 1 Range&nbsp;Up (positive)</span></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><span style="color: rgb(153, 153, 153); background-color: rgb(251, 251, 251);">FRCE Outside Level 1 Range&nbsp;</span>Down (negative)</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><span style="color: rgb(153, 153, 153); background-color: rgb(251, 251, 251);">FRCE Outside Level 2 Range&nbsp;Up (positive)</span></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><span style="color: rgb(153, 153, 153); background-color: rgb(251, 251, 251);">FRCE Outside Level 2 Range Down (negative)</span></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><span style="color: rgb(153, 153, 153); background-color: rgb(251, 251, 251);">FRCE Exceeded 60% of FRR Capacity&nbsp;Up (positive)</span></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><span style="color: rgb(153, 153, 153); background-color: rgb(251, 251, 251);">FRCE Exceeded 60% of FRR Capacity&nbsp;</span>Down (negative)</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="card shadow border-start-warning py-2">
-                                <div class="card-body">
-                                    <div class="row align-items-center no-gutters">
-                                        <div class="col me-2">
-                                            <div class="text-uppercase text-dark fw-bold text-xs mb-1"><span>Stop Service</span></div>
-                                            <div class="text-center text-dark fw-bold h5 mb-0"><button class="btn btn-danger" id="start-1" type="submit" style="padding-right: 40px;padding-left: 40px;" onclick="stopService()">Stop</button></div>
-                                        </div>
-                                        <div class="col-auto"><i class="fas fa-pause fa-2x text-gray-300"></i></div>
-                                    </div>
-                                </div>
+                            <div class="tab-pane" role="tabpanel" id="tab-2">
+                                <p>Content for tab 2.</p>
                             </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="card shadow border-start-warning py-2">
-                                <div class="card-body">
-                                    <div class="row align-items-center no-gutters">
-                                        <div class="col me-2">
-                                            <div class="text-uppercase text-dark fw-bold text-xs mb-1"><span>Update Config</span></div>
-                                            <div class="text-center text-dark fw-bold h5 mb-0"><button class="btn btn-warning" id="start-2" type="submit" style="padding-right: 31px;margin-left: -3px;padding-left: 34px;" onclick="updateConfig()">Send</button></div>
-                                        </div>
-                                        <div class="col-auto"><i class="fas fa-upload fa-2x text-gray-300"></i></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xl-3 mb-4">
-                            <div class="card shadow border-start-warning py-2">
-                                <div class="card-body">
-                                    <div class="row align-items-center no-gutters">
-                                        <div class="col me-2">
-                                            <div class="text-uppercase text-dark fw-bold text-xs mb-1"><span>Quit Service</span></div>
-                                            <div class="text-center text-dark fw-bold h5 mb-0"><button class="btn btn-secondary" id="start-3" type="submit" style="padding-right: 40px;padding-left: 40px;" onclick="quitService()">Quit</button></div>
-                                        </div>
-                                        <div class="col-auto"><i class="fas fa-power-off fa-2x text-gray-300"></i></div>
-                                    </div>
-                                </div>
+                            <div class="tab-pane" role="tabpanel" id="tab-3">
+                                <p>Content for tab 3.</p>
                             </div>
                         </div>
                     </div>
@@ -97,61 +149,13 @@
             </div>
             <footer class="bg-white sticky-footer">
                 <div class="container my-auto">
-                    <div class="text-center my-auto copyright"><span>Copyright © PSE Innowacje 2022</span></div>
+                    <div class="text-center my-auto copyright"><span>Copyright © PSE Innowacje 2023</span></div>
                 </div>
             </footer>
-        </div><a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
-    </div><!-- <script type="module" src="./modules/main.js"></script> -->
-<script type="text/javascript">
-
-function startService() {
-    const Http = new XMLHttpRequest();
-    const url='http://localhost:3055/api/start';
-    Http.open("GET", url);
-    Http.send();
-
-    Http.onreadystatechange = (e) => {
-      console.log(Http.responseText)
-    }
-}
-    
-function stopService() {
-    const Http = new XMLHttpRequest();
-    const url='http://localhost:3055/api/stop';
-    Http.open("GET", url);
-    Http.send();
-
-    Http.onreadystatechange = (e) => {
-      console.log(Http.responseText)
-    }
-}
-    
-function updateConfig() {
-    const Http = new XMLHttpRequest();
-    const url='http://localhost:3055/api/updatecfg';
-    Http.open("GET", url);
-    Http.send();
-
-    Http.onreadystatechange = (e) => {
-      console.log(Http.responseText)
-    }
-}
-    
-function quitService() {
-    const Http = new XMLHttpRequest();
-    const url='http://localhost:3055/api/quit';
-    Http.open("GET", url);
-    Http.send();
-
-    Http.onreadystatechange = (e) => {
-      console.log(Http.responseText)
-    }
-}
-    
-</script>
+        </div>
+    </div>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-    <script src="assets/js/files.js"></script>
-    <script src="assets/js/main.js"></script>
+    <script src="assets/js/kjcz.js"></script>
     <script src="assets/js/theme.js"></script>
 </body>
 
