@@ -279,6 +279,8 @@ func (dbc *dbConnector) callInicjujPozyskanie(rdata models.ReportData) error {
 
 func (dbc *dbConnector) getReport() {
 	data := models.TestReportData(dbc.data.ReportType)
+	//data.Start = dbc.data.ReportData.Start
+	//data.End = dbc.data.ReportData.End
 	data.MonthsDuration = dbc.data.ReportData.MonthsDuration
 
 	var reportId int64
