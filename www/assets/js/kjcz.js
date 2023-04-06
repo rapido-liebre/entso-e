@@ -9,11 +9,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
         case "configuration.html":
             setConfigurationForm(); break;
         default:
-            // createKjczTable();
+            // ReadConfigFile();
             break;
     }
 });
-
 
 // function loadFiles() {
 //     const url = 'http://localhost:3055/api/bucket_objects';
@@ -40,7 +39,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
 function saveKjczReport() {
     const Http = new XMLHttpRequest();
-    const url='http://localhost:3055/api/test_kjcz';
+    const url='http://'+ host + ':' + port + '/api/test_kjcz';
     Http.open("GET", url);
     Http.send();
 
@@ -51,7 +50,7 @@ function saveKjczReport() {
 
 function saveAndPublishKjczReport() {
     const Http = new XMLHttpRequest();
-    const url='http://localhost:3055/api/test_kjcz_publish';
+    const url='http://'+ host + ':' + port + '/api/test_kjcz_publish';
     Http.open("GET", url);
     Http.send();
 
@@ -74,24 +73,13 @@ function getKjczReport() {
     }
 
     // Calling it with then:
-    get('http://localhost:3055/api/get_kjcz', {
+    get('http://'+ host + ':' + port + '/api/get_kjcz', {
         dateFrom: dateFrom,
         dateTo: dateTo,
     }).then(respData => {
         console.log(respData)
         fillKjczForm(respData)
     })
-
-    // get('http://localhost:3055/api/get_pzrr', {
-    //     dateFrom: dateFrom,
-    //     dateTo: dateTo,
-    // }).then(data => console.log(data))
-    //
-    // get('http://localhost:3055/api/get_pzfrr', {
-    //     dateFrom: dateFrom,
-    //     dateTo: dateTo,
-    // }).then(data => console.log(data))
-
 }
 
 function fillKjczForm(respData) {

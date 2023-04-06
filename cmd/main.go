@@ -137,6 +137,7 @@ func main() {
 	noDeamonPtr := flag.Bool("no-deamon", false, "Run locally or as a deamon")
 	flag.Parse()
 	log.Printf("noDeamonPtr: %v\n", *noDeamonPtr)
+	log.Printf("App name: %s\n", config.GetAppName())
 
 	if *noDeamonPtr {
 		runLocally(*cfgPathPtr)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"sync"
@@ -32,12 +33,17 @@ type Config struct {
 	Path   string
 }
 
-const CFG_PATH = "/Users/rapido_liebre/GolandProjects/entso-e/"
-const CFG_FILENAME = ".env"
-
 var onceCfg sync.Once
 
 var singleInstanceCfg *Config
+
+func GetAppName() string {
+	path, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	return filepath.Base(path)
+}
 
 func GetConfig(cfgPath ...string) (Config, error) {
 	var err error
@@ -72,10 +78,12 @@ func GetConfig(cfgPath ...string) (Config, error) {
 func loadConfig(cfgPath string) (cfg Config, err error) {
 	cfg.Path = cfgPath
 	log.Println(os.Getwd())
+	viper.AddConfigPath("/etc/dr")
+	viper.AddConfigPath("/tmp/dr")
 	viper.AddConfigPath("./")
 	viper.AddConfigPath("../")
 	viper.AddConfigPath("../../")
-	viper.SetConfigName(CFG_FILENAME)
+	viper.SetConfigName(GetConfigFilename())
 	viper.SetConfigType("env")
 	viper.AutomaticEnv()
 
@@ -90,12 +98,18 @@ func loadConfig(cfgPath string) (cfg Config, err error) {
 	return
 }
 
-func GetConfigPath() string {
-	return CFG_PATH //TODO what about a path on windows..
+func GetConfigPaths() []string {
+	var paths []string
+	paths = append(paths, "/etc/dr")
+	paths = append(paths, "/tmp/dr")
+
+	return paths
 }
 
 func GetConfigFilename() string {
-	return CFG_FILENAME
+	cfgName := strings.Join([]string{GetAppName(), "cfg"}, ".")
+
+	return cfgName
 }
 
 // CustomPortValidator validates port in config struct, valid syntax is `:3055`

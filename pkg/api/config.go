@@ -1,10 +1,10 @@
 package api
 
 import (
-	"log"
-	"strings"
-
 	"entso-e_reports/pkg/common/config"
+	"log"
+	"os"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -16,7 +16,14 @@ func (h handler) GetConfig(ctx *fiber.Ctx) error {
 		log.Println("Failed at loading config", err)
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
-	cfg.Path = strings.Join([]string{config.GetConfigPath(), config.GetConfigFilename()}, "")
+
+	for _, path := range config.GetConfigPaths() {
+		cfgPath := strings.Join([]string{path, config.GetConfigFilename()}, "/")
+		if _, err := os.Stat(cfgPath); err == nil {
+			cfg.Path = cfgPath
+		}
+	}
+
 	//ss := "{Params:\n   {\n    TimeInterval: 5,\n    WarningSize: 10,\n    RedAlertSize: 3,\n    InputDir: \"/Users/rapido_liebre/GolandProjects/wams_archiver/tests/input\",\n    OutputDir: \"/Users/rapido_liebre/GolandProjects/wams_archiver/tests/output\",\n    Port: \":3055\"\n    },\n    Path:\"./\"\n}"
 	return ctx.Status(fiber.StatusOK).JSON(cfg)
 }

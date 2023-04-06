@@ -15,7 +15,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
 function savePzrrReport() {
     const Http = new XMLHttpRequest();
-    const url='http://localhost:3055/api/test_pzrr';
+    const url='http://'+ host + ':' + port + '/api/test_pzrr';
     Http.open("GET", url);
     Http.send();
 
@@ -26,7 +26,7 @@ function savePzrrReport() {
 
 function saveAndPublishPzrrReport() {
     const Http = new XMLHttpRequest();
-    const url='http://localhost:3055/api/test_pzrr_publish';
+    const url='http://'+ host + ':' + port + '/api/test_pzrr_publish';
     Http.open("GET", url);
     Http.send();
 
@@ -49,7 +49,7 @@ function getPzrrReport() {
     }
 
     // Calling it with then:
-    get('http://localhost:3055/api/get_pzrr', {
+    get('http://'+ host + ':' + port + '/api/get_pzrr', {
         dateFrom: dateFrom,
         dateTo: dateTo,
     }).then(respData => {

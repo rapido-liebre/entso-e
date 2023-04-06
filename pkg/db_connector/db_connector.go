@@ -73,7 +73,7 @@ func (dbc *dbConnector) Run(wg *sync.WaitGroup) {
 				log.Printf("Database connection failed, err: %v\n", err)
 			}
 			//
-			log.Printf("Connect to DB successful isRunning:%v  status:%v", dbc.isRunning, dbc.status)
+			log.Printf("Connect to DB successful isRunning:%v  status:%v\n", dbc.isRunning, dbc.status)
 			//if dbc.isRunning && dbc.status == Ready {
 			//	dbc.channels.RunProcess <- dbc.data
 			//}
@@ -108,9 +108,11 @@ func (dbc *dbConnector) connect() {
 
 linux:
 	defer func() {
-		err := dbc.db.Close()
-		if err != nil {
-			fmt.Println("Can't close connection: ", err)
+		if dbc.db != nil {
+			err := dbc.db.Close()
+			if err != nil {
+				fmt.Println("Can't close connection: ", err)
+			}
 		}
 	}()
 
