@@ -98,7 +98,7 @@ func (dbc *dbConnector) connect() {
 		fmt.Println("This service is not dedicated to running on Windows")
 	case "darwin":
 		fmt.Println("This service can be run on Mac but then connection to oracle db is skipped")
-		dbc.getReport()
+		dbc.getTestReport()
 		return
 	case "linux":
 		fallthrough
@@ -138,7 +138,10 @@ linux:
 		}
 	} else {
 		//normal usage
-		dbc.getReport()
+		err := dbc.getTestReport() //dbc.callGetReport()
+		if err != nil {
+			dbc.errch <- err
+		}
 	}
 
 	//if len(p.data) == 0 {
@@ -279,7 +282,7 @@ func (dbc *dbConnector) callInicjujPozyskanie(rdata models.ReportData) error {
 	return nil
 }
 
-func (dbc *dbConnector) getReport() {
+func (dbc *dbConnector) getTestReport() error {
 	data := models.TestReportData(dbc.data.ReportType)
 	//data.Start = dbc.data.ReportData.Start
 	//data.End = dbc.data.ReportData.End
@@ -303,7 +306,84 @@ func (dbc *dbConnector) getReport() {
 	default:
 		fmt.Println("getReport() fatal error! Unknown report type")
 	}
+	return nil
 }
+
+func (dbc *dbConnector) callGetReport() error {
+	t := time.Now()
+
+	//data := models.TestReportData(dbc.data.ReportType)
+	//data.Start = dbc.data.ReportData.Start
+	//data.End = dbc.data.ReportData.End
+	//data.MonthsDuration = dbc.data.ReportData.MonthsDuration
+
+	//var reportId int64
+	//reportId = 0
+
+	dbc.status = Ready
+
+	var (
+		cursorReport  go_ora.RefCursor
+		cursorPayload go_ora.RefCursor
+	)
+
+	//fmt.Println(db.Ping())
+	//statement := `begin :x := PKG_TEST.PROC_GET_DUAL(); end;`
+	//_, err := db.Exec(statement, sql.Out{Dest: &cursor})
+	//
+	//statement := `begin PKG_TEST.PROC_GET_DUAL(:1); end;`
+	//_, err := db.Exec(statement, sql.Out{Dest: &cursor})
+	//
+	////check errors
+
+	//get_last_kjcz(p_report_start in hl_entsoe_reports.report_start%type,
+	//p_report_end   in hl_entsoe_reports.report_end%type,
+	//p_report       out sys_refcursor,
+	//	p_payload      out sys_refcursor);
+
+	switch dbc.data.ReportType {
+	case models.PR_SO_KJCZ:
+		statement := models.GetLastKjcz(dbc.data.ReportData, dbc.data.ReportType)
+		_, err := dbc.db.Exec(statement, sql.Out{Dest: &cursorReport}, sql.Out{Dest: &cursorPayload})
+		if err != nil {
+			return err
+		}
+	case models.PD_BI_PZRR:
+		break
+	case models.PD_BI_PZFRR:
+		break
+	}
+
+	//defer cursor.Close()
+	//rows, err := cursor.Query()
+	//// check for error
+	//
+	//var (
+	//	var1 string
+	//)
+	//for rows.Next_() {
+	//	err = rows.Scan(&var1)
+	//	// check for error
+	//	fmt.Println(var1)
+	//}
+
+	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
+	return nil
+}
+
+//CREATE OR REPLACE PACKAGE PKG_TEST IS
+//TYPE REFCURSOR IS REF CURSOR;
+//PROCEDURE PROC_GET_DUAL(P_CUR OUT REFCURSOR);
+//end PKG_TEST;
+//CREATE OR REPLACE PACKAGE BODY PKG_TEST is
+//PROCEDURE PROC_GET_DUAL(
+//	P_CUR OUT REFCURSOR)
+//IS
+//BEGIN
+//OPEN P_CUR FOR
+//select * from dual;
+//	END PROC_GET_DUAL;
+//	end PKG_TEST;
 
 //func someAdditionalActions(_ *sql.DB) {
 

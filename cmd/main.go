@@ -7,7 +7,6 @@ import (
 	"entso-e_reports/pkg/parser"
 	"entso-e_reports/pkg/processor"
 	"flag"
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"log"
@@ -134,39 +133,39 @@ func init() {
 func main() {
 	// parse args
 	cfgPathPtr := flag.String("config", "./", "Specific path to config file")
-	noDeamonPtr := flag.Bool("no-deamon", false, "Run locally or as a deamon")
-	flag.Parse()
-	log.Printf("noDeamonPtr: %v\n", *noDeamonPtr)
-	log.Printf("App name: %s\n", config.GetAppName())
+	//noDeamonPtr := flag.Bool("no-daemon", false, "Run locally or as a deamon")
+	//flag.Parse()
+	//log.Printf("noDeamonPtr: %v\n", *noDeamonPtr)
+	//log.Printf("App name: %s\n", config.GetAppName())
+	//
+	//if *noDeamonPtr {
+	runLocally(*cfgPathPtr)
+	//} else {
+	//srv, err := daemon.New(name, description, daemon.SystemDaemon, dependencies...)
+	//if err != nil {
+	//	errlog.Println("Error: ", err)
+	//	os.Exit(1)
+	//}
+	//service := &Service{srv}
+	//status, err := service.Manage(*cfgPathPtr)
+	//if err != nil {
+	//	errlog.Println(status, "\nError: ", err)
+	//	os.Exit(1)
+	//}
+	//fmt.Println(status)
 
-	if *noDeamonPtr {
-		runLocally(*cfgPathPtr)
-	} else {
-		srv, err := daemon.New(name, description, daemon.SystemDaemon, dependencies...)
-		if err != nil {
-			errlog.Println("Error: ", err)
-			os.Exit(1)
-		}
-		service := &Service{srv}
-		status, err := service.Manage(*cfgPathPtr)
-		if err != nil {
-			errlog.Println(status, "\nError: ", err)
-			os.Exit(1)
-		}
-		fmt.Println(status)
+	//service, err := daemon.New("name", "description", daemon.SystemDaemon)
+	//if err != nil {
+	//	log.Fatal("Error: ", err)
+	//}
+	//status, err := service.Install()
+	//if err != nil {
+	//	log.Fatal(status, "\nError: ", err)
+	//}
+	//fmt.Println(status)
 
-		//service, err := daemon.New("name", "description", daemon.SystemDaemon)
-		//if err != nil {
-		//	log.Fatal("Error: ", err)
-		//}
-		//status, err := service.Install()
-		//if err != nil {
-		//	log.Fatal(status, "\nError: ", err)
-		//}
-		//fmt.Println(status)
-
-		//runLocally(*cfgPathPtr)
-	}
+	//runLocally(*cfgPathPtr)
+	//}
 
 	log.Println("Main says Bye bye")
 }

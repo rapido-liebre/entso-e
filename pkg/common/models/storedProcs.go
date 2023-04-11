@@ -7,18 +7,6 @@ import (
 	"time"
 )
 
-//type ReportType int
-//
-//const (
-//	Kjcz ReportType = iota
-//	Pzrr
-//	Pzfrr
-//)
-//
-//func (rt ReportType) String() string {
-//	return []string{"kjcz", "pzrr", "pzfrr"}[rt]
-//}
-
 type ReportType int
 
 const (
@@ -79,6 +67,16 @@ func GetPutReportBody(data ReportData, rt ReportType) string {
 		"p_creator => '%s', "+
 		"p_report_start => date '%s', "+
 		"p_report_end   => date '%s');", rt.shortly(), data.Creator, data.Start.Format(time.DateOnly), data.End.Format(time.DateOnly))
+
+	return strings.Join([]string{"begin", rdata, "end;"}, " ")
+}
+
+func GetLastKjcz(data ReportData, rt ReportType) string {
+	rdata := fmt.Sprintf("hl_entsoe_reports_pk.get_last_%s("+
+		"p_report_start => date '%s', "+
+		"p_report_end   => date '%s', "+
+		"p_report    	=> :1, "+
+		"p_payload      => :2);", rt.shortly(), data.Start.Format(time.DateOnly), data.End.Format(time.DateOnly))
 
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }

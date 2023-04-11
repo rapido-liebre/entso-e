@@ -164,3 +164,93 @@ func (h handler) GetPzfrr(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
+
+func (h handler) SaveKjcz(ctx *fiber.Ctx) error {
+	fmt.Println(string(ctx.Body()))
+
+	var body models.KjczBody
+
+	if err := ctx.BodyParser(&body); err != nil {
+		return err
+	}
+
+	//report, err := h.GetKjczReport(rd)
+	//if err != nil {
+	//	return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	//}
+	//
+	//return ctx.Status(fiber.StatusOK).JSON(report)
+
+	return ctx.JSON(body)
+	//rd, err := getCommonReportData(ctx)
+	//if err != nil {
+	//	return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	//}
+	//
+	//report, err := h.GetKjczReport(rd)
+	//if err != nil {
+	//	return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	//}
+	//
+	//return ctx.Status(fiber.StatusOK).JSON(report)
+}
+
+func (h handler) SaveKjczAndPublish(ctx *fiber.Ctx) error {
+	fmt.Println(string(ctx.Body()))
+
+	var body models.KjczBody
+
+	if err := ctx.BodyParser(&body); err != nil {
+		return err
+	}
+
+	return ctx.JSON(body)
+}
+
+func (h handler) SavePzrr(ctx *fiber.Ctx) error {
+	fmt.Println(string(ctx.Body()))
+
+	var body models.PzrrBody
+
+	if err := ctx.BodyParser(&body); err != nil {
+		return err
+	}
+
+	return ctx.JSON(body)
+}
+
+func (h handler) SavePzrrAndPublish(ctx *fiber.Ctx) error {
+	fmt.Println(string(ctx.Body()))
+
+	var body models.PzrrBody
+
+	if err := ctx.BodyParser(&body); err != nil {
+		return err
+	}
+
+	return ctx.JSON(body)
+}
+
+func (h handler) SavePzfrr(ctx *fiber.Ctx) error {
+	fmt.Println(string(ctx.Body()))
+
+	var body models.PzfrrBody
+
+	if err := ctx.BodyParser(&body); err != nil {
+		return err
+	}
+
+	return ctx.JSON(body)
+}
+
+func (h handler) SavePzfrrAndPublish(ctx *fiber.Ctx) error {
+	fmt.Println(string(ctx.Body()))
+
+	var body models.PzfrrBody
+
+	if err := ctx.BodyParser(&body); err != nil {
+		return err
+	}
+
+	return ctx.JSON(body)
+}

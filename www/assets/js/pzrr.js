@@ -14,25 +14,35 @@ window.addEventListener('DOMContentLoaded', (event) => {
 });
 
 function savePzrrReport() {
-    const Http = new XMLHttpRequest();
-    const url='http://'+ host + ':' + port + '/api/test_pzrr';
-    Http.open("GET", url);
-    Http.send();
+    const xhr = new XMLHttpRequest();
+    const url='http://'+ host + ':' + port + '/api/save_pzrr';
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("Content-Type", "application/json");
 
-    Http.onreadystatechange = (e) => {
-        console.log(Http.responseText)
-    }
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            console.log(xhr.status);
+            console.log(xhr.responseText);
+        }};
+
+    xhr.send(getJsonFromPzrrForm());
 }
 
 function saveAndPublishPzrrReport() {
-    const Http = new XMLHttpRequest();
-    const url='http://'+ host + ':' + port + '/api/test_pzrr_publish';
-    Http.open("GET", url);
-    Http.send();
+    const xhr = new XMLHttpRequest();
+    const url='http://'+ host + ':' + port + '/api/save_pzrr_publish';
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("Content-Type", "application/json");
 
-    Http.onreadystatechange = (e) => {
-        console.log(Http.responseText)
-    }
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            console.log(xhr.status);
+            console.log(xhr.responseText);
+        }};
+
+    xhr.send(getJsonFromPzrrForm());
 }
 
 function getPzrrReport() {
@@ -64,7 +74,87 @@ function fillPzrrForm(respData) {
     console.log(myJSON)
     console.log("-------")
 
-    createPzrrTable();
+    let data = respData["Data"];
+    let forecastedCapacityUp = respData["ForecastedCapacityUp"];
+    let forecastedCapacityDown = respData["ForecastedCapacityDown"];
+
+    fillPzrrData(data)
+    fillPzrrTableValues("table_pzrr_forecasted_capacity_up", forecastedCapacityUp);
+    fillPzrrTableValues("table_pzrr_forecasted_capacity_down", forecastedCapacityDown);
+
+    // createPzrrTable();
+}
+
+function fillPzrrData(data) {
+    const author = document.getElementById("pzrr_author");
+    console.log(data["Creator"]);
+    author.value = data["Creator"];
+    // let rev = document.getElementById("pzrr_rev");
+    // rev.value = data["Creator"];
+}
+
+function fillPzrrTableValues(row, values) {
+    clearPzrrTableValues(row)
+
+    let tr = document.getElementById(row);
+    for (let i in values) {
+        const index = values[i]["position"];
+        tr.insertCell(index).innerHTML = values[i]["Quantity"];
+    }
+}
+
+function getJsonFromPzrrForm() {
+    //convert object to json string
+    const data = pzrrDataToJson();
+    const forecastedCapacityUp = pzrrTableValuesToJson("table_pzrr_forecasted_capacity_up");
+    const forecastedCapacityDown = pzrrTableValuesToJson("table_pzrr_forecasted_capacity_down");
+
+
+    const obj = {};
+    obj.data = data;
+    obj.forecastedCapacityUp = forecastedCapacityUp;
+    obj.forecastedCapacityDown = forecastedCapacityDown;
+
+    return JSON.stringify(obj);
+}
+
+function pzrrDataToJson() {
+    const author = document.getElementById("pzrr_author").value;
+    // const rev = document.getElementById("pzrr_rev").innerHTML;
+    const date_from = document.getElementById("pzrr_date_from").value;
+    const date_to = document.getElementById("pzrr_date_to").value;
+
+    let data = {};
+    data.creator = author;
+    data.start = date_from;
+    data.end = date_to;
+
+    return data;
+}
+
+function pzrrTableValuesToJson(row) {
+    let tr = document.getElementById(row);
+    let array = [];
+
+    for (let i in tr.cells) {
+        if (i === 0) continue;
+        // console.log(tr.cells[i].innerHTML);
+        let obj = {};
+        obj.position = parseInt(i);
+        obj.quantity = parseFloat(tr.cells[i].innerHTML);
+
+        array[i-1] = obj;
+    }
+
+    return array;
+}
+
+function clearPzrrTableValues(row) {
+    let tr = document.getElementById(row);
+
+    while (tr.cells.length > 1) {
+        tr.deleteCell(tr.cells.length - 1)
+    }
 }
 
 function createPzrrTable() {

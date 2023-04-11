@@ -38,25 +38,35 @@ window.addEventListener('DOMContentLoaded', (event) => {
 // }
 
 function saveKjczReport() {
-    const Http = new XMLHttpRequest();
-    const url='http://'+ host + ':' + port + '/api/test_kjcz';
-    Http.open("GET", url);
-    Http.send();
+    const xhr = new XMLHttpRequest();
+    const url='http://'+ host + ':' + port + '/api/save_kjcz';
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("Content-Type", "application/json");
 
-    Http.onreadystatechange = (e) => {
-        console.log(Http.responseText)
-    }
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            console.log(xhr.status);
+            console.log(xhr.responseText);
+        }};
+
+    xhr.send(getJsonFromKjczForm());
 }
 
 function saveAndPublishKjczReport() {
-    const Http = new XMLHttpRequest();
-    const url='http://'+ host + ':' + port + '/api/test_kjcz_publish';
-    Http.open("GET", url);
-    Http.send();
+    const xhr = new XMLHttpRequest();
+    const url='http://'+ host + ':' + port + '/api/save_kjcz_publish';
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("Content-Type", "application/json");
 
-    Http.onreadystatechange = (e) => {
-        console.log(Http.responseText)
-    }
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            console.log(xhr.status);
+            console.log(xhr.responseText);
+        }};
+
+    xhr.send(getJsonFromKjczForm());
 }
 
 function getKjczReport() {
@@ -88,47 +98,138 @@ function fillKjczForm(respData) {
     console.log(myJSON)
     console.log("-------")
 
-    // let data = myJSON["Data"];
-    // console.log(data);
-    // console.log(typeof data);
-    // console.log(Array.isArray(data));
-    // console.log(data === null);
+    let data = respData["Data"];
+    let meanValue = respData["MeanValue"];
+    let standardDeviation = respData["StandardDeviation"];
+    let percentile1 = respData["Percentile1"];
+    let percentile5 = respData["Percentile5"];
+    let percentile10 = respData["Percentile10"];
+    let percentile90 = respData["Percentile90"];
+    let percentile95 = respData["Percentile95"];
+    let percentile99 = respData["Percentile99"];
+    let frceOutsideLevel1RangeUp = respData["FRCEOutsideLevel1RangeUp"];
+    let frceOutsideLevel1RangeDown = respData["FRCEOutsideLevel1RangeDown"];
+    let frceOutsideLevel2RangeUp = respData["FRCEOutsideLevel2RangeUp"];
+    let frceOutsideLevel2RangeDown = respData["FRCEOutsideLevel2RangeDown"];
+    let frceExceeded60PercOfFRRCapacityUp = respData["FRCEExceeded60PercOfFRRCapacityUp"];
+    let frceExceeded60PercOfFRRCapacityDown = respData["FRCEExceeded60PercOfFRRCapacityDown"];
 
-    createKjczTable();
+    fillKjczData(data)
+    fillKjczTableValues("table_kjcz_mean_value_row", meanValue);
+    fillKjczTableValues("table_kjcz_standard_deviation_row", standardDeviation);
+    fillKjczTableValues("table_kjcz_1_percintile_row", percentile1);
+    fillKjczTableValues("table_kjcz_5_percintile_row", percentile5);
+    fillKjczTableValues("table_kjcz_10_percintile_row", percentile10);
+    fillKjczTableValues("table_kjcz_90_percintile_row", percentile90);
+    fillKjczTableValues("table_kjcz_95_percintile_row", percentile95);
+    fillKjczTableValues("table_kjcz_99_percintile_row", percentile99);
+    fillKjczTableValues("table_kjcz_frce_outside_lev1_range_up_row", frceOutsideLevel1RangeUp);
+    fillKjczTableValues("table_kjcz_frce_outside_lev1_range_down_row", frceOutsideLevel1RangeDown);
+    fillKjczTableValues("table_kjcz_frce_outside_lev2_range_up_row", frceOutsideLevel2RangeUp);
+    fillKjczTableValues("table_kjcz_frce_outside_lev2_range_down_row", frceOutsideLevel2RangeDown);
+    fillKjczTableValues("table_kjcz_frce_exceeded_60_frr_capacity_up_row", frceExceeded60PercOfFRRCapacityUp);
+    fillKjczTableValues("table_kjcz_frce_exceeded_60_frr_capacity_down_row", frceExceeded60PercOfFRRCapacityDown);
 
-    // if (typeof lsv === 'object' && lsv !== null && !Array.isArray(lsv)) {
-    //     for (const [k, v] of Object.entries(lsv)) {
-    //         // console.log(`${k}: ${v}`);
-    //         if (k === value) {
-    //             lsv = v;
-    //             break;
-    //         }
-    //     }
-    // }
-    //
-    // document.getElementById(key).value = lsv;
-    // localStorage.setItem("testJSON", myJSON);
+    // createKjczTable();
+}
 
+function fillKjczData(data) {
+    const author = document.getElementById("kjcz_author");
+    console.log(data["Creator"]);
+    author.value = data["Creator"];
+    // let rev = document.getElementById("kjcz_rev");
+    // rev.value = data["Creator"];
+}
+
+function fillKjczTableValues(row, values) {
+    clearKjczTableValues(row);
+
+    let tr = document.getElementById(row);
+
+    for (let i in values) {
+        const index = values[i]["position"];
+        tr.insertCell(index).innerHTML = values[i]["Quantity"];
+    }
+}
+
+function clearKjczTableValues(row) {
+    let tr = document.getElementById(row);
+
+    while (tr.cells.length > 1) {
+        tr.deleteCell(tr.cells.length - 1)
+    }
+}
+
+function getJsonFromKjczForm() {
+    //convert object to json string
+    const data = kjczDataToJson();
+    const meanValue = kjczTableValuesToJson("table_kjcz_mean_value_row");
+    const standardDeviation = kjczTableValuesToJson("table_kjcz_standard_deviation_row");
+    const percentile1 = kjczTableValuesToJson("table_kjcz_1_percintile_row");
+    const percentile5 = kjczTableValuesToJson("table_kjcz_5_percintile_row");
+    const percentile10 = kjczTableValuesToJson("table_kjcz_10_percintile_row");
+    const percentile90 = kjczTableValuesToJson("table_kjcz_90_percintile_row");
+    const percentile95 = kjczTableValuesToJson("table_kjcz_95_percintile_row");
+    const percentile99 = kjczTableValuesToJson("table_kjcz_99_percintile_row");
+    const frceOutsideLevel1RangeUp = kjczTableValuesToJson("table_kjcz_frce_outside_lev1_range_up_row");
+    const frceOutsideLevel1RangeDown = kjczTableValuesToJson("table_kjcz_frce_outside_lev1_range_down_row");
+    const frceOutsideLevel2RangeUp = kjczTableValuesToJson("table_kjcz_frce_outside_lev2_range_up_row");
+    const frceOutsideLevel2RangeDown = kjczTableValuesToJson("table_kjcz_frce_outside_lev2_range_down_row");
+    const frceExceeded60PercOfFRRCapacityUp = kjczTableValuesToJson("table_kjcz_frce_exceeded_60_frr_capacity_up_row");
+    const frceExceeded60PercOfFRRCapacityDown = kjczTableValuesToJson("table_kjcz_frce_exceeded_60_frr_capacity_down_row");
+
+    const obj = {};
+    obj.data = data;
+    obj.meanValue = meanValue;
+    obj.standardDeviation = standardDeviation;
+    obj.percentile1 = percentile1;
+    obj.percentile5 = percentile5;
+    obj.percentile10 = percentile10;
+    obj.percentile90 = percentile90;
+    obj.percentile95 = percentile95;
+    obj.percentile99 = percentile99;
+    obj.frceOutsideLevel1RangeUp = frceOutsideLevel1RangeUp;
+    obj.frceOutsideLevel1RangeDown = frceOutsideLevel1RangeDown;
+    obj.frceOutsideLevel2RangeUp = frceOutsideLevel2RangeUp;
+    obj.frceOutsideLevel2RangeDown = frceOutsideLevel2RangeDown;
+    obj.frceExceeded60PercOfFRRCapacityUp = frceExceeded60PercOfFRRCapacityUp;
+    obj.frceExceeded60PercOfFRRCapacityDown = frceExceeded60PercOfFRRCapacityDown;
+
+    return JSON.stringify(obj);
+}
+
+function kjczDataToJson() {
+    const author = document.getElementById("kjcz_author").value;
+    // const rev = document.getElementById("kjcz_rev").innerHTML;
+    const date_from = document.getElementById("kjcz_date_from").value;
+    const date_to = document.getElementById("kjcz_date_to").value;
+
+    let data = {};
+    data.creator = author;
+    data.start = date_from;
+    data.end = date_to;
+
+    return data;
+}
+
+function kjczTableValuesToJson(row) {
+    let tr = document.getElementById(row);
+    let array = [];
+
+    for (let i in tr.cells) {
+        if (i === 0) continue;
+        // console.log(tr.cells[i].innerHTML);
+        let obj = {};
+        obj.position = parseInt(i);
+        obj.quantity = parseFloat(tr.cells[i].innerHTML);
+
+        array[i-1] = obj;
+    }
+
+    return array;
 }
 
 function createKjczTable() {
-    // let table = document.getElementById("table_kjcz");
-    // // var cols = table.cols;
-    //
-    // // if (cols.length > 1) {
-    //
-    //     // Getting the rows in table.
-    //     var rows = table.rows;
-    //
-    //     // Removing the column at index(1).
-    //     for (var j = 0; j < rows.length; j++) {
-    //
-    //         // Deleting the ith cell of each row.
-    //         rows[j].deleteCell(1);
-    //         rows[j].deleteCell(2);
-    //         rows[j].deleteCell(3);
-    //     }
-    // // }
     let thr = document.getElementById("table_kjcz_header_row");
 
     thr.insertCell(1).innerHTML = "2022-10";

@@ -50,6 +50,18 @@ func RegisterRoutes(app *fiber.App, ch *config.Channels) {
 	routes.Get("/get_pzrr", h.GetPzrr)
 
 	routes.Get("/get_pzfrr", h.GetPzfrr)
+
+	routes.Post("/save_kjcz", h.SaveKjcz)
+
+	routes.Post("/save_kjcz_publish", h.SaveKjczAndPublish)
+
+	routes.Post("/save_pzrr", h.SavePzrr)
+
+	routes.Post("/save_pzrr_publish", h.SavePzrrAndPublish)
+
+	routes.Post("/save_pzfrr", h.SavePzfrr)
+
+	routes.Post("/save_pzfrr_publish", h.SavePzfrrAndPublish)
 }
 
 func (h handler) ChannelIsClosed(ch <-chan bool) bool {

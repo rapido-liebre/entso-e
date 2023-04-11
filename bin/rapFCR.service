@@ -1,0 +1,22 @@
+[Unit]  
+Description=report FCR service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/rapido_liebre/GolangProjects/entso-e/bin/repFCR   
+WorkingDirectory=/home/rapido_liebre/GolangProjects/entso-e/bin
+Restart=on-failure
+
+User=rapido_liebre
+Group=rapido_liebre
+
+Restart=always    
+RestartSec=10    
+KillSignal=SIGINT
+
+SyslogIdentifier=repFCR-service      
+PrivateTmp=true  
+
+[Install]      
+WantedBy=multi-user.target  
