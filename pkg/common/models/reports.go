@@ -7,13 +7,18 @@ import (
 
 type Reporter interface {
 	GetAllPayloads() []ReportPayload
+	Save(cd CursorData, cps []CursorPayload)
 	//GetTestReport(reportId int64, data ReportData) any
 }
 
 type ReportData struct {
 	Creator        string
+	Revision       int64
 	Start          time.Time
 	End            time.Time
+	Created        time.Time
+	Saved          time.Time
+	Reported       time.Time
 	MonthsDuration int64
 }
 
@@ -55,7 +60,7 @@ type KjczReport struct {
 	FRCEExceeded60PercOfFRRCapacityDown []ReportPayload
 }
 
-func (r KjczReport) GetAllPayloads() (payloads []ReportPayload) {
+func (r *KjczReport) GetAllPayloads() (payloads []ReportPayload) {
 	payloads = append(payloads, r.MeanValue...)
 	payloads = append(payloads, r.StandardDeviation...)
 	payloads = append(payloads, r.Percentile1...)
@@ -74,6 +79,82 @@ func (r KjczReport) GetAllPayloads() (payloads []ReportPayload) {
 	return
 }
 
+func (r *KjczReport) Save(cd CursorData, cps []CursorPayload) {
+	r.Data.Creator = cd.Creator
+	r.Data.Revision = cd.Revision
+	r.Data.Start = cd.Start
+	r.Data.End = cd.End
+	r.Data.Created = cd.Created
+	r.Data.Saved = cd.Saved
+	r.Data.Reported = cd.Reported
+
+	for _, cp := range cps {
+		switch cp.MrId {
+		case 1:
+			r.MeanValue = append(r.MeanValue, cp.getReportPayload())
+		case 2:
+			r.StandardDeviation = append(r.StandardDeviation, cp.getReportPayload())
+		case 3:
+			r.Percentile1 = append(r.Percentile1, cp.getReportPayload())
+		case 4:
+			r.Percentile5 = append(r.Percentile5, cp.getReportPayload())
+		case 5:
+			r.Percentile10 = append(r.Percentile10, cp.getReportPayload())
+		case 6:
+			r.Percentile90 = append(r.Percentile90, cp.getReportPayload())
+		case 7:
+			r.Percentile95 = append(r.Percentile95, cp.getReportPayload())
+		case 8:
+			r.Percentile99 = append(r.Percentile99, cp.getReportPayload())
+		case 9:
+			r.FRCEOutsideLevel1RangeUp = append(r.FRCEOutsideLevel1RangeUp, cp.getReportPayload())
+		case 10:
+			r.FRCEOutsideLevel1RangeDown = append(r.FRCEOutsideLevel1RangeDown, cp.getReportPayload())
+		case 11:
+			r.FRCEOutsideLevel2RangeUp = append(r.FRCEOutsideLevel2RangeUp, cp.getReportPayload())
+		case 12:
+			r.FRCEOutsideLevel2RangeDown = append(r.FRCEOutsideLevel2RangeDown, cp.getReportPayload())
+		case 13:
+			r.FRCEExceeded60PercOfFRRCapacityUp = append(r.FRCEExceeded60PercOfFRRCapacityUp, cp.getReportPayload())
+		case 14:
+			r.FRCEExceeded60PercOfFRRCapacityDown = append(r.FRCEExceeded60PercOfFRRCapacityDown, cp.getReportPayload())
+		}
+	}
+}
+
+func updatePayloads(dest []ReportPayload, src []BodyReportPayload) {
+	for _, d := range dest {
+		for _, s := range src {
+			if d.Position == s.Position {
+				d.Quantity = s.Quantity
+			}
+		}
+	}
+}
+
+func (r *KjczReport) Update(payload any) {
+	p := payload.(KjczBody)
+
+	r.Data.Creator = p.Data.Creator
+	r.Data.Start, _ = FirstDayDate(p.Data.Start)
+	r.Data.End, _ = LastDayDate(p.Data.End)
+
+	updatePayloads(r.MeanValue, p.MeanValue)
+	updatePayloads(r.StandardDeviation, p.StandardDeviation)
+	updatePayloads(r.Percentile1, p.Percentile1)
+	updatePayloads(r.Percentile5, p.Percentile5)
+	updatePayloads(r.Percentile10, p.Percentile10)
+	updatePayloads(r.Percentile90, p.Percentile90)
+	updatePayloads(r.Percentile95, p.Percentile95)
+	updatePayloads(r.Percentile99, p.Percentile99)
+	updatePayloads(r.FRCEOutsideLevel1RangeUp, p.FrceOutsideLevel1RangeUp)
+	updatePayloads(r.FRCEOutsideLevel1RangeDown, p.FrceOutsideLevel1RangeDown)
+	updatePayloads(r.FRCEOutsideLevel2RangeUp, p.FrceOutsideLevel2RangeUp)
+	updatePayloads(r.FRCEOutsideLevel2RangeDown, p.FrceOutsideLevel2RangeDown)
+	updatePayloads(r.FRCEExceeded60PercOfFRRCapacityUp, p.FrceExceeded60PercOfFRRCapacityUp)
+	updatePayloads(r.FRCEExceeded60PercOfFRRCapacityDown, p.FrceExceeded60PercOfFRRCapacityDown)
+}
+
 //func (r KjczReport) GetTestReport(reportId int64, data ReportData) any {
 //	return GetTestKjczReportBody(reportId, data)
 //}
@@ -84,11 +165,41 @@ type PzrrReport struct {
 	ForecastedCapacityDown []ReportPayload
 }
 
-func (r PzrrReport) GetAllPayloads() (payloads []ReportPayload) {
+func (r *PzrrReport) GetAllPayloads() (payloads []ReportPayload) {
 	payloads = append(payloads, r.ForecastedCapacityUp...)
 	payloads = append(payloads, r.ForecastedCapacityDown...)
 
 	return
+}
+
+func (r *PzrrReport) Save(cd CursorData, cps []CursorPayload) {
+	r.Data.Creator = cd.Creator
+	r.Data.Revision = cd.Revision
+	r.Data.Start = cd.Start
+	r.Data.End = cd.End
+	r.Data.Created = cd.Created
+	r.Data.Saved = cd.Saved
+	r.Data.Reported = cd.Reported
+
+	for _, cp := range cps {
+		switch cp.MrId {
+		case 1:
+			r.ForecastedCapacityUp = append(r.ForecastedCapacityUp, cp.getReportPayload())
+		case 2:
+			r.ForecastedCapacityDown = append(r.ForecastedCapacityDown, cp.getReportPayload())
+		}
+	}
+}
+
+func (r *PzrrReport) Update(payload any) {
+	p := payload.(PzrrBody)
+
+	r.Data.Creator = p.Data.Creator
+	r.Data.Start, _ = FirstDayDate(p.Data.Start)
+	r.Data.End, _ = LastDayDate(p.Data.End)
+
+	updatePayloads(r.ForecastedCapacityUp, p.ForecastedCapacityUp)
+	updatePayloads(r.ForecastedCapacityDown, p.ForecastedCapacityDown)
 }
 
 //func (r PzrrReport) GetTestReport(reportId int64, data ReportData) any {
@@ -101,11 +212,41 @@ type PzfrrReport struct {
 	ForecastedCapacityDown []ReportPayload
 }
 
-func (r PzfrrReport) GetAllPayloads() (payloads []ReportPayload) {
+func (r *PzfrrReport) GetAllPayloads() (payloads []ReportPayload) {
 	payloads = append(payloads, r.ForecastedCapacityUp...)
 	payloads = append(payloads, r.ForecastedCapacityDown...)
 
 	return
+}
+
+func (r *PzfrrReport) Save(cd CursorData, cps []CursorPayload) {
+	r.Data.Creator = cd.Creator
+	r.Data.Revision = cd.Revision
+	r.Data.Start = cd.Start
+	r.Data.End = cd.End
+	r.Data.Created = cd.Created
+	r.Data.Saved = cd.Saved
+	r.Data.Reported = cd.Reported
+
+	for _, cp := range cps {
+		switch cp.MrId {
+		case 1:
+			r.ForecastedCapacityUp = append(r.ForecastedCapacityUp, cp.getReportPayload())
+		case 2:
+			r.ForecastedCapacityDown = append(r.ForecastedCapacityDown, cp.getReportPayload())
+		}
+	}
+}
+
+func (r *PzfrrReport) Update(payload any) {
+	p := payload.(PzfrrBody)
+
+	r.Data.Creator = p.Data.Creator
+	r.Data.Start, _ = FirstDayDate(p.Data.Start)
+	r.Data.End, _ = LastDayDate(p.Data.End)
+
+	updatePayloads(r.ForecastedCapacityUp, p.ForecastedCapacityUp)
+	updatePayloads(r.ForecastedCapacityDown, p.ForecastedCapacityDown)
 }
 
 //func (r PzfrrReport) GetTestReport(reportId int64, data ReportData) any {
@@ -149,45 +290,4 @@ const (
 
 func (qmu QuantityMeasureUnit) String() string {
 	return []string{"MAW", "C62"}[qmu]
-}
-
-type BodyData struct {
-	Creator string `json:"creator"`
-	Start   string `json:"start"`
-	End     string `json:"end"`
-}
-
-type BodyReportPayload struct {
-	Position int     `json:"position"`
-	Quantity float64 `json:"quantity"`
-}
-
-type KjczBody struct {
-	Data                                BodyData            `json:"data"`
-	MeanValue                           []BodyReportPayload `json:"meanValue"`
-	StandardDeviation                   []BodyReportPayload `json:"standardDeviation"`
-	Percentile1                         []BodyReportPayload `json:"percentile1"`
-	Percentile5                         []BodyReportPayload `json:"percentile5"`
-	Percentile10                        []BodyReportPayload `json:"percentile10"`
-	Percentile90                        []BodyReportPayload `json:"percentile90"`
-	Percentile95                        []BodyReportPayload `json:"percentile95"`
-	Percentile99                        []BodyReportPayload `json:"percentile99"`
-	FrceOutsideLevel1RangeUp            []BodyReportPayload `json:"frceOutsideLevel1RangeUp"`
-	FrceOutsideLevel1RangeDown          []BodyReportPayload `json:"frceOutsideLevel1RangeDown"`
-	FrceOutsideLevel2RangeUp            []BodyReportPayload `json:"frceOutsideLevel2RangeUp"`
-	FrceOutsideLevel2RangeDown          []BodyReportPayload `json:"frceOutsideLevel2RangeDown"`
-	FrceExceeded60PercOfFRRCapacityUp   []BodyReportPayload `json:"frceExceeded60PercOfFRRCapacityUp"`
-	FrceExceeded60PercOfFRRCapacityDown []BodyReportPayload `json:"frceExceeded60PercOfFRRCapacityDown"`
-}
-
-type PzrrBody struct {
-	Data                   BodyData            `json:"data"`
-	ForecastedCapacityUp   []BodyReportPayload `json:"forecastedCapacityUp"`
-	ForecastedCapacityDown []BodyReportPayload `json:"forecastedCapacityDown"`
-}
-
-type PzfrrBody struct {
-	Data                   BodyData            `json:"data"`
-	ForecastedCapacityUp   []BodyReportPayload `json:"forecastedCapacityUp"`
-	ForecastedCapacityDown []BodyReportPayload `json:"forecastedCapacityDown"`
 }

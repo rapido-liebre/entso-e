@@ -136,10 +136,15 @@ linux:
 		if err != nil {
 			dbc.errch <- err
 		}
+		goto end
+	}
+	//normal usage
+	if dbc.data.Payload != nil {
+		if err := dbc.callSaveReport(); err != nil {
+			dbc.errch <- err
+		}
 	} else {
-		//normal usage
-		err := dbc.getTestReport() //dbc.callGetReport()
-		if err != nil {
+		if err := dbc.callGetReport(); err != nil { //dbc.getTestReport()
 			dbc.errch <- err
 		}
 	}
@@ -207,7 +212,7 @@ func (dbc *dbConnector) testData() error {
 	if err := dbc.connectToDB(); err != nil {
 		return err
 	}
-	if _, err := dbc.callPutReport(); err != nil {
+	if _, err := dbc.callPutTestReport(); err != nil {
 		return err
 	}
 
@@ -218,20 +223,21 @@ func (dbc *dbConnector) testDataAndPublish() error {
 	if err := dbc.connectToDB(); err != nil {
 		return err
 	}
-	rdata, err := dbc.callPutReport()
+	rdata, err := dbc.callPutTestReport()
 	if err != nil {
 		return err
 	}
 	return dbc.callInicjujPozyskanie(rdata)
 }
 
-func (dbc *dbConnector) callPutReport() (models.ReportData, error) {
+func (dbc *dbConnector) callPutTestReport() (models.ReportData, error) {
 	t := time.Now()
 
 	data := models.TestReportData(dbc.data.ReportType)
 
 	var reportId int64
-	_, err := dbc.db.Exec(models.GetPutReportBody(data, dbc.data.ReportType), sql.Out{Dest: &reportId})
+	statement := models.GetPutReportBody(data, dbc.data.ReportType)
+	_, err := dbc.db.Exec(statement, sql.Out{Dest: &reportId})
 
 	if err != nil {
 		return data, err
@@ -241,7 +247,8 @@ func (dbc *dbConnector) callPutReport() (models.ReportData, error) {
 	case models.PR_SO_KJCZ:
 		report := models.GetTestKjczReportBody(reportId, data)
 		for _, payload := range report.GetAllPayloads() {
-			_, err := dbc.db.Exec(models.GetAddPayloadEntryBody(payload))
+			statement = models.GetAddPayloadEntryBody(payload)
+			_, err := dbc.db.Exec(statement)
 			if err != nil {
 				return data, err
 			}
@@ -249,7 +256,8 @@ func (dbc *dbConnector) callPutReport() (models.ReportData, error) {
 	case models.PD_BI_PZRR:
 		report := models.GetTestPzrrReportBody(reportId, data)
 		for _, payload := range report.GetAllPayloads() {
-			_, err := dbc.db.Exec(models.GetAddPayloadEntryBody(payload))
+			statement = models.GetAddPayloadEntryBody(payload)
+			_, err := dbc.db.Exec(statement)
 			if err != nil {
 				return data, err
 			}
@@ -257,7 +265,8 @@ func (dbc *dbConnector) callPutReport() (models.ReportData, error) {
 	case models.PD_BI_PZFRR:
 		report := models.GetTestPzfrrReportBody(reportId, data)
 		for _, payload := range report.GetAllPayloads() {
-			_, err := dbc.db.Exec(models.GetAddPayloadEntryBody(payload))
+			statement = models.GetAddPayloadEntryBody(payload)
+			_, err := dbc.db.Exec(statement)
 			if err != nil {
 				return data, err
 			}
@@ -267,6 +276,55 @@ func (dbc *dbConnector) callPutReport() (models.ReportData, error) {
 	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
 
 	return data, nil
+}
+
+func (dbc *dbConnector) callPutReport(report any) error {
+	t := time.Now()
+
+	var reportId int64
+
+	switch dbc.data.ReportType {
+	case models.PR_SO_KJCZ:
+		r := report.(models.KjczReport)
+		statement := models.GetPutReportBody(r.Data, dbc.data.ReportType)
+		if _, err := dbc.db.Exec(statement, sql.Out{Dest: &reportId}); err != nil {
+			return err
+		}
+		for _, payload := range r.GetAllPayloads() {
+			statement = models.GetAddPayloadEntryBody(payload)
+			if _, err := dbc.db.Exec(statement); err != nil {
+				return err
+			}
+		}
+	case models.PD_BI_PZRR:
+		r := report.(models.PzrrReport)
+		statement := models.GetPutReportBody(r.Data, dbc.data.ReportType)
+		if _, err := dbc.db.Exec(statement, sql.Out{Dest: &reportId}); err != nil {
+			return err
+		}
+		for _, payload := range r.GetAllPayloads() {
+			statement = models.GetAddPayloadEntryBody(payload)
+			if _, err := dbc.db.Exec(statement); err != nil {
+				return err
+			}
+		}
+	case models.PD_BI_PZFRR:
+		r := report.(models.PzfrrReport)
+		statement := models.GetPutReportBody(r.Data, dbc.data.ReportType)
+		if _, err := dbc.db.Exec(statement, sql.Out{Dest: &reportId}); err != nil {
+			return err
+		}
+		for _, payload := range r.GetAllPayloads() {
+			statement = models.GetAddPayloadEntryBody(payload)
+			if _, err := dbc.db.Exec(statement); err != nil {
+				return err
+			}
+		}
+	}
+
+	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
+
+	return nil
 }
 
 func (dbc *dbConnector) callInicjujPozyskanie(rdata models.ReportData) error {
@@ -309,17 +367,12 @@ func (dbc *dbConnector) getTestReport() error {
 	return nil
 }
 
-func (dbc *dbConnector) callGetReport() error {
+func (dbc *dbConnector) callSaveReport() error {
 	t := time.Now()
 
-	//data := models.TestReportData(dbc.data.ReportType)
-	//data.Start = dbc.data.ReportData.Start
-	//data.End = dbc.data.ReportData.End
-	//data.MonthsDuration = dbc.data.ReportData.MonthsDuration
-
-	//var reportId int64
-	//reportId = 0
-
+	if err := dbc.connectToDB(); err != nil {
+		return err
+	}
 	dbc.status = Ready
 
 	var (
@@ -327,63 +380,152 @@ func (dbc *dbConnector) callGetReport() error {
 		cursorPayload go_ora.RefCursor
 	)
 
-	//fmt.Println(db.Ping())
-	//statement := `begin :x := PKG_TEST.PROC_GET_DUAL(); end;`
-	//_, err := db.Exec(statement, sql.Out{Dest: &cursor})
-	//
-	//statement := `begin PKG_TEST.PROC_GET_DUAL(:1); end;`
-	//_, err := db.Exec(statement, sql.Out{Dest: &cursor})
-	//
-	////check errors
+	//get last report
+	statement := models.GetLastReport(dbc.data.ReportData, dbc.data.ReportType)
+	if _, err := dbc.db.Exec(statement, sql.Out{Dest: &cursorReport}, sql.Out{Dest: &cursorPayload}); err != nil {
+		return err
+	}
+	defer cursorReport.Close()
+	defer cursorPayload.Close()
 
-	//get_last_kjcz(p_report_start in hl_entsoe_reports.report_start%type,
-	//p_report_end   in hl_entsoe_reports.report_end%type,
-	//p_report       out sys_refcursor,
-	//	p_payload      out sys_refcursor);
+	var (
+		cd  models.CursorData
+		cps []models.CursorPayload
+	)
 
-	switch dbc.data.ReportType {
-	case models.PR_SO_KJCZ:
-		statement := models.GetLastKjcz(dbc.data.ReportData, dbc.data.ReportType)
-		_, err := dbc.db.Exec(statement, sql.Out{Dest: &cursorReport}, sql.Out{Dest: &cursorPayload})
+	//fetch report data
+	dataRows, err := cursorReport.Query()
+	if err != nil {
+		return err
+	}
+	for dataRows.Next_() {
+		err = dataRows.Scan(&cd.ReportType, &cd.Revision, &cd.Creator, &cd.Created, &cd.Start, &cd.End, &cd.Saved, &cd.Reported)
 		if err != nil {
 			return err
 		}
-	case models.PD_BI_PZRR:
-		break
-	case models.PD_BI_PZFRR:
-		break
+		fmt.Println(cd)
 	}
 
-	//defer cursor.Close()
-	//rows, err := cursor.Query()
-	//// check for error
-	//
-	//var (
-	//	var1 string
-	//)
-	//for rows.Next_() {
-	//	err = rows.Scan(&var1)
-	//	// check for error
-	//	fmt.Println(var1)
-	//}
+	//fetch report payload
+	payloadRows, err := cursorPayload.Query()
+	if err != nil {
+		return err
+	}
+	for payloadRows.Next_() {
+		var cp models.CursorPayload
+		err = payloadRows.Scan(&cp.MrId, &cp.BusinessType, &cp.FlowDirection, &cp.QuantityMeasurement, &cp.Position, &cp.Quantity, &cp.SecondaryQuantity)
+		if err != nil {
+			return err
+		}
+		fmt.Println(cp)
+		cps = append(cps, cp)
+	}
+
+	//save to report
+	switch dbc.data.ReportType {
+	case models.PR_SO_KJCZ:
+		report := models.KjczReport{}
+		report.Save(cd, cps)
+		report.Update(dbc.data.Payload)
+		if err := dbc.callPutReport(report); err != nil {
+			return err
+		}
+		dbc.channels.KjczReport <- report
+	case models.PD_BI_PZRR:
+		report := models.PzrrReport{}
+		report.Save(cd, cps)
+		report.Update(dbc.data.Payload)
+		if err := dbc.callPutReport(report); err != nil {
+			return err
+		}
+		dbc.channels.PzrrReport <- report
+	case models.PD_BI_PZFRR:
+		report := models.PzfrrReport{}
+		report.Save(cd, cps)
+		report.Update(dbc.data.Payload)
+		if err := dbc.callPutReport(report); err != nil {
+			return err
+		}
+		dbc.channels.PzfrrReport <- report
+	}
 
 	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
 	return nil
 }
 
-//CREATE OR REPLACE PACKAGE PKG_TEST IS
-//TYPE REFCURSOR IS REF CURSOR;
-//PROCEDURE PROC_GET_DUAL(P_CUR OUT REFCURSOR);
-//end PKG_TEST;
-//CREATE OR REPLACE PACKAGE BODY PKG_TEST is
-//PROCEDURE PROC_GET_DUAL(
-//	P_CUR OUT REFCURSOR)
-//IS
-//BEGIN
-//OPEN P_CUR FOR
-//select * from dual;
-//	END PROC_GET_DUAL;
-//	end PKG_TEST;
+func (dbc *dbConnector) callGetReport() error {
+	t := time.Now()
+
+	if err := dbc.connectToDB(); err != nil {
+		return err
+	}
+	dbc.status = Ready
+
+	var (
+		cursorReport  go_ora.RefCursor
+		cursorPayload go_ora.RefCursor
+	)
+
+	//get last report
+	statement := models.GetLastReport(dbc.data.ReportData, dbc.data.ReportType)
+	if _, err := dbc.db.Exec(statement, sql.Out{Dest: &cursorReport}, sql.Out{Dest: &cursorPayload}); err != nil {
+		return err
+	}
+	defer cursorReport.Close()
+	defer cursorPayload.Close()
+
+	var (
+		cd  models.CursorData
+		cps []models.CursorPayload
+	)
+
+	//fetch report data
+	dataRows, err := cursorReport.Query()
+	if err != nil {
+		return err
+	}
+	for dataRows.Next_() {
+		err = dataRows.Scan(&cd.ReportType, &cd.Revision, &cd.Creator, &cd.Created, &cd.Start, &cd.End, &cd.Saved, &cd.Reported)
+		if err != nil {
+			return err
+		}
+		fmt.Println(cd)
+	}
+
+	//fetch report payload
+	payloadRows, err := cursorPayload.Query()
+	if err != nil {
+		return err
+	}
+	for payloadRows.Next_() {
+		var cp models.CursorPayload
+		err = payloadRows.Scan(&cp.MrId, &cp.BusinessType, &cp.FlowDirection, &cp.QuantityMeasurement, &cp.Position, &cp.Quantity, &cp.SecondaryQuantity)
+		if err != nil {
+			return err
+		}
+		fmt.Println(cp)
+		cps = append(cps, cp)
+	}
+
+	//save to report
+	switch dbc.data.ReportType {
+	case models.PR_SO_KJCZ:
+		report := models.KjczReport{}
+		report.Save(cd, cps)
+		dbc.channels.KjczReport <- report
+	case models.PD_BI_PZRR:
+		report := models.PzrrReport{}
+		report.Save(cd, cps)
+		dbc.channels.PzrrReport <- report
+	case models.PD_BI_PZFRR:
+		report := models.PzfrrReport{}
+		report.Save(cd, cps)
+		dbc.channels.PzfrrReport <- report
+	}
+
+	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
+	return nil
+}
 
 //func someAdditionalActions(_ *sql.DB) {
 

@@ -87,10 +87,9 @@ function fillPzrrForm(respData) {
 
 function fillPzrrData(data) {
     const author = document.getElementById("pzrr_author");
-    console.log(data["Creator"]);
     author.value = data["Creator"];
-    // let rev = document.getElementById("pzrr_rev");
-    // rev.value = data["Creator"];
+    let rev = document.getElementById("pzrr_rev");
+    rev.value = data["Revision"];
 }
 
 function fillPzrrTableValues(row, values) {

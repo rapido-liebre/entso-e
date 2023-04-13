@@ -20,9 +20,9 @@ var creators = []string{
 	"Korczak Ziółkowski",
 }
 var dateRanges = []string{
-	"2022-01-31",
+	"2022-01-01",
 	"2022-03-31",
-	"2022-12-31",
+	"2022-12-01",
 	"2023-12-31",
 }
 
@@ -60,8 +60,16 @@ func TestReportData(rt ReportType) ReportData {
 func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 
 	var report KjczReport
-
 	report.Data = data
+
+	var sq1, sq5, sq10, sq90, sq95, sq99, dummy *int
+	sq1 = new(int)
+	sq5 = new(int)
+	sq10 = new(int)
+	sq90 = new(int)
+	sq95 = new(int)
+	sq99 = new(int)
+	dummy = new(int)
 
 	report.MeanValue = append(report.MeanValue, ReportPayload{
 		ReportId:            reportId,
@@ -71,7 +79,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            1,
 		Quantity:            3.309,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                1,
@@ -80,7 +88,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            2,
 		Quantity:            1.388,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                1,
@@ -89,7 +97,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            3,
 		Quantity:            -1.941,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	})
 
 	report.StandardDeviation = append(report.StandardDeviation, ReportPayload{
@@ -100,7 +108,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            1,
 		Quantity:            56.739,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                2,
@@ -109,7 +117,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            2,
 		Quantity:            61.257,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                2,
@@ -118,12 +126,10 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            3,
 		Quantity:            58.645,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	})
 
-	var sq *int
-	sq = new(int)
-	*sq = 1
+	*sq1 = 1
 	report.Percentile1 = append(report.Percentile1, ReportPayload{
 		ReportId:            reportId,
 		MrId:                3,
@@ -132,7 +138,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            1,
 		Quantity:            -132.749,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq1,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                3,
@@ -141,7 +147,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            2,
 		Quantity:            -154.430,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq1,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                3,
@@ -150,10 +156,10 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            3,
 		Quantity:            -162.567,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq1,
 	})
 
-	*sq = 5
+	*sq5 = 5
 	report.Percentile5 = append(report.Percentile5, ReportPayload{
 		ReportId:            reportId,
 		MrId:                4,
@@ -162,7 +168,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            1,
 		Quantity:            -132.749,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq5,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                4,
@@ -171,7 +177,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            2,
 		Quantity:            -154.430,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq5,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                4,
@@ -180,10 +186,10 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            3,
 		Quantity:            -162.567,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq5,
 	})
 
-	*sq = 10
+	*sq10 = 10
 	report.Percentile10 = append(report.Percentile10, ReportPayload{
 		ReportId:            reportId,
 		MrId:                5,
@@ -192,7 +198,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            1,
 		Quantity:            -132.749,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq10,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                5,
@@ -201,7 +207,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            2,
 		Quantity:            -154.430,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq10,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                5,
@@ -210,10 +216,10 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            3,
 		Quantity:            -162.567,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq10,
 	})
 
-	*sq = 90
+	*sq90 = 90
 	report.Percentile90 = append(report.Percentile90, ReportPayload{
 		ReportId:            reportId,
 		MrId:                6,
@@ -222,7 +228,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            1,
 		Quantity:            -132.749,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq90,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                6,
@@ -231,7 +237,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            2,
 		Quantity:            -154.430,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq90,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                6,
@@ -240,10 +246,10 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            3,
 		Quantity:            -162.567,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq90,
 	})
 
-	*sq = 95
+	*sq95 = 95
 	report.Percentile95 = append(report.Percentile95, ReportPayload{
 		ReportId:            reportId,
 		MrId:                7,
@@ -252,7 +258,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            1,
 		Quantity:            -132.749,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq95,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                7,
@@ -261,7 +267,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            2,
 		Quantity:            -154.430,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq95,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                7,
@@ -270,10 +276,10 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            3,
 		Quantity:            -162.567,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq95,
 	})
 
-	*sq = 99
+	*sq99 = 99
 	report.Percentile99 = append(report.Percentile99, ReportPayload{
 		ReportId:            reportId,
 		MrId:                8,
@@ -282,7 +288,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            1,
 		Quantity:            -132.749,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq99,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                8,
@@ -291,7 +297,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            2,
 		Quantity:            -154.430,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq99,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                8,
@@ -300,7 +306,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            3,
 		Quantity:            -162.567,
-		SecondaryQuantity:   sq,
+		SecondaryQuantity:   sq99,
 	})
 
 	report.FRCEOutsideLevel1RangeUp = append(report.FRCEOutsideLevel1RangeUp, ReportPayload{
@@ -311,7 +317,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            1,
 		Quantity:            64,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                9,
@@ -320,7 +326,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            2,
 		Quantity:            39,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                9,
@@ -329,7 +335,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            3,
 		Quantity:            32,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	})
 
 	report.FRCEOutsideLevel1RangeDown = append(report.FRCEOutsideLevel1RangeDown, ReportPayload{
@@ -340,7 +346,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            1,
 		Quantity:            28,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                10,
@@ -349,7 +355,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            2,
 		Quantity:            50,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                10,
@@ -358,7 +364,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            3,
 		Quantity:            51,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	})
 
 	report.FRCEOutsideLevel2RangeUp = append(report.FRCEOutsideLevel2RangeUp, ReportPayload{
@@ -369,7 +375,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            1,
 		Quantity:            6,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                11,
@@ -378,7 +384,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            2,
 		Quantity:            8,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                11,
@@ -387,7 +393,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            3,
 		Quantity:            0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	})
 
 	report.FRCEOutsideLevel2RangeDown = append(report.FRCEOutsideLevel2RangeDown, ReportPayload{
@@ -398,7 +404,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            1,
 		Quantity:            3,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                12,
@@ -407,7 +413,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            2,
 		Quantity:            8,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                12,
@@ -416,7 +422,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            3,
 		Quantity:            10,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	})
 
 	report.FRCEExceeded60PercOfFRRCapacityUp = append(report.FRCEExceeded60PercOfFRRCapacityUp, ReportPayload{
@@ -427,7 +433,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            1,
 		Quantity:            7,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                13,
@@ -436,7 +442,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            2,
 		Quantity:            2,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                13,
@@ -445,7 +451,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            3,
 		Quantity:            0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	})
 
 	report.FRCEExceeded60PercOfFRRCapacityDown = append(report.FRCEExceeded60PercOfFRRCapacityDown, ReportPayload{
@@ -456,7 +462,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            1,
 		Quantity:            1,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                14,
@@ -465,7 +471,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            2,
 		Quantity:            3,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                14,
@@ -474,7 +480,7 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 		QuantityMeasureUnit: C62.String(),
 		Position:            3,
 		Quantity:            6,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	})
 
 	return report
@@ -483,8 +489,10 @@ func GetTestKjczReportBody(reportId int64, data ReportData) KjczReport {
 func GetTestPzrrReportBody(reportId int64, data ReportData) PzrrReport {
 
 	var report PzrrReport
-
 	report.Data = data
+
+	var dummy *int
+	dummy = new(int)
 
 	report.ForecastedCapacityUp = append(report.ForecastedCapacityUp, ReportPayload{
 		ReportId:            reportId,
@@ -494,7 +502,7 @@ func GetTestPzrrReportBody(reportId int64, data ReportData) PzrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            1,
 		Quantity:            1500.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                1,
@@ -503,7 +511,7 @@ func GetTestPzrrReportBody(reportId int64, data ReportData) PzrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            2,
 		Quantity:            1500.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                1,
@@ -512,7 +520,7 @@ func GetTestPzrrReportBody(reportId int64, data ReportData) PzrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            3,
 		Quantity:            1500.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                1,
@@ -521,7 +529,7 @@ func GetTestPzrrReportBody(reportId int64, data ReportData) PzrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            4,
 		Quantity:            1500.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	})
 
 	report.ForecastedCapacityDown = append(report.ForecastedCapacityDown, ReportPayload{
@@ -532,7 +540,7 @@ func GetTestPzrrReportBody(reportId int64, data ReportData) PzrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            1,
 		Quantity:            0.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                2,
@@ -541,7 +549,7 @@ func GetTestPzrrReportBody(reportId int64, data ReportData) PzrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            2,
 		Quantity:            0.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                2,
@@ -550,7 +558,7 @@ func GetTestPzrrReportBody(reportId int64, data ReportData) PzrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            3,
 		Quantity:            0.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                2,
@@ -559,7 +567,7 @@ func GetTestPzrrReportBody(reportId int64, data ReportData) PzrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            4,
 		Quantity:            0.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	})
 
 	return report
@@ -568,8 +576,10 @@ func GetTestPzrrReportBody(reportId int64, data ReportData) PzrrReport {
 func GetTestPzfrrReportBody(reportId int64, data ReportData) PzfrrReport {
 
 	var report PzfrrReport
-
 	report.Data = data
+
+	var dummy *int
+	dummy = new(int)
 
 	report.ForecastedCapacityUp = append(report.ForecastedCapacityUp, ReportPayload{
 		ReportId:            reportId,
@@ -579,7 +589,7 @@ func GetTestPzfrrReportBody(reportId int64, data ReportData) PzfrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            1,
 		Quantity:            1075.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                1,
@@ -588,7 +598,7 @@ func GetTestPzfrrReportBody(reportId int64, data ReportData) PzfrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            2,
 		Quantity:            1075.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                1,
@@ -597,7 +607,7 @@ func GetTestPzfrrReportBody(reportId int64, data ReportData) PzfrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            3,
 		Quantity:            1075.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                1,
@@ -606,7 +616,7 @@ func GetTestPzfrrReportBody(reportId int64, data ReportData) PzfrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            4,
 		Quantity:            1075.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	})
 
 	report.ForecastedCapacityDown = append(report.ForecastedCapacityDown, ReportPayload{
@@ -617,7 +627,7 @@ func GetTestPzfrrReportBody(reportId int64, data ReportData) PzfrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            1,
 		Quantity:            600.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                2,
@@ -626,7 +636,7 @@ func GetTestPzfrrReportBody(reportId int64, data ReportData) PzfrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            2,
 		Quantity:            600.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                2,
@@ -635,7 +645,7 @@ func GetTestPzfrrReportBody(reportId int64, data ReportData) PzfrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            3,
 		Quantity:            600.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	}, ReportPayload{
 		ReportId:            reportId,
 		MrId:                2,
@@ -644,7 +654,7 @@ func GetTestPzfrrReportBody(reportId int64, data ReportData) PzfrrReport {
 		QuantityMeasureUnit: MAW.String(),
 		Position:            4,
 		Quantity:            600.0,
-		SecondaryQuantity:   nil,
+		SecondaryQuantity:   dummy,
 	})
 
 	return report

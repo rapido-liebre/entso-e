@@ -71,12 +71,12 @@ func GetPutReportBody(data ReportData, rt ReportType) string {
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
 
-func GetLastKjcz(data ReportData, rt ReportType) string {
+func GetLastReport(data ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf("hl_entsoe_reports_pk.get_last_%s("+
-		"p_report_start => date '%s', "+
-		"p_report_end   => date '%s', "+
-		"p_report    	=> :1, "+
-		"p_payload      => :2);", rt.shortly(), data.Start.Format(time.DateOnly), data.End.Format(time.DateOnly))
+		"date '%s', "+
+		"date '%s', "+
+		":1, "+
+		":2);", rt.shortly(), data.Start.Format(time.DateOnly), data.End.Format(time.DateOnly))
 
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }

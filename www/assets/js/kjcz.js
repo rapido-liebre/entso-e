@@ -135,10 +135,9 @@ function fillKjczForm(respData) {
 
 function fillKjczData(data) {
     const author = document.getElementById("kjcz_author");
-    console.log(data["Creator"]);
     author.value = data["Creator"];
-    // let rev = document.getElementById("kjcz_rev");
-    // rev.value = data["Creator"];
+    let rev = document.getElementById("kjcz_rev");
+    rev.value = data["Revision"];
 }
 
 function fillKjczTableValues(row, values) {

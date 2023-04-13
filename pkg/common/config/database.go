@@ -9,5 +9,5 @@ type DBAction struct {
 	ConnectionOnly bool              `json:"connection_only"` // is only test for connection
 	ReportType     models.ReportType `json:"report_type"`     // report type
 	ReportData     models.ReportData `json:"report_data"`     // report data
-	Payload        string            `json:"payload"`         // payload containing full data report (data + payload)
+	Payload        any               `json:"payload"`         // payload containing full data report (data + payload)
 }

@@ -5,6 +5,7 @@ import (
 	"entso-e_reports/pkg/common/models"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"time"
 )
 
 func (h handler) ConnectToDB(ctx *fiber.Ctx) error {
@@ -60,7 +61,7 @@ func (h handler) GetKjczReport(rd models.ReportData) (models.KjczReport, error) 
 		ConnectionOnly: false,
 		ReportType:     models.PR_SO_KJCZ,
 		ReportData:     rd,
-		Payload:        "",
+		Payload:        nil,
 	}
 	report := <-h.channels.KjczReport
 	return report, nil
@@ -73,7 +74,7 @@ func (h handler) GetPzrrReport(rd models.ReportData) (models.PzrrReport, error) 
 		ConnectionOnly: false,
 		ReportType:     models.PD_BI_PZRR,
 		ReportData:     rd,
-		Payload:        "",
+		Payload:        nil,
 	}
 	report := <-h.channels.PzrrReport
 	return report, nil
@@ -86,7 +87,7 @@ func (h handler) GetPzfrrReport(rd models.ReportData) (models.PzfrrReport, error
 		ConnectionOnly: false,
 		ReportType:     models.PD_BI_PZFRR,
 		ReportData:     rd,
-		Payload:        "",
+		Payload:        nil,
 	}
 	report := <-h.channels.PzfrrReport
 	return report, nil
@@ -168,12 +169,37 @@ func (h handler) GetPzfrr(ctx *fiber.Ctx) error {
 func (h handler) SaveKjcz(ctx *fiber.Ctx) error {
 	fmt.Println(string(ctx.Body()))
 
-	var body models.KjczBody
+	var (
+		body   models.KjczBody
+		tStart time.Time
+		tEnd   time.Time
+		err    error
+	)
 
-	if err := ctx.BodyParser(&body); err != nil {
+	if err = ctx.BodyParser(&body); err != nil {
+		return err
+	}
+	if tStart, err = models.FirstDayDate(body.Data.Start); err != nil {
+		return err
+	}
+	if tEnd, err = models.FirstDayDate(body.Data.End); err != nil {
 		return err
 	}
 
+	rd := models.ReportData{
+		Creator: body.Data.Creator,
+		Start:   tStart,
+		End:     tEnd,
+	}
+
+	h.channels.RunDBConn <- config.DBAction{
+		Publish:        false,
+		TestData:       false,
+		ConnectionOnly: false,
+		ReportType:     models.PR_SO_KJCZ,
+		ReportData:     rd,
+		Payload:        body,
+	}
 	//report, err := h.GetKjczReport(rd)
 	//if err != nil {
 	//	return fiber.NewError(fiber.StatusInternalServerError, err.Error())

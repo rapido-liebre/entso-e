@@ -48,3 +48,11 @@ func ExtractDate(param string, isLastDay bool) (time.Time, error) {
 	}
 	return firstOfMonth, nil
 }
+
+func FirstDayDate(yearMonth string) (time.Time, error) {
+	return time.Parse(time.DateOnly, strings.Join([]string{yearMonth, "01"}, "-"))
+}
+
+func LastDayDate(yearMonth string) (time.Time, error) {
+	return time.Parse(time.DateOnly, strings.Join([]string{yearMonth, "31"}, "-"))
+}
