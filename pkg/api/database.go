@@ -51,7 +51,7 @@ func (h handler) SendTestPzrr(ctx *fiber.Ctx) error {
 		ReportType:     models.PD_BI_PZRR,
 		Payload:        "",
 	}
-	report := <-h.channels.KjczReport
+	report := <-h.channels.PzrrReport
 
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
@@ -64,7 +64,7 @@ func (h handler) SendTestPzfrr(ctx *fiber.Ctx) error {
 		ReportType:     models.PD_BI_PZFRR,
 		Payload:        "",
 	}
-	report := <-h.channels.KjczReport
+	report := <-h.channels.PzfrrReport
 
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
