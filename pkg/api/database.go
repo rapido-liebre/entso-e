@@ -31,15 +31,42 @@ func (h handler) SendTest(ctx *fiber.Ctx, rt models.ReportType, publish bool) er
 }
 
 func (h handler) SendTestKjcz(ctx *fiber.Ctx) error {
-	return h.SendTest(ctx, models.PR_SO_KJCZ, false)
+	h.channels.RunDBConn <- config.DBAction{
+		Publish:        false,
+		TestData:       true,
+		ConnectionOnly: false,
+		ReportType:     models.PR_SO_KJCZ,
+		Payload:        "",
+	}
+	report := <-h.channels.KjczReport
+
+	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
 func (h handler) SendTestPzrr(ctx *fiber.Ctx) error {
-	return h.SendTest(ctx, models.PD_BI_PZRR, false)
+	h.channels.RunDBConn <- config.DBAction{
+		Publish:        false,
+		TestData:       true,
+		ConnectionOnly: false,
+		ReportType:     models.PD_BI_PZRR,
+		Payload:        "",
+	}
+	report := <-h.channels.KjczReport
+
+	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
 func (h handler) SendTestPzfrr(ctx *fiber.Ctx) error {
-	return h.SendTest(ctx, models.PD_BI_PZFRR, false)
+	h.channels.RunDBConn <- config.DBAction{
+		Publish:        false,
+		TestData:       true,
+		ConnectionOnly: false,
+		ReportType:     models.PD_BI_PZFRR,
+		Payload:        "",
+	}
+	report := <-h.channels.KjczReport
+
+	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
 func (h handler) SendTestKjczAndPublish(ctx *fiber.Ctx) error {

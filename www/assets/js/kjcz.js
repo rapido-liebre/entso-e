@@ -69,6 +69,29 @@ function saveAndPublishKjczReport() {
     xhr.send(getJsonFromKjczForm());
 }
 
+function generateKjczReport() {
+    let dateFrom = document.getElementById("kjcz_date_from").value;
+    let dateTo = document.getElementById("kjcz_date_to").value;
+
+    console.log("Get KJCZ report within dates: ", dateFrom, dateTo);
+
+    const get = async (url, params) => {
+        const response = await fetch(url + '?' + new URLSearchParams(params))
+        const respData = await response.json()
+
+        return respData
+    }
+
+    // Calling it with then:
+    get('http://'+ host + ':' + port + '/api/test_kjcz', {
+        dateFrom: dateFrom,
+        dateTo: dateTo,
+    }).then(respData => {
+        console.log(respData)
+        fillKjczForm(respData)
+    })
+}
+
 function getKjczReport() {
     let dateFrom = document.getElementById("kjcz_date_from").value;
     let dateTo = document.getElementById("kjcz_date_to").value;

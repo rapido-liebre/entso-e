@@ -209,12 +209,16 @@ func (dbc *dbConnector) connectToDB() error {
 //const insertStatement = "INSERT INTO TEMP_TABLE ( NAME , VALUE) VALUES (:name, :value)"
 
 func (dbc *dbConnector) testData() error {
-	if err := dbc.connectToDB(); err != nil {
+	if err := dbc.getTestReport(); err != nil {
 		return err
 	}
-	if _, err := dbc.callPutTestReport(); err != nil {
-		return err
-	}
+
+	//if err := dbc.connectToDB(); err != nil {
+	//	return err
+	//}
+	//if _, err := dbc.callPutTestReport(); err != nil {
+	//	return err
+	//}
 
 	return nil
 }
@@ -237,9 +241,7 @@ func (dbc *dbConnector) callPutTestReport() (models.ReportData, error) {
 
 	var reportId int64
 	statement := models.GetPutReportBody(data, dbc.data.ReportType)
-	_, err := dbc.db.Exec(statement, sql.Out{Dest: &reportId})
-
-	if err != nil {
+	if _, err := dbc.db.Exec(statement, sql.Out{Dest: &reportId}); err != nil {
 		return data, err
 	}
 

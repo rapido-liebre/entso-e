@@ -45,6 +45,29 @@ function saveAndPublishPzfrrReport() {
     xhr.send(getJsonFromPzfrrForm());
 }
 
+function generatePzfrrReport() {
+    let dateFrom = document.getElementById("pzfrr_date_from").value;
+    let dateTo = document.getElementById("pzfrr_date_to").value;
+
+    console.log("Get PZFRR report within dates: ", dateFrom, dateTo);
+
+    const get = async (url, params) => {
+        const response = await fetch(url + '?' + new URLSearchParams(params))
+        const respData = await response.json()
+
+        return respData
+    }
+
+    // Calling it with then:
+    get('http://'+ host + ':' + port + '/api/test_pzfrr', {
+        dateFrom: dateFrom,
+        dateTo: dateTo,
+    }).then(respData => {
+        console.log(respData)
+        fillPzfrrForm(respData)
+    })
+}
+
 function getPzfrrReport() {
     let dateFrom = document.getElementById("pzfrr_date_from").value;
     let dateTo = document.getElementById("pzfrr_date_to").value;
