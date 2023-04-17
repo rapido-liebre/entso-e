@@ -31,17 +31,36 @@
                                     <div class="card-body">
                                         <fieldset>
                                             <legend>Raport KJCZ</legend>
-                                            <div class="btn-toolbar" style="margin-bottom: 10px;">
-                                                <div class="btn-group" role="group"><button class="btn btn-primary" id="kjcz_new_report" type="button" style="margin-right: 5px;" onclick="getKjczReport()">Otwórz</button></div>
-                                                <div class="btn-group" role="group"><button class="btn btn-primary" id="kjcz_generate_data" type="button" style="margin-right: 5px;" onclick="generateKjczReport()">Wygeneruj wartości z bazy</button></div>
-                                                <div class="btn-group" role="group"><button class="btn btn-primary" id="kjcz_save" type="button" style="margin-right: 5px;" onclick="saveKjczReport()">Zapisz</button></div>
-                                                <div class="btn-group" role="group"><button class="btn btn-primary" id="kjcz_publish" type="button" style="margin-right: 5px;" onclick="saveAndPublishKjczReport()">Publikuj</button></div>
+                                            <div class="row">
+                                                <div class="col col-2">
+                                                    <legend style="font-size: 12px;">Data utworzenia:&nbsp;</legend><button class="btn btn-primary" id="kjcz_new_report" type="button" style="margin-right: 5px;" onclick="getKjczReport()">Otwórz</button>
+                                                </div>
+                                                <div class="col col-2">
+                                                    <legend style="font-size: 12px;">Data zapisu::&nbsp;</legend><button class="btn btn-primary" id="kjcz_save" type="button" style="margin-right: 5px;" onclick="saveKjczReport()">Zapisz</button>
+                                                </div>
+                                                <div class="col col-2">
+                                                    <legend style="font-size: 12px;">Data publikacji::</legend><button class="btn btn-primary" id="kjcz_publish" type="button" style="margin-right: 5px;" onclick="saveAndPublishKjczReport()">Publikuj</button>
+                                                </div>
+                                                <div class="col">
+                                                    <legend style="font-size: 12px;">.</legend><button class="btn btn-primary" id="kjcz_generate_data" type="button" style="margin-right: 5px;" onclick="generateKjczReport()">Wygeneruj wartości z bazy</button>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="btn-toolbar" style="margin-bottom: 10px;">
+                                                        <div class="btn-group" role="group"></div>
+                                                        <div class="btn-group" role="group"></div>
+                                                        <div class="btn-group" role="group"></div>
+                                                        <div class="btn-group" role="group"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="col col-4"></div>
                                             </div>
                                             <div class="row" style="margin-bottom: 12px;">
                                                 <div class="col col-6">
                                                     <fieldset>
                                                         <legend style="font-size: 12px;">Autor i wersja</legend>
-                                                        <div class="input-group"><span class="input-group-text" style="width: 65px;">Autor</span><input class="form-control" type="text" id="kjcz_author" style="margin-right: 10px;"><span class="input-group-text" style="width: 65px;">Rev.</span><input class="form-control" type="number" id="kjcz_rev"></div>
+                                                        <div class="input-group"><span class="input-group-text" style="width: 65px;">Autor</span><input class="form-control" type="text" id="kjcz_author" style="margin-right: 10px;"><span class="input-group-text" style="width: 65px;">Rev.</span><input class="form-control form-control-sm" type="text" id="kjcz_rev" inputmode="numeric"></div>
                                                     </fieldset>
                                                 </div>
                                                 <div class="col col-2">
