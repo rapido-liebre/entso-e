@@ -33,13 +33,13 @@
                                             <legend>Raport KJCZ</legend>
                                             <div class="row">
                                                 <div class="col col-2">
-                                                    <legend style="font-size: 12px;">Data utworzenia:&nbsp;</legend><button class="btn btn-primary" id="kjcz_new_report" type="button" style="margin-right: 5px;" onclick="getKjczReport()">Otwórz</button>
+                                                    <legend id="kjcz-created" style="font-size: 12px;">Data utworzenia:&nbsp;</legend><button class="btn btn-primary" id="kjcz_new_report" type="button" style="margin-right: 5px;" onclick="getKjczReport()">Otwórz</button>
                                                 </div>
                                                 <div class="col col-2">
-                                                    <legend style="font-size: 12px;">Data zapisu::&nbsp;</legend><button class="btn btn-primary" id="kjcz_save" type="button" style="margin-right: 5px;" onclick="saveKjczReport()">Zapisz</button>
+                                                    <legend id="kjcz-saved" style="font-size: 12px;">Data zapisu::&nbsp;</legend><button class="btn btn-primary" id="kjcz_save" type="button" style="margin-right: 5px;" onclick="saveKjczReport()">Zapisz</button>
                                                 </div>
                                                 <div class="col col-2">
-                                                    <legend style="font-size: 12px;">Data publikacji::</legend><button class="btn btn-primary" id="kjcz_publish" type="button" style="margin-right: 5px;" onclick="saveAndPublishKjczReport()">Publikuj</button>
+                                                    <legend id="kjcz-published" style="font-size: 12px;">Data publikacji::</legend><button class="btn btn-primary" id="kjcz_publish" type="button" style="margin-right: 5px;" onclick="saveAndPublishKjczReport()">Publikuj</button>
                                                 </div>
                                                 <div class="col">
                                                     <legend style="font-size: 12px;">.</legend><button class="btn btn-primary" id="kjcz_generate_data" type="button" style="margin-right: 5px;" onclick="generateKjczReport()">Wygeneruj wartości z bazy</button>
@@ -157,11 +157,30 @@
                                     <div class="card-body">
                                         <fieldset>
                                             <legend>Raport PZRR</legend>
-                                            <div class="btn-toolbar" style="margin-bottom: 10px;">
-                                                <div class="btn-group" role="group"><button class="btn btn-primary" id="pzrr_new_report" type="button" style="margin-right: 5px;" onclick="getPzrrReport()">Otwórz</button></div>
-                                                <div class="btn-group" role="group"><button class="btn btn-primary" id="pzrr_generate_data" type="button" style="margin-right: 5px;" onclick="generatePzrrReport()">Wygeneruj wartości z bazy</button></div>
-                                                <div class="btn-group" role="group"><button class="btn btn-primary" id="pzrr_save" type="button" style="margin-right: 5px;" onclick="savePzrrReport()">Zapisz</button></div>
-                                                <div class="btn-group" role="group"><button class="btn btn-primary" id="pzrr_publish" type="button" style="margin-right: 5px;" onclick="saveAndPublishPzrrReport()">Publikuj</button></div>
+                                            <div class="row">
+                                                <div class="col col-2">
+                                                    <legend id="pzrr-created" style="font-size: 12px;">Data utworzenia:&nbsp;</legend><button class="btn btn-primary" id="pzrr_new_report" type="button" style="margin-right: 5px;" onclick="getPzrrReport()">Otwórz</button>
+                                                </div>
+                                                <div class="col col-2">
+                                                    <legend id="pzrr-saved" style="font-size: 12px;">Data zapisu::&nbsp;</legend><button class="btn btn-primary" id="pzrr_save" type="button" style="margin-right: 5px;" onclick="savePzrrReport()">Zapisz</button>
+                                                </div>
+                                                <div class="col col-2">
+                                                    <legend id="pzrr-published" style="font-size: 12px;">Data publikacji::</legend><button class="btn btn-primary" id="pzrr_publish" type="button" style="margin-right: 5px;" onclick="saveAndPublishPzrrReport()">Publikuj</button>
+                                                </div>
+                                                <div class="col">
+                                                    <legend style="font-size: 12px;">.</legend><button class="btn btn-primary" id="pzrr_generate_data" type="button" style="margin-right: 5px;" onclick="generatePzrrReport()">Wygeneruj wartości z bazy</button>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="btn-toolbar" style="margin-bottom: 10px;">
+                                                        <div class="btn-group" role="group"></div>
+                                                        <div class="btn-group" role="group"></div>
+                                                        <div class="btn-group" role="group"></div>
+                                                        <div class="btn-group" role="group"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="col col-4"></div>
                                             </div>
                                             <div class="row" style="margin-bottom: 12px;">
                                                 <div class="col col-6">
@@ -213,11 +232,30 @@
                                     <div class="card-body">
                                         <fieldset>
                                             <legend>Raport PZFRR</legend>
-                                            <div class="btn-toolbar" style="margin-bottom: 10px;">
-                                                <div class="btn-group" role="group"><button class="btn btn-primary" id="pzfrr_new_report" type="button" style="margin-right: 5px;" onclick="getPzfrrReport()">Otwórz</button></div>
-                                                <div class="btn-group" role="group"><button class="btn btn-primary" id="pzfrr_generate_data" type="button" style="margin-right: 5px;" onclick="generatePzfrrReport()">Wygeneruj wartości z bazy</button></div>
-                                                <div class="btn-group" role="group"><button class="btn btn-primary" id="pzfrr_save" type="button" style="margin-right: 5px;" onclick="savePzfrrReport()">Zapisz</button></div>
-                                                <div class="btn-group" role="group"><button class="btn btn-primary" id="pzfrr_publish" type="button" style="margin-right: 5px;" onclick="saveAndPublishPzfrrReport()">Publikuj</button></div>
+                                            <div class="row">
+                                                <div class="col col-2">
+                                                    <legend id="pzfrr-created" style="font-size: 12px;">Data utworzenia:&nbsp;</legend><button class="btn btn-primary" id="pzfrr_new_report" type="button" style="margin-right: 5px;" onclick="getPzrrReport()">Otwórz</button>
+                                                </div>
+                                                <div class="col col-2">
+                                                    <legend id="pzfrr-saved" style="font-size: 12px;">Data zapisu::&nbsp;</legend><button class="btn btn-primary" id="pzfrr_save" type="button" style="margin-right: 5px;" onclick="savePzfrrReport()">Zapisz</button>
+                                                </div>
+                                                <div class="col col-2">
+                                                    <legend id="pzfrr-published" style="font-size: 12px;">Data publikacji::</legend><button class="btn btn-primary" id="pzfrr_publish" type="button" style="margin-right: 5px;" onclick="saveAndPublishPzfrrReport()">Publikuj</button>
+                                                </div>
+                                                <div class="col">
+                                                    <legend style="font-size: 12px;">.</legend><button class="btn btn-primary" id="pzfrr_generate_data" type="button" style="margin-right: 5px;" onclick="generatePzfrrReport()">Wygeneruj wartości z bazy</button>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="btn-toolbar" style="margin-bottom: 10px;">
+                                                        <div class="btn-group" role="group"></div>
+                                                        <div class="btn-group" role="group"></div>
+                                                        <div class="btn-group" role="group"></div>
+                                                        <div class="btn-group" role="group"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="col col-4"></div>
                                             </div>
                                             <div class="row" style="margin-bottom: 12px;">
                                                 <div class="col col-6">
