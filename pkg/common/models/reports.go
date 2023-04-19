@@ -20,6 +20,7 @@ type ReportData struct {
 	Saved          time.Time
 	Reported       time.Time
 	MonthsDuration int64
+	Error          error
 }
 
 func (rd ReportData) GetDurationInMonths() (int64, error) {
@@ -122,14 +123,30 @@ func (r *KjczReport) Save(cd CursorData, cps []CursorPayload) {
 	}
 }
 
-func updatePayloads(dest []ReportPayload, src []BodyReportPayload) {
-	for _, d := range dest {
+func updatePayloads(dest *[]ReportPayload, src []BodyReportPayload) {
+	for _, d := range *dest {
 		for _, s := range src {
 			if d.Position == s.Position {
 				d.Quantity = s.Quantity
 			}
 		}
 	}
+}
+
+func getPayloads(template []ReportPayload, src []BodyReportPayload) (dest []ReportPayload) {
+	for _, s := range src {
+		dest = append(dest, ReportPayload{
+			ReportId:            0,
+			MrId:                template[0].MrId,
+			BusinessType:        template[0].BusinessType,
+			FlowDirection:       template[0].FlowDirection,
+			QuantityMeasureUnit: template[0].QuantityMeasureUnit,
+			Position:            s.Position,
+			Quantity:            s.Quantity,
+			SecondaryQuantity:   nil,
+		})
+	}
+	return
 }
 
 func (r *KjczReport) Update(payload any) {
@@ -139,20 +156,37 @@ func (r *KjczReport) Update(payload any) {
 	r.Data.Start, _ = FirstDayDate(p.Data.Start)
 	r.Data.End, _ = LastDayDate(p.Data.End)
 
-	updatePayloads(r.MeanValue, p.MeanValue)
-	updatePayloads(r.StandardDeviation, p.StandardDeviation)
-	updatePayloads(r.Percentile1, p.Percentile1)
-	updatePayloads(r.Percentile5, p.Percentile5)
-	updatePayloads(r.Percentile10, p.Percentile10)
-	updatePayloads(r.Percentile90, p.Percentile90)
-	updatePayloads(r.Percentile95, p.Percentile95)
-	updatePayloads(r.Percentile99, p.Percentile99)
-	updatePayloads(r.FRCEOutsideLevel1RangeUp, p.FrceOutsideLevel1RangeUp)
-	updatePayloads(r.FRCEOutsideLevel1RangeDown, p.FrceOutsideLevel1RangeDown)
-	updatePayloads(r.FRCEOutsideLevel2RangeUp, p.FrceOutsideLevel2RangeUp)
-	updatePayloads(r.FRCEOutsideLevel2RangeDown, p.FrceOutsideLevel2RangeDown)
-	updatePayloads(r.FRCEExceeded60PercOfFRRCapacityUp, p.FrceExceeded60PercOfFRRCapacityUp)
-	updatePayloads(r.FRCEExceeded60PercOfFRRCapacityDown, p.FrceExceeded60PercOfFRRCapacityDown)
+	t := GetKjczReportTemplate(r.Data)
+
+	r.MeanValue = getPayloads(t.MeanValue, p.MeanValue)
+	r.StandardDeviation = getPayloads(t.StandardDeviation, p.StandardDeviation)
+	r.Percentile1 = getPayloads(t.Percentile1, p.Percentile1)
+	r.Percentile5 = getPayloads(t.Percentile5, p.Percentile5)
+	r.Percentile10 = getPayloads(t.Percentile10, p.Percentile10)
+	r.Percentile90 = getPayloads(t.Percentile90, p.Percentile90)
+	r.Percentile95 = getPayloads(t.Percentile95, p.Percentile95)
+	r.Percentile99 = getPayloads(t.Percentile99, p.Percentile99)
+	r.FRCEOutsideLevel1RangeUp = getPayloads(t.FRCEOutsideLevel1RangeUp, p.FrceOutsideLevel1RangeUp)
+	r.FRCEOutsideLevel1RangeDown = getPayloads(t.FRCEOutsideLevel1RangeDown, p.FrceOutsideLevel1RangeDown)
+	r.FRCEOutsideLevel2RangeUp = getPayloads(t.FRCEOutsideLevel2RangeUp, p.FrceOutsideLevel2RangeUp)
+	r.FRCEOutsideLevel2RangeDown = getPayloads(t.FRCEOutsideLevel2RangeDown, p.FrceOutsideLevel2RangeDown)
+	r.FRCEExceeded60PercOfFRRCapacityUp = getPayloads(t.FRCEExceeded60PercOfFRRCapacityUp, p.FrceExceeded60PercOfFRRCapacityUp)
+	r.FRCEExceeded60PercOfFRRCapacityDown = getPayloads(t.FRCEExceeded60PercOfFRRCapacityDown, p.FrceExceeded60PercOfFRRCapacityDown)
+
+	//updatePayloads(&r.MeanValue, p.MeanValue)
+	//updatePayloads(&r.StandardDeviation, p.StandardDeviation)
+	//updatePayloads(&r.Percentile1, p.Percentile1)
+	//updatePayloads(&r.Percentile5, p.Percentile5)
+	//updatePayloads(&r.Percentile10, p.Percentile10)
+	//updatePayloads(&r.Percentile90, p.Percentile90)
+	//updatePayloads(&r.Percentile95, p.Percentile95)
+	//updatePayloads(&r.Percentile99, p.Percentile99)
+	//updatePayloads(&r.FRCEOutsideLevel1RangeUp, p.FrceOutsideLevel1RangeUp)
+	//updatePayloads(&r.FRCEOutsideLevel1RangeDown, p.FrceOutsideLevel1RangeDown)
+	//updatePayloads(&r.FRCEOutsideLevel2RangeUp, p.FrceOutsideLevel2RangeUp)
+	//updatePayloads(&r.FRCEOutsideLevel2RangeDown, p.FrceOutsideLevel2RangeDown)
+	//updatePayloads(&r.FRCEExceeded60PercOfFRRCapacityUp, p.FrceExceeded60PercOfFRRCapacityUp)
+	//updatePayloads(&r.FRCEExceeded60PercOfFRRCapacityDown, p.FrceExceeded60PercOfFRRCapacityDown)
 }
 
 //func (r KjczReport) GetTestReport(reportId int64, data ReportData) any {
@@ -198,8 +232,10 @@ func (r *PzrrReport) Update(payload any) {
 	r.Data.Start, _ = FirstDayDate(p.Data.Start)
 	r.Data.End, _ = LastDayDate(p.Data.End)
 
-	updatePayloads(r.ForecastedCapacityUp, p.ForecastedCapacityUp)
-	updatePayloads(r.ForecastedCapacityDown, p.ForecastedCapacityDown)
+	t := GetPzrrReportTemplate(r.Data)
+
+	r.ForecastedCapacityUp = getPayloads(t.ForecastedCapacityUp, p.ForecastedCapacityUp)
+	r.ForecastedCapacityDown = getPayloads(t.ForecastedCapacityDown, p.ForecastedCapacityDown)
 }
 
 //func (r PzrrReport) GetTestReport(reportId int64, data ReportData) any {
@@ -245,8 +281,10 @@ func (r *PzfrrReport) Update(payload any) {
 	r.Data.Start, _ = FirstDayDate(p.Data.Start)
 	r.Data.End, _ = LastDayDate(p.Data.End)
 
-	updatePayloads(r.ForecastedCapacityUp, p.ForecastedCapacityUp)
-	updatePayloads(r.ForecastedCapacityDown, p.ForecastedCapacityDown)
+	t := GetPzfrrReportTemplate(r.Data)
+
+	r.ForecastedCapacityUp = getPayloads(t.ForecastedCapacityUp, p.ForecastedCapacityUp)
+	r.ForecastedCapacityDown = getPayloads(t.ForecastedCapacityDown, p.ForecastedCapacityDown)
 }
 
 //func (r PzfrrReport) GetTestReport(reportId int64, data ReportData) any {

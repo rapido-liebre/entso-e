@@ -70,7 +70,8 @@ func (dbc *dbConnector) Run(wg *sync.WaitGroup) {
 
 		case err := <-dbc.errch:
 			if err != nil {
-				log.Printf("Database connection failed, err: %v\n", err)
+				log.Printf("Error occured, err: %v\n", err)
+				dbc.releaseChannel(err)
 			}
 			//
 			log.Printf("Connect to DB successful isRunning:%v  status:%v\n", dbc.isRunning, dbc.status)
@@ -156,6 +157,26 @@ end:
 	fmt.Println("Time Elapsed", time.Now().Sub(t).Milliseconds())
 	dbc.status = Ready
 	dbc.errch <- nil
+}
+
+func (dbc *dbConnector) releaseChannel(err error) {
+	switch dbc.data.ReportType {
+	case models.PR_SO_KJCZ:
+		dbc.channels.KjczReport <- models.KjczReport{
+			Data: models.ReportData{
+				Error: err,
+			}}
+	case models.PD_BI_PZRR:
+		dbc.channels.PzrrReport <- models.PzrrReport{
+			Data: models.ReportData{
+				Error: err,
+			}}
+	case models.PD_BI_PZFRR:
+		dbc.channels.PzfrrReport <- models.PzfrrReport{
+			Data: models.ReportData{
+				Error: err,
+			}}
+	}
 }
 
 func (dbc *dbConnector) connectToDB() error {
@@ -293,7 +314,8 @@ func (dbc *dbConnector) callPutReport(report any) error {
 			return err
 		}
 		for _, payload := range r.GetAllPayloads() {
-			statement = models.GetAddPayloadEntryBody(payload)
+			payload.ReportId = reportId
+			statement = models.GetAddPayloadEntryBody2(payload)
 			if _, err := dbc.db.Exec(statement); err != nil {
 				return err
 			}
@@ -305,6 +327,7 @@ func (dbc *dbConnector) callPutReport(report any) error {
 			return err
 		}
 		for _, payload := range r.GetAllPayloads() {
+			payload.ReportId = reportId
 			statement = models.GetAddPayloadEntryBody(payload)
 			if _, err := dbc.db.Exec(statement); err != nil {
 				return err
@@ -317,6 +340,7 @@ func (dbc *dbConnector) callPutReport(report any) error {
 			return err
 		}
 		for _, payload := range r.GetAllPayloads() {
+			payload.ReportId = reportId
 			statement = models.GetAddPayloadEntryBody(payload)
 			if _, err := dbc.db.Exec(statement); err != nil {
 				return err
@@ -431,6 +455,10 @@ func (dbc *dbConnector) callSaveReport() error {
 		report.Update(dbc.data.Payload)
 		if err := dbc.callPutReport(report); err != nil {
 			return err
+		}
+		report.Data.Saved = time.Now()
+		if report.Data.Created.IsZero() {
+			report.Data.Created = report.Data.Saved
 		}
 		dbc.channels.KjczReport <- report
 	case models.PD_BI_PZRR:

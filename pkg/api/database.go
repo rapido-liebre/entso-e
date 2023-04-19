@@ -161,6 +161,9 @@ func (h handler) GetKjcz(ctx *fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
+	if report.Data.Error != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
+	}
 
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
@@ -175,6 +178,9 @@ func (h handler) GetPzrr(ctx *fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
+	if report.Data.Error != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
+	}
 
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
@@ -188,6 +194,9 @@ func (h handler) GetPzfrr(ctx *fiber.Ctx) error {
 	report, err := h.GetPzfrrReport(rd)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+	if report.Data.Error != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(report)
@@ -227,25 +236,13 @@ func (h handler) SaveKjcz(ctx *fiber.Ctx) error {
 		ReportData:     rd,
 		Payload:        body,
 	}
-	//report, err := h.GetKjczReport(rd)
-	//if err != nil {
-	//	return fiber.NewError(fiber.StatusInternalServerError, err.Error())
-	//}
-	//
-	//return ctx.Status(fiber.StatusOK).JSON(report)
 
-	return ctx.JSON(body)
-	//rd, err := getCommonReportData(ctx)
-	//if err != nil {
-	//	return fiber.NewError(fiber.StatusInternalServerError, err.Error())
-	//}
-	//
-	//report, err := h.GetKjczReport(rd)
-	//if err != nil {
-	//	return fiber.NewError(fiber.StatusInternalServerError, err.Error())
-	//}
-	//
-	//return ctx.Status(fiber.StatusOK).JSON(report)
+	report := <-h.channels.KjczReport
+	if report.Data.Error != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
 func (h handler) SaveKjczAndPublish(ctx *fiber.Ctx) error {

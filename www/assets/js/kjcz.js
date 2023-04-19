@@ -47,7 +47,8 @@ function saveKjczReport() {
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             console.log(xhr.status);
-            console.log(xhr.responseText);
+            // console.log(xhr.responseText);
+            fillKjczForm(JSON.parse(xhr.responseText))
         }};
 
     xhr.send(getJsonFromKjczForm());
@@ -63,7 +64,8 @@ function saveAndPublishKjczReport() {
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             console.log(xhr.status);
-            console.log(xhr.responseText);
+            // console.log(xhr.responseText);
+            fillKjczForm(JSON.parse(xhr.responseText))
         }};
 
     xhr.send(getJsonFromKjczForm());
@@ -161,6 +163,21 @@ function fillKjczData(data) {
     author.value = data["Creator"];
     let rev = document.getElementById("kjcz_rev");
     rev.value = data["Revision"];
+
+    const created = data["Created"];
+    const saved = data["Saved"];
+    const published = data["Reported"];
+    setKjczDates(created, saved, published)
+}
+
+function setKjczDates(created, saved, published) {
+    let kjcz_created = document.getElementById("kjcz-created");
+    let kjcz_saved = document.getElementById("kjcz-saved");
+    let kjcz_published = document.getElementById("kjcz-published");
+
+    kjcz_created.textContent = "Data utworzenia: " + convertDate(created);
+    kjcz_saved.textContent = "Data zapisu: " + convertDate(saved);
+    kjcz_published.textContent = "Data publikacji: " + convertDate(published);
 }
 
 function fillKjczTableValues(row, values) {

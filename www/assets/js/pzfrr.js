@@ -113,6 +113,21 @@ function fillPzfrrData(data) {
     author.value = data["Creator"];
     let rev = document.getElementById("pzfrr_rev");
     rev.value = data["Revision"];
+
+    const created = data["Created"];
+    const saved = data["Saved"];
+    const published = data["Reported"];
+    setPzfrrDates(created, saved, published)
+}
+
+function setPzfrrDates(created, saved, published) {
+    let pzfrr_created = document.getElementById("pzfrr-created");
+    let pzfrr_saved = document.getElementById("pzfrr-saved");
+    let pzfrr_published = document.getElementById("pzfrr-published");
+
+    pzfrr_created.textContent = "Data utworzenia: " + convertDate(created);
+    pzfrr_saved.textContent = "Data zapisu: " + convertDate(saved);
+    pzfrr_published.textContent = "Data publikacji: " + convertDate(published);
 }
 
 function fillPzfrrTableValues(row, values) {

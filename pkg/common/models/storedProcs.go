@@ -55,6 +55,16 @@ func GetAddPayloadEntryBody(payload ReportPayload) string {
 	return s
 }
 
+func GetAddPayloadEntryBody2(payload ReportPayload) string {
+	rdata := fmt.Sprintf("insert into hl_entsoe_report_payloads("+
+		"reportid, mrid, businesstype, flowdirection, quantitymeasureunit, position, quantity, secondaryquantity) "+
+		"values (%d, %d, '%s', '%s', '%s', %d, %.3f, %s);", payload.ReportId, payload.MrId, payload.BusinessType, payload.FlowDirection,
+		payload.QuantityMeasureUnit, payload.Position, payload.Quantity, getSecondaryQuantityString(payload.SecondaryQuantity))
+
+	s := strings.Join([]string{"begin", rdata, "end;"}, " ")
+	return s
+}
+
 func getSecondaryQuantityString(secondaryQuantity *int) string {
 	if secondaryQuantity == nil {
 		return "null"

@@ -28,16 +28,24 @@ var dateRanges = []string{
 
 func TestReportData(rt ReportType) ReportData {
 	index := 0
+	monthsDuration := 3
+
 	if rt != PR_SO_KJCZ {
 		index = 2
+		monthsDuration = 4
 	}
 	tStart, _ := time.Parse(time.DateOnly, dateRanges[index])
 	tEnd, _ := time.Parse(time.DateOnly, dateRanges[index+1])
 
 	return ReportData{
-		Creator: creators[rand.Intn(len(creators))],
-		Start:   tStart,
-		End:     tEnd,
+		Creator:        creators[rand.Intn(len(creators))],
+		Revision:       0,
+		Start:          tStart,
+		End:            tEnd,
+		Created:        time.Time{},
+		Saved:          time.Time{},
+		Reported:       time.Time{},
+		MonthsDuration: int64(monthsDuration),
 	}
 }
 
