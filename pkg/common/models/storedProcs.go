@@ -91,6 +91,12 @@ func GetLastReport(data ReportData, rt ReportType) string {
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
 
+func GetSetReported(reportId int64) string {
+	rdata := fmt.Sprintf("hl_entsoe_reports_pk.set_reported(p_id => %d);", reportId)
+
+	return strings.Join([]string{"begin", rdata, "end;"}, " ")
+}
+
 func GetInicjujPozyskanie(rt ReportType, rd ReportData) string {
 	rdata := fmt.Sprintf("inicjujPozyskanie("+
 		"p_ekstrakt => '%s', "+

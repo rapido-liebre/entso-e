@@ -202,9 +202,8 @@ func (h handler) GetPzfrr(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
-func (h handler) SaveKjcz(ctx *fiber.Ctx) error {
+func (h handler) saveKjczReport(ctx *fiber.Ctx, publish bool) error {
 	fmt.Println(string(ctx.Body()))
-
 	var (
 		body   models.KjczBody
 		tStart time.Time
@@ -229,7 +228,7 @@ func (h handler) SaveKjcz(ctx *fiber.Ctx) error {
 	}
 
 	h.channels.RunDBConn <- config.DBAction{
-		Publish:        false,
+		Publish:        publish,
 		TestData:       false,
 		ConnectionOnly: false,
 		ReportType:     models.PR_SO_KJCZ,
@@ -245,62 +244,110 @@ func (h handler) SaveKjcz(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
+func (h handler) SaveKjcz(ctx *fiber.Ctx) error {
+	return h.saveKjczReport(ctx, false)
+}
+
 func (h handler) SaveKjczAndPublish(ctx *fiber.Ctx) error {
+	return h.saveKjczReport(ctx, true)
+}
+
+func (h handler) savePzrrReport(ctx *fiber.Ctx, publish bool) error {
 	fmt.Println(string(ctx.Body()))
+	var (
+		body   models.PzrrBody
+		tStart time.Time
+		tEnd   time.Time
+		err    error
+	)
 
-	var body models.KjczBody
-
-	if err := ctx.BodyParser(&body); err != nil {
+	if err = ctx.BodyParser(&body); err != nil {
+		return err
+	}
+	if tStart, err = models.FirstDayDate(body.Data.Start); err != nil {
+		return err
+	}
+	if tEnd, err = models.FirstDayDate(body.Data.End); err != nil {
 		return err
 	}
 
-	return ctx.JSON(body)
+	rd := models.ReportData{
+		Creator: body.Data.Creator,
+		Start:   tStart,
+		End:     tEnd,
+	}
+
+	h.channels.RunDBConn <- config.DBAction{
+		Publish:        publish,
+		TestData:       false,
+		ConnectionOnly: false,
+		ReportType:     models.PD_BI_PZRR,
+		ReportData:     rd,
+		Payload:        body,
+	}
+
+	report := <-h.channels.PzrrReport
+	if report.Data.Error != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
 func (h handler) SavePzrr(ctx *fiber.Ctx) error {
-	fmt.Println(string(ctx.Body()))
-
-	var body models.PzrrBody
-
-	if err := ctx.BodyParser(&body); err != nil {
-		return err
-	}
-
-	return ctx.JSON(body)
+	return h.savePzrrReport(ctx, false)
 }
 
 func (h handler) SavePzrrAndPublish(ctx *fiber.Ctx) error {
+	return h.savePzrrReport(ctx, true)
+}
+
+func (h handler) savePzfrrReport(ctx *fiber.Ctx, publish bool) error {
 	fmt.Println(string(ctx.Body()))
+	var (
+		body   models.PzfrrBody
+		tStart time.Time
+		tEnd   time.Time
+		err    error
+	)
 
-	var body models.PzrrBody
-
-	if err := ctx.BodyParser(&body); err != nil {
+	if err = ctx.BodyParser(&body); err != nil {
+		return err
+	}
+	if tStart, err = models.FirstDayDate(body.Data.Start); err != nil {
+		return err
+	}
+	if tEnd, err = models.FirstDayDate(body.Data.End); err != nil {
 		return err
 	}
 
-	return ctx.JSON(body)
+	rd := models.ReportData{
+		Creator: body.Data.Creator,
+		Start:   tStart,
+		End:     tEnd,
+	}
+
+	h.channels.RunDBConn <- config.DBAction{
+		Publish:        publish,
+		TestData:       false,
+		ConnectionOnly: false,
+		ReportType:     models.PD_BI_PZFRR,
+		ReportData:     rd,
+		Payload:        body,
+	}
+
+	report := <-h.channels.PzfrrReport
+	if report.Data.Error != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
 func (h handler) SavePzfrr(ctx *fiber.Ctx) error {
-	fmt.Println(string(ctx.Body()))
-
-	var body models.PzfrrBody
-
-	if err := ctx.BodyParser(&body); err != nil {
-		return err
-	}
-
-	return ctx.JSON(body)
+	return h.savePzfrrReport(ctx, false)
 }
 
 func (h handler) SavePzfrrAndPublish(ctx *fiber.Ctx) error {
-	fmt.Println(string(ctx.Body()))
-
-	var body models.PzfrrBody
-
-	if err := ctx.BodyParser(&body); err != nil {
-		return err
-	}
-
-	return ctx.JSON(body)
+	return h.savePzfrrReport(ctx, true)
 }

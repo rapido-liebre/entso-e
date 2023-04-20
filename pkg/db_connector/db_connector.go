@@ -348,6 +348,13 @@ func (dbc *dbConnector) callPutReport(report any) error {
 		}
 	}
 
+	if dbc.data.Publish {
+		statement := models.GetSetReported(reportId)
+		if _, err := dbc.db.Exec(statement); err != nil {
+			return err
+		}
+	}
+
 	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
 
 	return nil
@@ -460,6 +467,9 @@ func (dbc *dbConnector) callSaveReport() error {
 		if report.Data.Created.IsZero() {
 			report.Data.Created = report.Data.Saved
 		}
+		if dbc.data.Publish {
+			report.Data.Reported = report.Data.Saved
+		}
 		dbc.channels.KjczReport <- report
 	case models.PD_BI_PZRR:
 		report := models.PzrrReport{}
@@ -468,6 +478,13 @@ func (dbc *dbConnector) callSaveReport() error {
 		if err := dbc.callPutReport(report); err != nil {
 			return err
 		}
+		report.Data.Saved = time.Now()
+		if report.Data.Created.IsZero() {
+			report.Data.Created = report.Data.Saved
+		}
+		if dbc.data.Publish {
+			report.Data.Reported = report.Data.Saved
+		}
 		dbc.channels.PzrrReport <- report
 	case models.PD_BI_PZFRR:
 		report := models.PzfrrReport{}
@@ -475,6 +492,13 @@ func (dbc *dbConnector) callSaveReport() error {
 		report.Update(dbc.data.Payload)
 		if err := dbc.callPutReport(report); err != nil {
 			return err
+		}
+		report.Data.Saved = time.Now()
+		if report.Data.Created.IsZero() {
+			report.Data.Created = report.Data.Saved
+		}
+		if dbc.data.Publish {
+			report.Data.Reported = report.Data.Saved
 		}
 		dbc.channels.PzfrrReport <- report
 	}

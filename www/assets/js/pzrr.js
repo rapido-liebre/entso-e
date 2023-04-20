@@ -23,7 +23,8 @@ function savePzrrReport() {
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             console.log(xhr.status);
-            console.log(xhr.responseText);
+            // console.log(xhr.responseText);
+            fillPzrrForm(JSON.parse(xhr.responseText))
         }};
 
     xhr.send(getJsonFromPzrrForm());
@@ -39,7 +40,8 @@ function saveAndPublishPzrrReport() {
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             console.log(xhr.status);
-            console.log(xhr.responseText);
+            // console.log(xhr.responseText);
+            fillPzrrForm(JSON.parse(xhr.responseText))
         }};
 
     xhr.send(getJsonFromPzrrForm());
