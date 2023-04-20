@@ -469,6 +469,7 @@ func (dbc *dbConnector) callSaveReport() error {
 		}
 		if dbc.data.Publish {
 			report.Data.Reported = report.Data.Saved
+			_ = dbc.callInicjujPozyskanie(report.Data)
 		}
 		dbc.channels.KjczReport <- report
 	case models.PD_BI_PZRR:
@@ -484,6 +485,7 @@ func (dbc *dbConnector) callSaveReport() error {
 		}
 		if dbc.data.Publish {
 			report.Data.Reported = report.Data.Saved
+			_ = dbc.callInicjujPozyskanie(report.Data)
 		}
 		dbc.channels.PzrrReport <- report
 	case models.PD_BI_PZFRR:
@@ -499,6 +501,7 @@ func (dbc *dbConnector) callSaveReport() error {
 		}
 		if dbc.data.Publish {
 			report.Data.Reported = report.Data.Saved
+			_ = dbc.callInicjujPozyskanie(report.Data)
 		}
 		dbc.channels.PzfrrReport <- report
 	}
