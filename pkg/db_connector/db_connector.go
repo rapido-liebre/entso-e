@@ -363,7 +363,9 @@ func (dbc *dbConnector) callPutReport(report any) error {
 func (dbc *dbConnector) callInicjujPozyskanie(rdata models.ReportData) error {
 	t := time.Now()
 
-	_, err := dbc.db.Exec(models.GetInicjujPozyskanie(dbc.data.ReportType, rdata))
+	statement := models.GetInicjujPozyskanie(dbc.data.ReportType, rdata)
+	fmt.Println(statement)
+	_, err := dbc.db.Exec(statement)
 	if err != nil {
 		return err
 	}
