@@ -98,17 +98,18 @@ func GetSetReported(reportId int64) string {
 }
 
 func GetInicjujPozyskanie(rt ReportType, rd ReportData) string {
-	rdata := fmt.Sprintf("inicjujPozyskanie("+
-		"p_ekstrakt => '%s', "+
+	rdata := fmt.Sprintf("CN_INT_STERUJ_POZYSKANIEM_PK.inicjujPozyskanie("+
+		"p_ekstrakt => v_ekstrakt, "+
 		"p_zakresOd => null, "+
 		"p_zakresDo => null, "+
 		"p_ziarno => '%s', "+
 		"p_dataOd => ad_czas.podajCzasUTC(to_date('%s','yyyy-mm-dd'),'N'), "+
 		"p_dataDo => ad_czas.podajCzasUTC(to_date('%s','yyyy-mm-dd'),'N'), "+
 		"p_zrodlo => null, "+
-		"p_obiekt_danych => null);", rt.String(), getResolution(rt), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
+		"p_obiekt_danych => null);", getResolution(rt), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
 
-	s := strings.Join([]string{"begin", rdata, "end;"}, " ")
+	s := strings.Join([]string{"declare v_ekstrakt ad_util.t_tDane; v_dane ad_util.t_tDane; begin",
+		fmt.Sprintf("v_dane(1) := null; v_ekstrakt(1) := '%s'; ", rt.String()), rdata, "end;"}, " ")
 	return s
 }
 
