@@ -119,10 +119,16 @@ linux:
 
 	t := time.Now()
 	if dbc.data.ConnectionOnly {
-		err := dbc.connectToDB()
-		if err != nil {
-			dbc.errch <- err
+		if dbc.data.ReportType == models.FETCH_15_MIN {
+			if err := dbc.callFetch15min(); err != nil {
+				dbc.errch <- err
+			}
+		} else {
+			if err := dbc.connectToDB(); err != nil {
+				dbc.errch <- err
+			}
 		}
+
 		goto end
 	}
 	if dbc.data.TestData {
@@ -225,21 +231,76 @@ func (dbc *dbConnector) connectToDB() error {
 	return nil
 }
 
-//const createTableStatement = "CREATE TABLE TEMP_TABLE ( NAME VARCHAR2(100), CREATION_TIME TIMESTAMP DEFAULT SYSTIMESTAMP, VALUE  NUMBER(5))"
-//const dropTableStatement = "DROP TABLE TEMP_TABLE PURGE"
-//const insertStatement = "INSERT INTO TEMP_TABLE ( NAME , VALUE) VALUES (:name, :value)"
+func (dbc *dbConnector) connectToSourceDB() error {
+	cfg := dbc.config.Params
+
+	var connectionString string
+	if len(cfg.SrcConnString) > 0 {
+		fmt.Println("Using provided connection string")
+		connectionString = cfg.ConnString
+	}
+
+	fmt.Println(connectionString)
+	var err error
+	dbc.db, err = sql.Open("oracle", connectionString)
+	if err != nil {
+		return fmt.Errorf("error in sql.Open: %w", err)
+	}
+
+	dbc.db.SetConnMaxLifetime(time.Minute * 5)
+	err = dbc.db.Ping()
+	if err != nil {
+		return fmt.Errorf("error pinging db: %w", err)
+	}
+	return nil
+}
+
+func (dbc *dbConnector) callFetch15min() error {
+	t := time.Now()
+
+	if err := dbc.connectToSourceDB(); err != nil {
+		return err
+	}
+	dbc.status = Ready
+
+	var (
+		cursor go_ora.RefCursor
+	)
+
+	//get last report
+	statement := models.GetFetchSourceData15min(dbc.data.ReportData)
+	fmt.Println(statement)
+	if _, err := dbc.db.Exec(statement, sql.Out{Dest: &cursor}); err != nil {
+		return err
+	}
+	defer cursor.Close()
+
+	//var (
+	//	cd  models.CursorData
+	//	cps []models.CursorPayload
+	//)
+
+	//fetch report data
+	dataRows, err := cursor.Query()
+	if err != nil {
+		return err
+	}
+	for dataRows.Next_() {
+		//err = dataRows.Scan(&cd.ReportType, &cd.Revision, &cd.Creator, &cd.Created, &cd.Start, &cd.End, &cd.Saved, &cd.Reported)
+		//if err != nil {
+		//	return err
+		//}
+		//fmt.Println(cd)
+	}
+
+	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
+	return nil
+}
 
 func (dbc *dbConnector) testData() error {
 	if err := dbc.getTestReport(); err != nil {
 		return err
 	}
-
-	//if err := dbc.connectToDB(); err != nil {
-	//	return err
-	//}
-	//if _, err := dbc.callPutTestReport(); err != nil {
-	//	return err
-	//}
 
 	return nil
 }

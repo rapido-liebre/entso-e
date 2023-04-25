@@ -33,6 +33,8 @@ func RegisterRoutes(app *fiber.App, ch *config.Channels) {
 
 	routes.Get("/test_conn", h.ConnectToDB)
 
+	routes.Get("/test_fetch_15", h.Fetch15min)
+
 	routes.Get("/test_kjcz", h.SendTestKjcz)
 
 	routes.Get("/test_kjcz_publish", h.SendTestKjczAndPublish)

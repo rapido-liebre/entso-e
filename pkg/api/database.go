@@ -19,6 +19,17 @@ func (h handler) ConnectToDB(ctx *fiber.Ctx) error {
 	return ctx.SendStatus(fiber.StatusOK)
 }
 
+func (h handler) Fetch15min(ctx *fiber.Ctx) error {
+	h.channels.RunDBConn <- config.DBAction{
+		Publish:        false,
+		TestData:       false,
+		ConnectionOnly: true,
+		ReportType:     models.FETCH_15_MIN,
+		Payload:        "",
+	}
+	return ctx.SendStatus(fiber.StatusOK)
+}
+
 func (h handler) SendTest(ctx *fiber.Ctx, rt models.ReportType, publish bool) error {
 	h.channels.RunDBConn <- config.DBAction{
 		Publish:        publish,

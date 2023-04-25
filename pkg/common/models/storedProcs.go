@@ -13,6 +13,8 @@ const (
 	PD_BI_PZFRR ReportType = iota
 	PD_BI_PZRR
 	PR_SO_KJCZ
+	FETCH_15_MIN
+	FETCH_1_MIN
 )
 
 func (rt ReportType) String() string {
@@ -72,21 +74,21 @@ func getSecondaryQuantityString(secondaryQuantity *int) string {
 	return strconv.Itoa(*secondaryQuantity)
 }
 
-func GetPutReportBody(data ReportData, rt ReportType) string {
+func GetPutReportBody(rd ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf(":1 := hl_entsoe_reports_pk.put_%s_report("+
 		"p_creator => '%s', "+
 		"p_report_start => date '%s', "+
-		"p_report_end   => date '%s');", rt.shortly(), data.Creator, data.Start.Format(time.DateOnly), data.End.Format(time.DateOnly))
+		"p_report_end   => date '%s');", rt.shortly(), rd.Creator, rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
 
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
 
-func GetLastReport(data ReportData, rt ReportType) string {
+func GetLastReport(rd ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf("hl_entsoe_reports_pk.get_last_%s("+
 		"date '%s', "+
 		"date '%s', "+
 		":1, "+
-		":2);", rt.shortly(), data.Start.Format(time.DateOnly), data.End.Format(time.DateOnly))
+		":2);", rt.shortly(), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
 
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
@@ -119,3 +121,19 @@ func getResolution(rt ReportType) string {
 	}
 	return P3M.String()
 }
+
+func GetFetchSourceData15min(rd ReportData) string {
+	rdata := fmt.Sprintf("SELECT avg_value FROM avg_15 WHERE avg_time >= '%s' AND avg_time < '%s' "+
+		"AND avg_name = 'RC_AVG15m_LFC_ACE_PL' ORDER BY avg_value;", rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
+
+	return strings.Join([]string{"begin", rdata, "end;"}, " ")
+}
+
+func GetFetchSourceData1min(rd ReportData) string {
+	rdata := fmt.Sprintf("SELECT avg_value, avg_time FROM avg_1 WHERE avg_time >= '%s' AND avg_time < '%s' "+
+		"AND avg_name = 'RC_AVG1M_LFC_ACE_PL' ORDER BY avg_time;", rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
+
+	return strings.Join([]string{"begin", rdata, "end;"}, " ")
+}
+
+//SELECT avg_value FROM avg_1mon WHERE avg_time = '$bar-01 00:00:00' AND avg_name = 'RC_AVG1MON_LFC_Pp_max';
