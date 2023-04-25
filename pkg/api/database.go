@@ -42,11 +42,17 @@ func (h handler) SendTest(ctx *fiber.Ctx, rt models.ReportType, publish bool) er
 }
 
 func (h handler) SendTestKjcz(ctx *fiber.Ctx) error {
+	rd, err := getCommonReportData(ctx)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
 	h.channels.RunDBConn <- config.DBAction{
 		Publish:        false,
 		TestData:       true,
 		ConnectionOnly: false,
 		ReportType:     models.PR_SO_KJCZ,
+		ReportData:     rd,
 		Payload:        "",
 	}
 	report := <-h.channels.KjczReport
@@ -55,11 +61,17 @@ func (h handler) SendTestKjcz(ctx *fiber.Ctx) error {
 }
 
 func (h handler) SendTestPzrr(ctx *fiber.Ctx) error {
+	rd, err := getCommonReportData(ctx)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
 	h.channels.RunDBConn <- config.DBAction{
 		Publish:        false,
 		TestData:       true,
 		ConnectionOnly: false,
 		ReportType:     models.PD_BI_PZRR,
+		ReportData:     rd,
 		Payload:        "",
 	}
 	report := <-h.channels.PzrrReport
@@ -68,11 +80,17 @@ func (h handler) SendTestPzrr(ctx *fiber.Ctx) error {
 }
 
 func (h handler) SendTestPzfrr(ctx *fiber.Ctx) error {
+	rd, err := getCommonReportData(ctx)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
 	h.channels.RunDBConn <- config.DBAction{
 		Publish:        false,
 		TestData:       true,
 		ConnectionOnly: false,
 		ReportType:     models.PD_BI_PZFRR,
+		ReportData:     rd,
 		Payload:        "",
 	}
 	report := <-h.channels.PzfrrReport

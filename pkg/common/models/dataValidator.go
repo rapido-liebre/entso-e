@@ -9,6 +9,7 @@ import (
 )
 
 func ParseQueryParams(ctx *fiber.Ctx, expectedParamsCount int) ([]string, error) {
+	fmt.Println(string(ctx.Request().URI().QueryString()))
 	params := strings.Split(string(ctx.Request().URI().QueryString()), "&")
 	if len(params) != expectedParamsCount {
 		return []string{}, fiber.NewError(fiber.StatusInternalServerError,

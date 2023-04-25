@@ -18,10 +18,10 @@ const (
 )
 
 func (rt ReportType) String() string {
-	return []string{"PD_BI_PZFRR", "PD_BI_PZRR", "PR_SO_KJCZ"}[rt]
+	return []string{"PD_BI_PZFRR", "PD_BI_PZRR", "PR_SO_KJCZ", "RC_AVG15m_LFC_ACE_PL", "RC_AVG1M_LFC_ACE_PL"}[rt]
 }
 func (rt ReportType) shortly() string {
-	return []string{"pzfrr", "pzrr", "kjcz"}[rt]
+	return []string{"pzfrr", "pzrr", "kjcz", "avg_15", "avg_1"}[rt]
 }
 
 type Resolution int
@@ -99,7 +99,7 @@ func GetSetReported(reportId int64) string {
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
 
-func GetInicjujPozyskanie(rt ReportType, rd ReportData) string {
+func GetInicjujPozyskanie(rd ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf("CN_INT_STERUJ_POZYSKANIEM_PK.inicjujPozyskanie("+
 		"v_ekstrakt, "+
 		"null, "+
@@ -122,9 +122,10 @@ func getResolution(rt ReportType) string {
 	return P3M.String()
 }
 
-func GetFetchSourceData15min(rd ReportData) string {
-	rdata := fmt.Sprintf("SELECT avg_value FROM avg_15 WHERE avg_time >= '%s' AND avg_time < '%s' "+
-		"AND avg_name = 'RC_AVG15m_LFC_ACE_PL' ORDER BY avg_value;", rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
+func GetFetchSourceData(rd ReportData, rt ReportType) string {
+	rdata := fmt.Sprintf(":1 := SELECT avg_time, save_time, avg_name, avg_value, avg_status, system_site "+
+		"FROM %s WHERE avg_time >= to_date('%s','yyyy-mm-dd') AND avg_time < to_date('%s','yyyy-mm-dd') AND avg_name = '%s';", //ORDER BY avg_value
+		rt.shortly(), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly), rt.String())
 
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }

@@ -258,27 +258,22 @@ func (dbc *dbConnector) connectToSourceDB() error {
 func (dbc *dbConnector) callFetch15min() error {
 	t := time.Now()
 
-	if err := dbc.connectToSourceDB(); err != nil {
+	if err := dbc.connectToDB(); err != nil {
 		return err
 	}
 	dbc.status = Ready
 
-	var (
-		cursor go_ora.RefCursor
-	)
+	var cursor go_ora.RefCursor
 
 	//get last report
-	statement := models.GetFetchSourceData15min(dbc.data.ReportData)
+	statement := models.GetFetchSourceData(dbc.data.ReportData, models.FETCH_15_MIN)
 	fmt.Println(statement)
 	if _, err := dbc.db.Exec(statement, sql.Out{Dest: &cursor}); err != nil {
 		return err
 	}
 	defer cursor.Close()
 
-	//var (
-	//	cd  models.CursorData
-	//	cps []models.CursorPayload
-	//)
+	var lfcAce []models.LfcAce
 
 	//fetch report data
 	dataRows, err := cursor.Query()
@@ -286,18 +281,48 @@ func (dbc *dbConnector) callFetch15min() error {
 		return err
 	}
 	for dataRows.Next_() {
-		//err = dataRows.Scan(&cd.ReportType, &cd.Revision, &cd.Creator, &cd.Created, &cd.Start, &cd.End, &cd.Saved, &cd.Reported)
-		//if err != nil {
-		//	return err
-		//}
-		//fmt.Println(cd)
+		var lfc models.LfcAce
+		err = dataRows.Scan(&lfc.AvgTime, &lfc.SaveTime, &lfc.AvgName, &lfc.AvgValue, &lfc.AvgStatus, &lfc.SystemSite)
+		if err != nil {
+			return err
+		}
+		lfcAce = append(lfcAce, lfc)
 	}
+	fmt.Println("len(lfcAce): ", len(lfcAce))
 
+	//data := models.TestReportData(dbc.data.ReportType)
+	////data.Start = dbc.data.ReportData.Start
+	////data.End = dbc.data.ReportData.End
+	//data.MonthsDuration = dbc.data.ReportData.MonthsDuration
+	//
+	//var reportId int64
+	//reportId = 0
+	//
+	//dbc.status = Ready
+	//
+	//switch dbc.data.ReportType {
+	//case models.PR_SO_KJCZ:
+	//	report := models.GetTestKjczReportBody(reportId, data)
+	//	dbc.channels.KjczReport <- report
+	//case models.PD_BI_PZRR:
+	//	report := models.GetTestPzrrReportBody(reportId, data)
+	//	dbc.channels.PzrrReport <- report
+	//case models.PD_BI_PZFRR:
+	//	report := models.GetTestPzfrrReportBody(reportId, data)
+	//	dbc.channels.PzfrrReport <- report
+	//default:
+	//	fmt.Println("getReport() fatal error! Unknown report type")
+	//}
+	//
 	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
 	return nil
 }
 
 func (dbc *dbConnector) testData() error {
+	if err := dbc.callFetch15min(); err != nil {
+		return err
+	}
+
 	if err := dbc.getTestReport(); err != nil {
 		return err
 	}
@@ -424,7 +449,7 @@ func (dbc *dbConnector) callPutReport(report any) error {
 func (dbc *dbConnector) callInicjujPozyskanie(rdata models.ReportData) error {
 	t := time.Now()
 
-	statement := models.GetInicjujPozyskanie(dbc.data.ReportType, rdata)
+	statement := models.GetInicjujPozyskanie(rdata, dbc.data.ReportType)
 	fmt.Println(statement)
 	_, err := dbc.db.Exec(statement)
 	if err != nil {
