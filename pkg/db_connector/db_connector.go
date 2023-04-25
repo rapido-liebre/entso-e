@@ -263,24 +263,32 @@ func (dbc *dbConnector) callFetch15min() error {
 	}
 	dbc.status = Ready
 
-	var cursor go_ora.RefCursor
+	//var cursor go_ora.RefCursor
 
 	//get last report
 	statement := models.GetFetchSourceData(dbc.data.ReportData, models.FETCH_15_MIN)
 	fmt.Println(statement)
-	if _, err := dbc.db.Exec(statement, sql.Out{Dest: &cursor}); err != nil {
+
+	// fetching multiple rows
+	dataRows, err := dbc.db.Query(statement)
+	if err != nil {
 		return err
 	}
-	defer cursor.Close()
+	defer dataRows.Close()
+
+	//if _, err := dbc.db.Exec(statement, sql.Out{Dest: &cursor}); err != nil {
+	//	return err
+	//}
+	//defer cursor.Close()
 
 	var lfcAce []models.LfcAce
 
 	//fetch report data
-	dataRows, err := cursor.Query()
-	if err != nil {
-		return err
-	}
-	for dataRows.Next_() {
+	//dataRows, err := cursor.Query()
+	//if err != nil {
+	//	return err
+	//}
+	for dataRows.Next() {
 		var lfc models.LfcAce
 		err = dataRows.Scan(&lfc.AvgTime, &lfc.SaveTime, &lfc.AvgName, &lfc.AvgValue, &lfc.AvgStatus, &lfc.SystemSite)
 		if err != nil {
