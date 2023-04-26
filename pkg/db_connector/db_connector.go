@@ -231,30 +231,6 @@ func (dbc *dbConnector) connectToDB() error {
 	return nil
 }
 
-func (dbc *dbConnector) connectToSourceDB() error {
-	cfg := dbc.config.Params
-
-	var connectionString string
-	if len(cfg.SrcConnString) > 0 {
-		fmt.Println("Using provided connection string")
-		connectionString = cfg.ConnString
-	}
-
-	fmt.Println(connectionString)
-	var err error
-	dbc.db, err = sql.Open("oracle", connectionString)
-	if err != nil {
-		return fmt.Errorf("error in sql.Open: %w", err)
-	}
-
-	dbc.db.SetConnMaxLifetime(time.Minute * 5)
-	err = dbc.db.Ping()
-	if err != nil {
-		return fmt.Errorf("error pinging db: %w", err)
-	}
-	return nil
-}
-
 func (dbc *dbConnector) callFetch15min() error {
 	t := time.Now()
 
@@ -532,7 +508,6 @@ func (dbc *dbConnector) callSaveReport() error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(cd)
 	}
 
 	//fetch report payload
@@ -546,7 +521,6 @@ func (dbc *dbConnector) callSaveReport() error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(cp)
 		cps = append(cps, cp)
 	}
 
@@ -642,7 +616,7 @@ func (dbc *dbConnector) callGetReport() error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(cd)
+		//fmt.Println(cd)
 	}
 
 	//fetch report payload
@@ -656,7 +630,7 @@ func (dbc *dbConnector) callGetReport() error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(cp)
+		//fmt.Println(cp)
 		cps = append(cps, cp)
 	}
 
