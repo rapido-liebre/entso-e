@@ -100,18 +100,11 @@ func GetSetReported(reportId int64) string {
 }
 
 func GetInicjujPozyskanie(rd ReportData, rt ReportType) string {
-	rdata := fmt.Sprintf("CN_INT_STERUJ_POZYSKANIEM_PK.inicjujPozyskanie("+
-		"v_ekstrakt, "+
-		"null, "+
-		"null, "+
-		"'%s', "+
-		"ad_czas.podajCzasUTC(to_date('%s','yyyy-mm-dd'),'N'), "+
-		"ad_czas.podajCzasUTC(to_date('%s','yyyy-mm-dd'),'N'), "+
-		"null, "+
-		"v_dane);", getResolution(rt), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
+	rdata := fmt.Sprintf(" inicjujPozyskanie('%s', null, null, '%s', "+
+		"to_date('%s', 'yyyy-mm-dd'), to_date('%s', 'yyyy-mm-dd'), null, null);",
+		rt.String(), getResolution(rt), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
 
-	s := strings.Join([]string{"declare v_ekstrakt ad_util.t_tDane; v_dane ad_util.t_tDane; begin",
-		fmt.Sprintf("v_dane(1) := null; v_ekstrakt(1) := '%s'; ", rt.String()), rdata, "end;"}, " ")
+	s := strings.Join([]string{"begin", rdata, "end;"}, " ")
 	return s
 }
 
