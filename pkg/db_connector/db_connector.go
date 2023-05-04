@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"entso-e_reports/pkg/common/config"
 	"entso-e_reports/pkg/common/models"
+	"errors"
 	"fmt"
 	go_ora "github.com/sijms/go-ora/v2"
 	"log"
@@ -120,7 +121,7 @@ linux:
 	t := time.Now()
 	if dbc.data.ConnectionOnly {
 		if dbc.data.ReportType == models.FETCH_15_MIN {
-			if err := dbc.callFetch15min(); err != nil {
+			if err := dbc.callFetchLfcAce(); err != nil {
 				dbc.errch <- err
 			}
 		} else {
@@ -231,7 +232,7 @@ func (dbc *dbConnector) connectToDB() error {
 	return nil
 }
 
-func (dbc *dbConnector) callFetch15min() error {
+func (dbc *dbConnector) callFetchLfcAce() error {
 	t := time.Now()
 
 	if err := dbc.connectToDB(); err != nil {
@@ -239,71 +240,63 @@ func (dbc *dbConnector) callFetch15min() error {
 	}
 	dbc.status = Ready
 
-	//var cursor go_ora.RefCursor
+	//fetch 15min data
+	lfcAce15min, err := dbc.fetchRawLfcAce(models.FETCH_15_MIN)
+	if err != nil {
+		return err
+	}
 
-	//get last report
-	statement := models.GetFetchSourceData(dbc.data.ReportData, models.FETCH_15_MIN)
+	//fetch 1min data
+	lfcAce1min, err := dbc.fetchRawLfcAce(models.FETCH_1_MIN)
+	if err != nil {
+		return err
+	}
+
+	var rc models.ReportCalculator
+	report := rc.Calculate(lfcAce15min, lfcAce1min)
+	fmt.Println(report)
+
+	dbc.channels.KjczReport <- report
+
+	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
+	return nil
+}
+
+func (dbc *dbConnector) fetchRawLfcAce(rt models.ReportType) ([]models.LfcAce, error) {
+	if rt < models.FETCH_15_MIN {
+		return []models.LfcAce{}, errors.New(fmt.Sprintf("Wrong report type! Expected: %s or %s, got: %s",
+			models.FETCH_15_MIN.String(), models.FETCH_1_MIN.String(), rt.String()))
+	}
+	t := time.Now()
+
+	statement := models.GetFetchSourceData(dbc.data.ReportData, rt)
 	fmt.Println(statement)
 
 	// fetching multiple rows
 	dataRows, err := dbc.db.Query(statement)
 	if err != nil {
-		return err
+		return []models.LfcAce{}, err
 	}
 	defer dataRows.Close()
 
-	//if _, err := dbc.db.Exec(statement, sql.Out{Dest: &cursor}); err != nil {
-	//	return err
-	//}
-	//defer cursor.Close()
-
 	var lfcAce []models.LfcAce
 
-	//fetch report data
-	//dataRows, err := cursor.Query()
-	//if err != nil {
-	//	return err
-	//}
 	for dataRows.Next() {
 		var lfc models.LfcAce
 		err = dataRows.Scan(&lfc.AvgTime, &lfc.SaveTime, &lfc.AvgName, &lfc.AvgValue, &lfc.AvgStatus, &lfc.SystemSite)
 		if err != nil {
-			return err
+			return []models.LfcAce{}, err
 		}
 		lfcAce = append(lfcAce, lfc)
 	}
-	fmt.Println("len(lfcAce): ", len(lfcAce))
-
-	//data := models.TestReportData(dbc.data.ReportType)
-	////data.Start = dbc.data.ReportData.Start
-	////data.End = dbc.data.ReportData.End
-	//data.MonthsDuration = dbc.data.ReportData.MonthsDuration
-	//
-	//var reportId int64
-	//reportId = 0
-	//
-	//dbc.status = Ready
-	//
-	//switch dbc.data.ReportType {
-	//case models.PR_SO_KJCZ:
-	//	report := models.GetTestKjczReportBody(reportId, data)
-	//	dbc.channels.KjczReport <- report
-	//case models.PD_BI_PZRR:
-	//	report := models.GetTestPzrrReportBody(reportId, data)
-	//	dbc.channels.PzrrReport <- report
-	//case models.PD_BI_PZFRR:
-	//	report := models.GetTestPzfrrReportBody(reportId, data)
-	//	dbc.channels.PzfrrReport <- report
-	//default:
-	//	fmt.Println("getReport() fatal error! Unknown report type")
-	//}
-	//
+	fmt.Printf("len(%s): %d\n", rt.Shortly(), len(lfcAce))
 	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
-	return nil
+
+	return lfcAce, nil
 }
 
 func (dbc *dbConnector) testData() error {
-	if err := dbc.callFetch15min(); err != nil {
+	if err := dbc.callFetchLfcAce(); err != nil {
 		return err
 	}
 

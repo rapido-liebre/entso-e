@@ -20,7 +20,7 @@ const (
 func (rt ReportType) String() string {
 	return []string{"PD_BI_PZFRR", "PD_BI_PZRR", "PR_SO_KJCZ", "RC_AVG15m_LFC_ACE_PL", "RC_AVG1M_LFC_ACE_PL"}[rt]
 }
-func (rt ReportType) shortly() string {
+func (rt ReportType) Shortly() string {
 	return []string{"pzfrr", "pzrr", "kjcz", "avg_15", "avg_1"}[rt]
 }
 
@@ -78,7 +78,7 @@ func GetPutReportBody(rd ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf(":1 := hl_entsoe_reports_pk.put_%s_report("+
 		"p_creator => '%s', "+
 		"p_report_start => date '%s', "+
-		"p_report_end   => date '%s');", rt.shortly(), rd.Creator, rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
+		"p_report_end   => date '%s');", rt.Shortly(), rd.Creator, rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
 
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
@@ -88,7 +88,7 @@ func GetLastReport(rd ReportData, rt ReportType) string {
 		"date '%s', "+
 		"date '%s', "+
 		":1, "+
-		":2);", rt.shortly(), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
+		":2);", rt.Shortly(), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
 
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
@@ -118,7 +118,7 @@ func getResolution(rt ReportType) string {
 func GetFetchSourceData(rd ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf("SELECT avg_time, save_time, avg_name, avg_value, avg_status, system_site "+
 		"FROM %s WHERE avg_time >= to_date('%s','yyyy-mm-dd') AND avg_time < to_date('%s','yyyy-mm-dd') AND avg_name = '%s'", //ORDER BY avg_value
-		rt.shortly(), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly), rt.String())
+		rt.Shortly(), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly), rt.String())
 
 	return rdata //strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
