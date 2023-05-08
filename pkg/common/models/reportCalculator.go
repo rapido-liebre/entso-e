@@ -102,9 +102,7 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 	)
 
 	for _, v := range lfcAce15 {
-		//fmt.Println(k, v)
 		sum += v.AvgValue
-		sumq += math.Pow(v.AvgValue, 2)
 
 		if -v.AvgValue > level1 {
 			lv1pos += 1
@@ -118,11 +116,14 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 		if -v.AvgValue < -level2 {
 			lv2neg += 1
 		}
-
 	}
+
 	avg := sum / totalCount
-	avg = -avg
 	fmt.Println(avg)
+
+	for _, v := range lfcAce15 {
+		sumq += math.Pow(v.AvgValue-avg, 2)
+	}
 
 	dev := math.Sqrt(sumq / totalCount)
 	fmt.Println(dev)
@@ -145,21 +146,6 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 	fmt.Println("Perc 95:", perc95)
 	fmt.Println("Perc 99:", perc99)
 
-	//out0 := totalCount
-	//out1 := avg
-	//out2 := sumq
-	//out3 := perc1
-	//out4 := perc1
-	//out5 := perc1
-	//out6 := perc1
-	//out7 := perc1
-	//out8 := perc1
-	//out9 := lv1pos
-	//out10 := lv1neg
-	//out11 := lv2pos
-	//out12 := lv2neg
-	//out13 := 0 //data od
-
 	getBRPayload := func(quantity float64) BodyReportPayload {
 		return BodyReportPayload{
 			Position:  position,
@@ -168,8 +154,8 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 		}
 	}
 
-	body.MeanValue = append(body.MeanValue, getBRPayload(avg))
-	body.StandardDeviation = append(body.StandardDeviation, getBRPayload(sumq))
+	body.MeanValue = append(body.MeanValue, getBRPayload(-avg))
+	body.StandardDeviation = append(body.StandardDeviation, getBRPayload(dev))
 	body.Percentile1 = append(body.Percentile1, getBRPayload(perc1))
 	body.Percentile5 = append(body.Percentile5, getBRPayload(perc5))
 	body.Percentile10 = append(body.Percentile10, getBRPayload(perc10))
@@ -194,8 +180,8 @@ func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yea
 		exceeding, exceedingTime, plus, minus int
 	)
 
-	for k, v := range lfcAce1 {
-		fmt.Println(k, v)
+	for _, v := range lfcAce1 {
+		//fmt.Println(k, v)
 		val := v.AvgValue
 		{
 			if -val < FRR15 && exceeding == 1 {

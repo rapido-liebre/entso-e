@@ -57,8 +57,9 @@ func (h handler) SendTestKjcz(ctx *fiber.Ctx) error {
 		Payload:        "",
 	}
 	report := <-h.channels.KjczReport
-	fmt.Println(json.Marshal(report))
 
+	rs, _ := json.Marshal(report)
+	fmt.Println(fmt.Sprintf("%s", rs))
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
@@ -78,6 +79,8 @@ func (h handler) SendTestPzrr(ctx *fiber.Ctx) error {
 	}
 	report := <-h.channels.PzrrReport
 
+	rs, _ := json.Marshal(report)
+	fmt.Println(fmt.Sprintf("%s", rs))
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
@@ -97,6 +100,8 @@ func (h handler) SendTestPzfrr(ctx *fiber.Ctx) error {
 	}
 	report := <-h.channels.PzfrrReport
 
+	rs, _ := json.Marshal(report)
+	fmt.Println(fmt.Sprintf("%s", rs))
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
@@ -196,6 +201,8 @@ func (h handler) GetKjcz(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
 	}
 
+	rs, _ := json.Marshal(report)
+	fmt.Println(fmt.Sprintf("%s", rs))
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
@@ -213,6 +220,8 @@ func (h handler) GetPzrr(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
 	}
 
+	rs, _ := json.Marshal(report)
+	fmt.Println(fmt.Sprintf("%s", rs))
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
@@ -230,6 +239,8 @@ func (h handler) GetPzfrr(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
 	}
 
+	rs, _ := json.Marshal(report)
+	fmt.Println(fmt.Sprintf("%s", rs))
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
@@ -272,7 +283,8 @@ func (h handler) saveKjczReport(ctx *fiber.Ctx, publish bool) error {
 		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
 	}
 
-	fmt.Println(json.Marshal(report))
+	rs, _ := json.Marshal(report)
+	fmt.Println(fmt.Sprintf("%s", rs))
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
@@ -323,6 +335,8 @@ func (h handler) savePzrrReport(ctx *fiber.Ctx, publish bool) error {
 		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
 	}
 
+	rs, _ := json.Marshal(report)
+	fmt.Println(fmt.Sprintf("%s", rs))
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
@@ -373,6 +387,8 @@ func (h handler) savePzfrrReport(ctx *fiber.Ctx, publish bool) error {
 		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
 	}
 
+	rs, _ := json.Marshal(report)
+	fmt.Println(fmt.Sprintf("%s", rs))
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 
