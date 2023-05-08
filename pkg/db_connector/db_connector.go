@@ -296,14 +296,19 @@ func (dbc *dbConnector) fetchRawLfcAce(rt models.ReportType) ([]models.LfcAce, e
 }
 
 func (dbc *dbConnector) testData() error {
-	if err := dbc.callFetchLfcAce(); err != nil {
-		return err
+	// fetch data from db only for kjcz
+	switch dbc.data.ReportType {
+	case models.PR_SO_KJCZ:
+		if err := dbc.callFetchLfcAce(); err != nil {
+			return err
+		}
+	case models.PD_BI_PZRR:
+		fallthrough
+	case models.PD_BI_PZFRR:
+		if err := dbc.getTestReport(); err != nil {
+			return err
+		}
 	}
-
-	if err := dbc.getTestReport(); err != nil {
-		return err
-	}
-
 	return nil
 }
 

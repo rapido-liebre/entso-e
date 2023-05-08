@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"entso-e_reports/pkg/common/config"
 	"entso-e_reports/pkg/common/models"
 	"fmt"
@@ -56,6 +57,7 @@ func (h handler) SendTestKjcz(ctx *fiber.Ctx) error {
 		Payload:        "",
 	}
 	report := <-h.channels.KjczReport
+	fmt.Println(json.Marshal(report))
 
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
@@ -270,6 +272,7 @@ func (h handler) saveKjczReport(ctx *fiber.Ctx, publish bool) error {
 		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
 	}
 
+	fmt.Println(json.Marshal(report))
 	return ctx.Status(fiber.StatusOK).JSON(report)
 }
 

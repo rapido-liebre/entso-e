@@ -18,7 +18,7 @@ const (
 )
 
 func (rt ReportType) String() string {
-	return []string{"PD_BI_PZFRR", "PD_BI_PZRR", "PR_SO_KJCZ", "RC_AVG15m_LFC_ACE_PL", "RC_AVG1M_LFC_ACE_PL"}[rt]
+	return []string{"PD_BI_PZFRR", "PD_BI_PZRR", "PR_SO_KJCZ", "RC_AVG15m_LFC_ACE_PL", "RC_AVG1m_LFC_ACE_%"}[rt]
 }
 func (rt ReportType) Shortly() string {
 	return []string{"pzfrr", "pzrr", "kjcz", "avg_15", "avg_1"}[rt]
@@ -117,7 +117,7 @@ func getResolution(rt ReportType) string {
 
 func GetFetchSourceData(rd ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf("SELECT avg_time, save_time, avg_name, avg_value, avg_status, system_site "+
-		"FROM %s WHERE avg_time >= to_date('%s','yyyy-mm-dd') AND avg_time < to_date('%s','yyyy-mm-dd') AND avg_name = '%s'", //ORDER BY avg_value
+		"FROM %s WHERE avg_time >= to_date('%s','yyyy-mm-dd') AND avg_time < to_date('%s','yyyy-mm-dd') AND avg_name LIKE '%s'", //ORDER BY avg_value
 		rt.Shortly(), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly), rt.String())
 
 	return rdata //strings.Join([]string{"begin", rdata, "end;"}, " ")

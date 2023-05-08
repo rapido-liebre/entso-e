@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"strings"
 	"time"
 )
 
@@ -29,7 +28,7 @@ func (rc *ReportCalculator) Calculate(lfcAce15 []LfcAce, lfcAce1 []LfcAce) KjczR
 	for year, months := range rc.data15min {
 		position := 1
 		for month, measurements := range months {
-			yearMonth := strings.Join([]string{string(year), month.String()}, "-")
+			yearMonth := fmt.Sprintf("%d-%02d", year, month)
 			CalculateReportData15min(measurements, position, kjczBody, yearMonth)
 			CalculateReportData1min(measurements, position, kjczBody, yearMonth)
 			position += 1
@@ -164,7 +163,7 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 	getBRPayload := func(quantity float64) BodyReportPayload {
 		return BodyReportPayload{
 			Position:  position,
-			Quantity:  quantity,
+			Quantity:  roundFloat(quantity, 3),
 			YearMonth: yearMonth,
 		}
 	}
@@ -262,4 +261,9 @@ func getReportPayload(mrId int, businessType, flowDirection, quantityMeasureUnit
 	}
 
 	return reportPayloads
+}
+
+func roundFloat(val float64, precision uint) float64 {
+	ratio := math.Pow(10, float64(precision))
+	return math.Round(val*ratio) / ratio
 }
