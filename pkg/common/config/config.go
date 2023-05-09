@@ -27,6 +27,7 @@ type params struct {
 	DBWallet      string `mapstructure:"ORA_WALLET"`
 	ConnString    string `mapstructure:"ORA_CONN_STRING"` // Oracle connection string with wallet
 	SrcConnString string `mapstructure:"SSIRB_CONN_STRING"`
+	FakePublish   bool   `mapstructure:"FAKE_PUBLISH"`
 }
 
 type Config struct {

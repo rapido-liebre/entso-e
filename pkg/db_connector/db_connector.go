@@ -528,7 +528,7 @@ func (dbc *dbConnector) callSaveReport() error {
 		report := models.KjczReport{}
 		report.Save(cd, cps)
 		report.Update(dbc.data.Payload)
-		if err := dbc.callPutReport(report); err != nil {
+		if err = dbc.callPutReport(report); err != nil {
 			return err
 		}
 		report.Data.Saved = time.Now()
@@ -537,14 +537,20 @@ func (dbc *dbConnector) callSaveReport() error {
 		}
 		if dbc.data.Publish {
 			report.Data.Reported = report.Data.Saved
-			_ = dbc.callInicjujPozyskanie(report.Data)
+			if err = dbc.callInicjujPozyskanie(report.Data); err != nil {
+				if dbc.config.Params.FakePublish {
+					fmt.Println("Fake publish triggered")
+				} else {
+					return err
+				}
+			}
 		}
 		dbc.channels.KjczReport <- report
 	case models.PD_BI_PZRR:
 		report := models.PzrrReport{}
 		report.Save(cd, cps)
 		report.Update(dbc.data.Payload)
-		if err := dbc.callPutReport(report); err != nil {
+		if err = dbc.callPutReport(report); err != nil {
 			return err
 		}
 		report.Data.Saved = time.Now()
@@ -553,14 +559,20 @@ func (dbc *dbConnector) callSaveReport() error {
 		}
 		if dbc.data.Publish {
 			report.Data.Reported = report.Data.Saved
-			_ = dbc.callInicjujPozyskanie(report.Data)
+			if err = dbc.callInicjujPozyskanie(report.Data); err != nil {
+				if dbc.config.Params.FakePublish {
+					fmt.Println("Fake publish triggered")
+				} else {
+					return err
+				}
+			}
 		}
 		dbc.channels.PzrrReport <- report
 	case models.PD_BI_PZFRR:
 		report := models.PzfrrReport{}
 		report.Save(cd, cps)
 		report.Update(dbc.data.Payload)
-		if err := dbc.callPutReport(report); err != nil {
+		if err = dbc.callPutReport(report); err != nil {
 			return err
 		}
 		report.Data.Saved = time.Now()
@@ -569,7 +581,13 @@ func (dbc *dbConnector) callSaveReport() error {
 		}
 		if dbc.data.Publish {
 			report.Data.Reported = report.Data.Saved
-			_ = dbc.callInicjujPozyskanie(report.Data)
+			if err = dbc.callInicjujPozyskanie(report.Data); err != nil {
+				if dbc.config.Params.FakePublish {
+					fmt.Println("Fake publish triggered")
+				} else {
+					return err
+				}
+			}
 		}
 		dbc.channels.PzfrrReport <- report
 	}
