@@ -55,5 +55,33 @@ func FirstDayDate(yearMonth string) (time.Time, error) {
 }
 
 func LastDayDate(yearMonth string) (time.Time, error) {
-	return time.Parse(time.DateOnly, strings.Join([]string{yearMonth, "31"}, "-"))
+	var lastDay = "31"
+	ym := strings.Split(yearMonth, "-")
+	month, _ := strconv.Atoi(ym[1])
+	if isEven(month) {
+		lastDay = "30"
+		if month == 2 {
+			lastDay = "28"
+			year, _ := strconv.Atoi(ym[0])
+			if isLeapYear(year) {
+				lastDay = "29"
+			}
+		}
+	}
+
+	return time.Parse(time.DateOnly, strings.Join([]string{yearMonth, lastDay}, "-"))
+}
+
+func isEven(n int) bool {
+	if n%2 == 0 {
+		return true //is even
+	}
+	return false
+}
+
+func isLeapYear(y int) bool {
+	if y%4 == 0 && y%100 != 0 || y%400 == 0 {
+		return true //is leap
+	}
+	return false
 }

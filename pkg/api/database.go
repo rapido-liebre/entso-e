@@ -259,7 +259,7 @@ func (h handler) saveKjczReport(ctx *fiber.Ctx, publish bool) error {
 	if tStart, err = models.FirstDayDate(body.Data.Start); err != nil {
 		return err
 	}
-	if tEnd, err = models.FirstDayDate(body.Data.End); err != nil {
+	if tEnd, err = models.LastDayDate(body.Data.End); err != nil {
 		return err
 	}
 
