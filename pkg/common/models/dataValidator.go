@@ -58,6 +58,7 @@ func LastDayDate(yearMonth string) (time.Time, error) {
 	var lastDay = "31"
 	ym := strings.Split(yearMonth, "-")
 	month, _ := strconv.Atoi(ym[1])
+
 	if isEven(month) {
 		lastDay = "30"
 		if month == 2 {
@@ -73,8 +74,10 @@ func LastDayDate(yearMonth string) (time.Time, error) {
 }
 
 func isEven(n int) bool {
-	if n%2 == 0 {
-		return true //is even
+	months := []int{2, 4, 6, 9, 11}
+
+	if contains(months, n) {
+		return true //has 30 days
 	}
 	return false
 }
@@ -82,6 +85,15 @@ func isEven(n int) bool {
 func isLeapYear(y int) bool {
 	if y%4 == 0 && y%100 != 0 || y%400 == 0 {
 		return true //is leap
+	}
+	return false
+}
+
+func contains(s []int, n int) bool {
+	for _, v := range s {
+		if v == n {
+			return true
+		}
 	}
 	return false
 }

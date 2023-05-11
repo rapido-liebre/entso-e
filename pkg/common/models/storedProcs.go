@@ -117,7 +117,7 @@ func getResolution(rt ReportType) string {
 
 func GetFetchSourceData(rd ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf("SELECT avg_time, save_time, avg_name, avg_value, avg_status, system_site "+
-		"FROM %s WHERE avg_time >= to_date('%s','yyyy-mm-dd') AND avg_time <= to_date('%s','yyyy-mm-dd') AND avg_name LIKE '%s'", //ORDER BY avg_value
+		"FROM %s WHERE avg_time >= to_date('%s','yyyy-mm-dd') AND avg_time < to_date('%s','yyyy-mm-dd') AND avg_name LIKE '%s'", //ORDER BY avg_value
 		rt.Shortly(), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly), rt.String())
 
 	return rdata //strings.Join([]string{"begin", rdata, "end;"}, " ")

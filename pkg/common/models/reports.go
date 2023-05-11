@@ -155,6 +155,7 @@ func (r *KjczReport) Update(payload any) {
 	r.Data.Creator = p.Data.Creator
 	r.Data.Start, _ = FirstDayDate(p.Data.Start)
 	r.Data.End, _ = LastDayDate(p.Data.End)
+	r.Data.End = r.Data.End.AddDate(0, 0, 1)
 
 	t := GetKjczReportTemplate(r.Data)
 
@@ -231,6 +232,7 @@ func (r *PzrrReport) Update(payload any) {
 	r.Data.Creator = p.Data.Creator
 	r.Data.Start, _ = FirstDayDate(p.Data.Start)
 	r.Data.End, _ = LastDayDate(p.Data.End)
+	r.Data.End = r.Data.End.AddDate(0, 0, 1)
 
 	t := GetPzrrReportTemplate(r.Data)
 
@@ -280,6 +282,7 @@ func (r *PzfrrReport) Update(payload any) {
 	r.Data.Creator = p.Data.Creator
 	r.Data.Start, _ = FirstDayDate(p.Data.Start)
 	r.Data.End, _ = LastDayDate(p.Data.End)
+	r.Data.End = r.Data.End.AddDate(0, 0, 1)
 
 	t := GetPzfrrReportTemplate(r.Data)
 
