@@ -63,7 +63,7 @@ func (dbc *dbConnector) Run(wg *sync.WaitGroup) {
 			if dbc.isRunning { //TODO check if dbConnector is ready
 				if dbc.status == Ready {
 					dbc.status = Processing
-					dbc.data.ReportData.End = dbc.data.ReportData.End.AddDate(0, 0, 1)
+					dbc.data.ReportData.Start = dbc.data.ReportData.Start.AddDate(0, 0, -1)
 					go dbc.connect()
 				}
 			}
