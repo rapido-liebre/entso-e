@@ -448,7 +448,7 @@ func (dbc *dbConnector) getTestReport() error {
 	data := models.TestReportData(dbc.data.ReportType)
 	//data.Start = dbc.data.ReportData.Start
 	//data.End = dbc.data.ReportData.End
-	data.MonthsDuration = dbc.data.ReportData.MonthsDuration
+	data.YearMonths = dbc.data.ReportData.YearMonths
 
 	var reportId int64
 	reportId = 0

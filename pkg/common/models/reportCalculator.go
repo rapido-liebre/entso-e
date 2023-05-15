@@ -24,6 +24,7 @@ func (rc *ReportCalculator) Calculate(lfcAce15 []LfcAce, lfcAce1 []LfcAce) KjczR
 	rc.splitToYearsMonths(lfcAce1, FETCH_1_MIN)
 
 	kjczBody := &KjczBody{}
+	var yearMonths []string
 
 	for year, months := range rc.data15min {
 		position := 1
@@ -31,12 +32,15 @@ func (rc *ReportCalculator) Calculate(lfcAce15 []LfcAce, lfcAce1 []LfcAce) KjczR
 			yearMonth := fmt.Sprintf("%d-%02d", year, month)
 			CalculateReportData15min(measurements, position, kjczBody, yearMonth)
 			CalculateReportData1min(measurements, position, kjczBody, yearMonth)
+			yearMonths = append(yearMonths, yearMonth)
 			position += 1
 		}
 	}
 
 	var report KjczReport
 	report.Data = TestReportData(PR_SO_KJCZ)
+	report.Data.YearMonths = yearMonths
+
 	var secondaryQuantity *int
 	secondaryQuantity = new(int)
 	report.MeanValue = getReportPayload(1, MeanValue.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, kjczBody.MeanValue)

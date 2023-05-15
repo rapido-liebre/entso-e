@@ -179,10 +179,6 @@ func getCommonReportData(ctx *fiber.Ctx) (models.ReportData, error) {
 		Start: dateFrom,
 		End:   dateTo,
 	}
-	rd.MonthsDuration, err = rd.GetDurationInMonths()
-	if err != nil {
-		return models.ReportData{}, err
-	}
 
 	return rd, nil
 }
