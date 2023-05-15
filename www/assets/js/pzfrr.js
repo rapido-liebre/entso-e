@@ -104,6 +104,7 @@ function fillPzfrrForm(respData) {
     let forecastedCapacityDown = respData["ForecastedCapacityDown"];
 
     fillPzfrrData(data)
+    fillPzfrrTableHeaderValues("table_pzfrr_header_row", data);
     fillPzfrrTableValues("table_pzfrr_forecasted_capacity_up", forecastedCapacityUp);
     fillPzfrrTableValues("table_pzfrr_forecasted_capacity_down", forecastedCapacityDown);
 
@@ -130,6 +131,18 @@ function setPzfrrDates(created, saved, published) {
     pzfrr_created.textContent = "Data utworzenia: " + convertDate(created);
     pzfrr_saved.textContent = "Data zapisu: " + convertDate(saved);
     pzfrr_published.textContent = "Data publikacji: " + convertDate(published);
+}
+
+function fillPzfrrTableHeaderValues(row, values) {
+    clearPzfrrTableValues(row);
+
+    let tr = document.getElementById(row);
+    const yearMonths = values["YearMonths"]
+
+    const setHeaderDate = function (value, index, array) {
+        tr.insertCell(index+1).innerHTML = value
+    };
+    yearMonths.forEach(setHeaderDate);
 }
 
 function fillPzfrrTableValues(row, values) {

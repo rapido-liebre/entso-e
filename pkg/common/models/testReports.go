@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -22,18 +23,35 @@ var creators = []string{
 var dateRanges = []string{
 	"2022-01-01",
 	"2022-03-31",
-	"2022-12-01",
-	"2023-12-31",
+	"2022-01-01",
+	"2022-12-31",
 }
 
-func TestReportData(rt ReportType) ReportData {
+func TestReportData(rt ReportType, start time.Time) ReportData {
 	index := 0
-	yearMonths := []string{"2022-10", "2022-11", "2022-12"}
+	year := start.Year()
+	month := start.Month()
+	var yearMonths []string
 
-	if rt != PR_SO_KJCZ {
-		index = 2
-		yearMonths = []string{"2022-03", "2022-06", "2022-09", "2022-12"}
+	if rt == PR_SO_KJCZ {
+		months := []time.Month{month, month + 1, month + 2}
+		for _, m := range months {
+			ym := fmt.Sprintf("%d-%02d", year, m)
+			yearMonths = append(yearMonths, ym)
+		}
+	} else {
+		quaters := []string{"I kw.", "II kw.", "III kw.", "IV kw."}
+		for _, q := range quaters {
+			yearMonths = append(yearMonths, q)
+		}
 	}
+
+	//yearMonths := []string{"2022-10", "2022-11", "2022-12"}
+	//
+	//if rt != PR_SO_KJCZ {
+	//	index = 2
+	//	yearMonths = []string{"2022-03", "2022-06", "2022-09", "2022-12"}
+	//}
 	tStart, _ := time.Parse(time.DateOnly, dateRanges[index])
 	tEnd, _ := time.Parse(time.DateOnly, dateRanges[index+1])
 

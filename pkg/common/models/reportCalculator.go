@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"sort"
 	"time"
 )
 
@@ -36,9 +37,11 @@ func (rc *ReportCalculator) Calculate(lfcAce15 []LfcAce, lfcAce1 []LfcAce) KjczR
 			position += 1
 		}
 	}
+	sort.Strings(yearMonths)
 
 	var report KjczReport
-	report.Data = TestReportData(PR_SO_KJCZ)
+	startDate, _ := time.Parse(time.DateOnly, fmt.Sprintf("%s-01", yearMonths[0]))
+	report.Data = TestReportData(PR_SO_KJCZ, startDate)
 	report.Data.YearMonths = yearMonths
 
 	var secondaryQuantity *int

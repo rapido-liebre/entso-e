@@ -140,6 +140,7 @@ function fillKjczForm(respData) {
     let frceExceeded60PercOfFRRCapacityDown = respData["FRCEExceeded60PercOfFRRCapacityDown"];
 
     fillKjczData(data)
+    fillKjczTableHeaderValues("table_kjcz_header_row", data);
     fillKjczTableValues("table_kjcz_mean_value_row", meanValue);
     fillKjczTableValues("table_kjcz_standard_deviation_row", standardDeviation);
     fillKjczTableValues("table_kjcz_1_percintile_row", percentile1);
@@ -178,6 +179,18 @@ function setKjczDates(created, saved, published) {
     kjcz_created.textContent = "Data utworzenia: " + convertDate(created);
     kjcz_saved.textContent = "Data zapisu: " + convertDate(saved);
     kjcz_published.textContent = "Data publikacji: " + convertDate(published);
+}
+
+function fillKjczTableHeaderValues(row, values) {
+    clearKjczTableValues(row);
+
+    let tr = document.getElementById(row);
+    const yearMonths = values["YearMonths"]
+
+    const setHeaderDate = function (value, index, array) {
+        tr.insertCell(index+1).innerHTML = value
+    };
+    yearMonths.forEach(setHeaderDate);
 }
 
 function fillKjczTableValues(row, values) {

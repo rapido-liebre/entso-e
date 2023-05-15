@@ -63,7 +63,7 @@ func (dbc *dbConnector) Run(wg *sync.WaitGroup) {
 			if dbc.isRunning { //TODO check if dbConnector is ready
 				if dbc.status == Ready {
 					dbc.status = Processing
-					dbc.data.ReportData.Start = dbc.data.ReportData.Start.AddDate(0, 0, -1)
+					dbc.data.ReportData.End = dbc.data.ReportData.End.AddDate(0, 0, 1)
 					go dbc.connect()
 				}
 			}
@@ -327,7 +327,7 @@ func (dbc *dbConnector) testDataAndPublish() error {
 func (dbc *dbConnector) callPutTestReport() (models.ReportData, error) {
 	t := time.Now()
 
-	data := models.TestReportData(dbc.data.ReportType)
+	data := models.TestReportData(dbc.data.ReportType, dbc.data.ReportData.Start)
 
 	var reportId int64
 	statement := models.GetPutReportBody(data, dbc.data.ReportType)
@@ -445,10 +445,12 @@ func (dbc *dbConnector) callInicjujPozyskanie(rdata models.ReportData) error {
 }
 
 func (dbc *dbConnector) getTestReport() error {
-	data := models.TestReportData(dbc.data.ReportType)
+	data := models.TestReportData(dbc.data.ReportType, dbc.data.ReportData.Start)
 	//data.Start = dbc.data.ReportData.Start
 	//data.End = dbc.data.ReportData.End
-	data.YearMonths = dbc.data.ReportData.YearMonths
+	if len(dbc.data.ReportData.YearMonths) > 0 {
+		data.YearMonths = dbc.data.ReportData.YearMonths
+	}
 
 	var reportId int64
 	reportId = 0
