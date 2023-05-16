@@ -27,8 +27,7 @@ var dateRanges = []string{
 	"2022-12-31",
 }
 
-func TestReportData(rt ReportType, start time.Time) ReportData {
-	index := 0
+func calculateYearMonths(rt ReportType, start time.Time) []string {
 	year := start.Year()
 	month := start.Month()
 	var yearMonths []string
@@ -46,12 +45,11 @@ func TestReportData(rt ReportType, start time.Time) ReportData {
 		}
 	}
 
-	//yearMonths := []string{"2022-10", "2022-11", "2022-12"}
-	//
-	//if rt != PR_SO_KJCZ {
-	//	index = 2
-	//	yearMonths = []string{"2022-03", "2022-06", "2022-09", "2022-12"}
-	//}
+	return yearMonths
+}
+
+func TestReportData(rt ReportType, start time.Time) ReportData {
+	index := 0
 	tStart, _ := time.Parse(time.DateOnly, dateRanges[index])
 	tEnd, _ := time.Parse(time.DateOnly, dateRanges[index+1])
 
@@ -63,7 +61,7 @@ func TestReportData(rt ReportType, start time.Time) ReportData {
 		Created:    time.Time{},
 		Saved:      time.Time{},
 		Reported:   time.Time{},
-		YearMonths: yearMonths,
+		YearMonths: calculateYearMonths(rt, start),
 	}
 }
 

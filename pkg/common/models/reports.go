@@ -78,6 +78,7 @@ func (r *KjczReport) Save(cd CursorData, cps []CursorPayload) {
 	r.Data.Created = cd.Created
 	r.Data.Saved = cd.Saved
 	r.Data.Reported = cd.Reported
+	r.Data.YearMonths = calculateYearMonths(PR_SO_KJCZ, r.Data.Start)
 
 	for _, cp := range cps {
 		switch cp.MrId {
@@ -145,7 +146,7 @@ func (r *KjczReport) Update(payload any) {
 	r.Data.Creator = p.Data.Creator
 	r.Data.Start, _ = FirstDayDate(p.Data.Start)
 	r.Data.End, _ = LastDayDate(p.Data.End)
-	r.Data.End = r.Data.End.AddDate(0, 0, 1)
+	//r.Data.End = r.Data.End.AddDate(0, 0, 1)
 
 	t := GetKjczReportTemplate(r.Data)
 
@@ -205,6 +206,7 @@ func (r *PzrrReport) Save(cd CursorData, cps []CursorPayload) {
 	r.Data.Created = cd.Created
 	r.Data.Saved = cd.Saved
 	r.Data.Reported = cd.Reported
+	r.Data.YearMonths = calculateYearMonths(PD_BI_PZRR, r.Data.Start)
 
 	for _, cp := range cps {
 		switch cp.MrId {
@@ -222,7 +224,7 @@ func (r *PzrrReport) Update(payload any) {
 	r.Data.Creator = p.Data.Creator
 	r.Data.Start, _ = FirstDayDate(p.Data.Start)
 	r.Data.End, _ = LastDayDate(p.Data.End)
-	r.Data.End = r.Data.End.AddDate(0, 0, 1)
+	//r.Data.End = r.Data.End.AddDate(0, 0, 1)
 
 	t := GetPzrrReportTemplate(r.Data)
 
@@ -255,6 +257,7 @@ func (r *PzfrrReport) Save(cd CursorData, cps []CursorPayload) {
 	r.Data.Created = cd.Created
 	r.Data.Saved = cd.Saved
 	r.Data.Reported = cd.Reported
+	r.Data.YearMonths = calculateYearMonths(PD_BI_PZFRR, r.Data.Start)
 
 	for _, cp := range cps {
 		switch cp.MrId {
@@ -272,7 +275,7 @@ func (r *PzfrrReport) Update(payload any) {
 	r.Data.Creator = p.Data.Creator
 	r.Data.Start, _ = FirstDayDate(p.Data.Start)
 	r.Data.End, _ = LastDayDate(p.Data.End)
-	r.Data.End = r.Data.End.AddDate(0, 0, 1)
+	//r.Data.End = r.Data.End.AddDate(0, 0, 1)
 
 	t := GetPzfrrReportTemplate(r.Data)
 

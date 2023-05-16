@@ -27,7 +27,7 @@ func ExtractDate(param string, isLastDay bool) (time.Time, error) {
 	if len(yearMonth) != 2 {
 		return time.Time{}, fmt.Errorf("invalid request params %s", params[1])
 	}
-	currentLocation := time.Now().Location()
+
 	year, err := strconv.Atoi(yearMonth[0])
 	if err != nil {
 		return time.Time{}, fmt.Errorf("invalid request params %s err:%s", yearMonth[0], err)
@@ -37,8 +37,11 @@ func ExtractDate(param string, isLastDay bool) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("invalid request params %s err:%s", yearMonth[1], err)
 	}
 
-	firstOfMonth := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, currentLocation)
+	//currentLocation := time.Now().Location()
+	firstOfMonth := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	fmt.Println(firstOfMonth)
 	lastOfMonth := firstOfMonth.AddDate(0, 1, -1)
+	fmt.Println(lastOfMonth)
 
 	//date, err := time.Parse(time.DateOnly, lastOfMonth)
 	//if err != nil {
