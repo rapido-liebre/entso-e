@@ -73,8 +73,8 @@ func (r *KjczReport) GetAllPayloads() (payloads []ReportPayload) {
 func (r *KjczReport) Save(cd CursorData, cps []CursorPayload) {
 	r.Data.Creator = cd.Creator
 	r.Data.Revision = cd.Revision
-	r.Data.Start = cd.Start
-	r.Data.End = cd.End
+	r.Data.Start = cd.Start.UTC()
+	r.Data.End = cd.End.AddDate(0, 0, 1).UTC()
 	r.Data.Created = cd.Created
 	r.Data.Saved = cd.Saved
 	r.Data.Reported = cd.Reported
@@ -125,6 +125,16 @@ func updatePayloads(dest *[]ReportPayload, src []BodyReportPayload) {
 }
 
 func getPayloads(template []ReportPayload, src []BodyReportPayload) (dest []ReportPayload) {
+	getSecQuantity := func(sq *int) *int {
+		if sq == nil {
+			return nil
+		}
+		if *sq == 0 {
+			return nil
+		}
+		return sq
+	}
+
 	for _, s := range src {
 		dest = append(dest, ReportPayload{
 			ReportId:            0,
@@ -134,7 +144,7 @@ func getPayloads(template []ReportPayload, src []BodyReportPayload) (dest []Repo
 			QuantityMeasureUnit: template[0].QuantityMeasureUnit,
 			Position:            s.Position,
 			Quantity:            s.Quantity,
-			SecondaryQuantity:   nil,
+			SecondaryQuantity:   getSecQuantity(template[0].SecondaryQuantity),
 		})
 	}
 	return
@@ -144,8 +154,8 @@ func (r *KjczReport) Update(payload any) {
 	p := payload.(KjczBody)
 
 	r.Data.Creator = p.Data.Creator
-	r.Data.Start, _ = FirstDayDate(p.Data.Start)
-	r.Data.End, _ = LastDayDate(p.Data.End)
+	//r.Data.Start, _ = FirstDayDate(p.Data.Start)
+	//r.Data.End, _ = LastDayDate(p.Data.End)
 	//r.Data.End = r.Data.End.AddDate(0, 0, 1)
 
 	t := GetKjczReportTemplate(r.Data)

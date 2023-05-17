@@ -37,10 +37,13 @@ func ExtractDate(param string, isLastDay bool) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("invalid request params %s err:%s", yearMonth[1], err)
 	}
 
-	//currentLocation := time.Now().Location()
-	firstOfMonth := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	currentLocation := time.Now().Location()
+	firstOfMonth := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, currentLocation)
+	lastOfMonth := firstOfMonth.AddDate(0, 1, 0)
+
+	//firstOfMonth = firstOfMonth.UTC()
+	//lastOfMonth = lastOfMonth.UTC()
 	fmt.Println(firstOfMonth)
-	lastOfMonth := firstOfMonth.AddDate(0, 1, -1)
 	fmt.Println(lastOfMonth)
 
 	//date, err := time.Parse(time.DateOnly, lastOfMonth)
@@ -99,4 +102,11 @@ func contains(s []int, n int) bool {
 		}
 	}
 	return false
+}
+
+func GetSecondaryQuantityString(secondaryQuantity *int) string {
+	if secondaryQuantity == nil {
+		return "null"
+	}
+	return strconv.Itoa(*secondaryQuantity)
 }

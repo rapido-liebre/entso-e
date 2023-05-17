@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -51,7 +50,7 @@ func GetAddPayloadEntryBody(payload ReportPayload) string {
 		"p_position => %d, "+
 		"p_quantity => %.3f, "+
 		"p_secondaryquantity => %s);", payload.ReportId, payload.MrId, payload.BusinessType, payload.FlowDirection,
-		payload.QuantityMeasureUnit, payload.Position, payload.Quantity, getSecondaryQuantityString(payload.SecondaryQuantity))
+		payload.QuantityMeasureUnit, payload.Position, payload.Quantity, GetSecondaryQuantityString(payload.SecondaryQuantity))
 
 	s := strings.Join([]string{"begin", rdata, "end;"}, " ")
 	return s
@@ -61,34 +60,27 @@ func GetAddPayloadEntryBody2(payload ReportPayload) string {
 	rdata := fmt.Sprintf("insert into hl_entsoe_report_payloads("+
 		"reportid, mrid, businesstype, flowdirection, quantitymeasureunit, position, quantity, secondaryquantity) "+
 		"values (%d, %d, '%s', '%s', '%s', %d, %.3f, %s);", payload.ReportId, payload.MrId, payload.BusinessType, payload.FlowDirection,
-		payload.QuantityMeasureUnit, payload.Position, payload.Quantity, getSecondaryQuantityString(payload.SecondaryQuantity))
+		payload.QuantityMeasureUnit, payload.Position, payload.Quantity, GetSecondaryQuantityString(payload.SecondaryQuantity))
 
 	s := strings.Join([]string{"begin", rdata, "end;"}, " ")
 	return s
 }
 
-func getSecondaryQuantityString(secondaryQuantity *int) string {
-	if secondaryQuantity == nil {
-		return "null"
-	}
-	return strconv.Itoa(*secondaryQuantity)
-}
-
 func GetPutReportBody(rd ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf(":1 := hl_entsoe_reports_pk.put_%s_report("+
 		"p_creator => '%s', "+
-		"p_report_start => date '%s', "+
-		"p_report_end   => date '%s');", rt.Shortly(), rd.Creator, rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
+		"p_report_start => timestamp '%s.0000', "+
+		"p_report_end   => timestamp '%s.0000');", rt.Shortly(), rd.Creator, rd.Start.Format(time.DateTime), rd.End.Format(time.DateTime))
 
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
 
 func GetLastReport(rd ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf("hl_entsoe_reports_pk.get_last_%s("+
-		"date '%s', "+
-		"date '%s', "+
+		"timestamp '%s.0000', "+
+		"timestamp '%s.0000', "+
 		":1, "+
-		":2);", rt.Shortly(), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
+		":2);", rt.Shortly(), rd.Start.UTC().Format(time.DateTime), rd.End.AddDate(0, 0, 1).UTC().Format(time.DateTime))
 
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
@@ -117,17 +109,17 @@ func getResolution(rt ReportType) string {
 
 func GetFetchSourceData(rd ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf("SELECT avg_time, save_time, avg_name, avg_value, avg_status, system_site "+
-		"FROM %s WHERE avg_time >= to_date('%s','yyyy-mm-dd') AND avg_time < to_date('%s','yyyy-mm-dd') AND avg_name LIKE '%s'",
-		rt.Shortly(), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly), rt.String())
+		"FROM %s WHERE avg_time >= to_date('%s','yyyy-mm-dd HH24:MI:SS') AND avg_time < to_date('%s','yyyy-mm-dd HH24:MI:SS') AND avg_name LIKE '%s'",
+		rt.Shortly(), rd.Start.Local().Format(time.DateTime), rd.End.Local().Format(time.DateTime), rt.String())
 
-	return rdata //strings.Join([]string{"begin", rdata, "end;"}, " ")
+	return rdata
 }
 
-func GetFetchSourceData1min(rd ReportData) string {
-	rdata := fmt.Sprintf("SELECT avg_value, avg_time FROM avg_1 WHERE avg_time >= '%s' AND avg_time < '%s' "+
-		"AND avg_name = 'RC_AVG1M_LFC_ACE_PL' ORDER BY avg_time;", rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
-
-	return strings.Join([]string{"begin", rdata, "end;"}, " ")
-}
+//func GetFetchSourceData1min(rd ReportData) string {
+//	rdata := fmt.Sprintf("SELECT avg_value, avg_time FROM avg_1 WHERE avg_time >= '%s' AND avg_time < '%s' "+
+//		"AND avg_name = 'RC_AVG1M_LFC_ACE_PL' ORDER BY avg_time;", rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
+//
+//	return strings.Join([]string{"begin", rdata, "end;"}, " ")
+//}
 
 //SELECT avg_value FROM avg_1mon WHERE avg_time = '$bar-01 00:00:00' AND avg_name = 'RC_AVG1MON_LFC_Pp_max';
