@@ -6,7 +6,7 @@ import (
 
 type Reporter interface {
 	GetAllPayloads() []ReportPayload
-	Save(cd CursorData, cps []CursorPayload)
+	SaveCursors(cd CursorData, cps []CursorPayload)
 	//GetTestReport(reportId int64, data ReportData) any
 }
 
@@ -70,14 +70,16 @@ func (r *KjczReport) GetAllPayloads() (payloads []ReportPayload) {
 	return
 }
 
-func (r *KjczReport) Save(cd CursorData, cps []CursorPayload) {
+func (r *KjczReport) SaveCursors(cd CursorData, cps []CursorPayload) {
 	r.Data.Creator = cd.Creator
 	r.Data.Revision = cd.Revision
-	r.Data.Start = cd.Start.UTC()
-	r.Data.End = cd.End.AddDate(0, 0, 1).UTC()
+	r.Data.Start = LocalTimeAsUTC(cd.Start)
+	r.Data.End = LocalTimeAsUTC(cd.End)
 	r.Data.Created = cd.Created
 	r.Data.Saved = cd.Saved
-	r.Data.Reported = cd.Reported
+	if cd.Reported.Compare(time.Date(2001, 1, 1, 0, 0, 0, 0, time.Local)) != 0 {
+		r.Data.Reported = cd.Reported
+	}
 	r.Data.YearMonths = calculateYearMonths(PR_SO_KJCZ, r.Data.Start)
 
 	for _, cp := range cps {
@@ -154,9 +156,10 @@ func (r *KjczReport) Update(payload any) {
 	p := payload.(KjczBody)
 
 	r.Data.Creator = p.Data.Creator
-	//r.Data.Start, _ = FirstDayDate(p.Data.Start)
-	//r.Data.End, _ = LastDayDate(p.Data.End)
-	//r.Data.End = r.Data.End.AddDate(0, 0, 1)
+	if r.Data.Start.IsZero() || r.Data.End.IsZero() {
+		r.Data.Start, r.Data.End, _ = GetReportDates(p.Data.Start, p.Data.End)
+		r.Data.YearMonths = calculateYearMonths(PR_SO_KJCZ, r.Data.Start)
+	}
 
 	t := GetKjczReportTemplate(r.Data)
 
@@ -208,14 +211,16 @@ func (r *PzrrReport) GetAllPayloads() (payloads []ReportPayload) {
 	return
 }
 
-func (r *PzrrReport) Save(cd CursorData, cps []CursorPayload) {
+func (r *PzrrReport) SaveCursors(cd CursorData, cps []CursorPayload) {
 	r.Data.Creator = cd.Creator
 	r.Data.Revision = cd.Revision
-	r.Data.Start = cd.Start
-	r.Data.End = cd.End
+	r.Data.Start = LocalTimeAsUTC(cd.Start)
+	r.Data.End = LocalTimeAsUTC(cd.End)
 	r.Data.Created = cd.Created
 	r.Data.Saved = cd.Saved
-	r.Data.Reported = cd.Reported
+	if cd.Reported.Compare(time.Date(2001, 1, 1, 0, 0, 0, 0, time.Local)) != 0 {
+		r.Data.Reported = cd.Reported
+	}
 	r.Data.YearMonths = calculateYearMonths(PD_BI_PZRR, r.Data.Start)
 
 	for _, cp := range cps {
@@ -232,9 +237,10 @@ func (r *PzrrReport) Update(payload any) {
 	p := payload.(PzrrBody)
 
 	r.Data.Creator = p.Data.Creator
-	r.Data.Start, _ = FirstDayDate(p.Data.Start)
-	r.Data.End, _ = LastDayDate(p.Data.End)
-	//r.Data.End = r.Data.End.AddDate(0, 0, 1)
+	if r.Data.Start.IsZero() || r.Data.End.IsZero() {
+		r.Data.Start, r.Data.End, _ = GetReportDates(p.Data.Start, p.Data.End)
+		r.Data.YearMonths = calculateYearMonths(PD_BI_PZRR, r.Data.Start)
+	}
 
 	t := GetPzrrReportTemplate(r.Data)
 
@@ -259,14 +265,16 @@ func (r *PzfrrReport) GetAllPayloads() (payloads []ReportPayload) {
 	return
 }
 
-func (r *PzfrrReport) Save(cd CursorData, cps []CursorPayload) {
+func (r *PzfrrReport) SaveCursors(cd CursorData, cps []CursorPayload) {
 	r.Data.Creator = cd.Creator
 	r.Data.Revision = cd.Revision
-	r.Data.Start = cd.Start
-	r.Data.End = cd.End
+	r.Data.Start = LocalTimeAsUTC(cd.Start)
+	r.Data.End = LocalTimeAsUTC(cd.End)
 	r.Data.Created = cd.Created
 	r.Data.Saved = cd.Saved
-	r.Data.Reported = cd.Reported
+	if cd.Reported.Compare(time.Date(2001, 1, 1, 0, 0, 0, 0, time.Local)) != 0 {
+		r.Data.Reported = cd.Reported
+	}
 	r.Data.YearMonths = calculateYearMonths(PD_BI_PZFRR, r.Data.Start)
 
 	for _, cp := range cps {
@@ -283,9 +291,10 @@ func (r *PzfrrReport) Update(payload any) {
 	p := payload.(PzfrrBody)
 
 	r.Data.Creator = p.Data.Creator
-	r.Data.Start, _ = FirstDayDate(p.Data.Start)
-	r.Data.End, _ = LastDayDate(p.Data.End)
-	//r.Data.End = r.Data.End.AddDate(0, 0, 1)
+	if r.Data.Start.IsZero() || r.Data.End.IsZero() {
+		r.Data.Start, r.Data.End, _ = GetReportDates(p.Data.Start, p.Data.End)
+		r.Data.YearMonths = calculateYearMonths(PD_BI_PZFRR, r.Data.Start)
+	}
 
 	t := GetPzfrrReportTemplate(r.Data)
 

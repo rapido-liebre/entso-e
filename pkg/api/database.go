@@ -252,10 +252,7 @@ func (h handler) saveKjczReport(ctx *fiber.Ctx, publish bool) error {
 	if err = ctx.BodyParser(&body); err != nil {
 		return err
 	}
-	if tStart, err = models.FirstDayDate(body.Data.Start); err != nil {
-		return err
-	}
-	if tEnd, err = models.LastDayDate(body.Data.End); err != nil {
+	if tStart, tEnd, err = models.GetReportDates(body.Data.Start, body.Data.End); err != nil {
 		return err
 	}
 
@@ -304,10 +301,7 @@ func (h handler) savePzrrReport(ctx *fiber.Ctx, publish bool) error {
 	if err = ctx.BodyParser(&body); err != nil {
 		return err
 	}
-	if tStart, err = models.FirstDayDate(body.Data.Start); err != nil {
-		return err
-	}
-	if tEnd, err = models.FirstDayDate(body.Data.End); err != nil {
+	if tStart, tEnd, err = models.GetReportDates(body.Data.Start, body.Data.End); err != nil {
 		return err
 	}
 
@@ -356,10 +350,7 @@ func (h handler) savePzfrrReport(ctx *fiber.Ctx, publish bool) error {
 	if err = ctx.BodyParser(&body); err != nil {
 		return err
 	}
-	if tStart, err = models.FirstDayDate(body.Data.Start); err != nil {
-		return err
-	}
-	if tEnd, err = models.FirstDayDate(body.Data.End); err != nil {
+	if tStart, tEnd, err = models.GetReportDates(body.Data.Start, body.Data.End); err != nil {
 		return err
 	}
 

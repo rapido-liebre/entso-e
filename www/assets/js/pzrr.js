@@ -142,7 +142,9 @@ function fillPzrrTableHeaderValues(row, values) {
     const setHeaderDate = function (value, index, array) {
         tr.insertCell(index+1).innerHTML = value
     };
-    yearMonths.forEach(setHeaderDate);
+    if (yearMonths != null) {
+        yearMonths.forEach(setHeaderDate);
+    }
 }
 
 function fillPzrrTableValues(row, values) {

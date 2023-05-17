@@ -70,7 +70,7 @@ func GetPutReportBody(rd ReportData, rt ReportType) string {
 	rdata := fmt.Sprintf(":1 := hl_entsoe_reports_pk.put_%s_report("+
 		"p_creator => '%s', "+
 		"p_report_start => timestamp '%s.0000', "+
-		"p_report_end   => timestamp '%s.0000');", rt.Shortly(), rd.Creator, rd.Start.Format(time.DateTime), rd.End.Format(time.DateTime))
+		"p_report_end   => timestamp '%s.0000');", rt.Shortly(), rd.Creator, rd.Start.UTC().Format(time.DateTime), rd.End.UTC().Format(time.DateTime))
 
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
@@ -80,7 +80,7 @@ func GetLastReport(rd ReportData, rt ReportType) string {
 		"timestamp '%s.0000', "+
 		"timestamp '%s.0000', "+
 		":1, "+
-		":2);", rt.Shortly(), rd.Start.UTC().Format(time.DateTime), rd.End.AddDate(0, 0, 1).UTC().Format(time.DateTime))
+		":2);", rt.Shortly(), rd.Start.UTC().Format(time.DateTime), rd.End.UTC().Format(time.DateTime))
 
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }

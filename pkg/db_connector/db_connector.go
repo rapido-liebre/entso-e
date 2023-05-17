@@ -63,7 +63,6 @@ func (dbc *dbConnector) Run(wg *sync.WaitGroup) {
 			if dbc.isRunning { //TODO check if dbConnector is ready
 				if dbc.status == Ready {
 					dbc.status = Processing
-					//dbc.data.ReportData.End = dbc.data.ReportData.End.AddDate(0, 0, 1)
 					go dbc.connect()
 				}
 			}
@@ -529,11 +528,15 @@ func (dbc *dbConnector) callSaveReport() error {
 	switch dbc.data.ReportType {
 	case models.PR_SO_KJCZ:
 		report := models.KjczReport{}
-		report.Save(cd, cps)
+		if cd.IsValid() {
+			report.SaveCursors(cd, cps)
+		}
 		report.Update(dbc.data.Payload)
 		if err = dbc.callPutReport(report); err != nil {
 			return err
 		}
+		//sync revision to corresponding in DB
+		report.Data.Revision += 1
 		report.Data.Saved = time.Now()
 		if report.Data.Created.IsZero() {
 			report.Data.Created = report.Data.Saved
@@ -551,11 +554,15 @@ func (dbc *dbConnector) callSaveReport() error {
 		dbc.channels.KjczReport <- report
 	case models.PD_BI_PZRR:
 		report := models.PzrrReport{}
-		report.Save(cd, cps)
+		if cd.IsValid() {
+			report.SaveCursors(cd, cps)
+		}
 		report.Update(dbc.data.Payload)
 		if err = dbc.callPutReport(report); err != nil {
 			return err
 		}
+		//sync revision to corresponding in DB
+		report.Data.Revision += 1
 		report.Data.Saved = time.Now()
 		if report.Data.Created.IsZero() {
 			report.Data.Created = report.Data.Saved
@@ -573,11 +580,15 @@ func (dbc *dbConnector) callSaveReport() error {
 		dbc.channels.PzrrReport <- report
 	case models.PD_BI_PZFRR:
 		report := models.PzfrrReport{}
-		report.Save(cd, cps)
+		if cd.IsValid() {
+			report.SaveCursors(cd, cps)
+		}
 		report.Update(dbc.data.Payload)
 		if err = dbc.callPutReport(report); err != nil {
 			return err
 		}
+		//sync revision to corresponding in DB
+		report.Data.Revision += 1
 		report.Data.Saved = time.Now()
 		if report.Data.Created.IsZero() {
 			report.Data.Created = report.Data.Saved
@@ -657,15 +668,21 @@ func (dbc *dbConnector) callGetReport() error {
 	switch dbc.data.ReportType {
 	case models.PR_SO_KJCZ:
 		report := models.KjczReport{}
-		report.Save(cd, cps)
+		if cd.IsValid() {
+			report.SaveCursors(cd, cps)
+		}
 		dbc.channels.KjczReport <- report
 	case models.PD_BI_PZRR:
 		report := models.PzrrReport{}
-		report.Save(cd, cps)
+		if cd.IsValid() {
+			report.SaveCursors(cd, cps)
+		}
 		dbc.channels.PzrrReport <- report
 	case models.PD_BI_PZFRR:
 		report := models.PzfrrReport{}
-		report.Save(cd, cps)
+		if cd.IsValid() {
+			report.SaveCursors(cd, cps)
+		}
 		dbc.channels.PzfrrReport <- report
 	}
 

@@ -13,15 +13,18 @@ type CursorData struct {
 	Reported   time.Time
 }
 
-//func (cd CursorData) SaveToKjczReport(report *KjczReport) {
-//	report.Data.Creator = cd.Creator
-//	report.Data.Revision = cd.Revision
-//	report.Data.Start = cd.Start
-//	report.Data.End = cd.End
-//	report.Data.Created = cd.Created
-//	report.Data.Saved = cd.Saved
-//	report.Data.Reported = cd.Reported
-//}
+func (cd CursorData) IsValid() bool {
+	if len(cd.Creator) == 0 {
+		return false
+	}
+	if cd.Start.IsZero() {
+		return false
+	}
+	if cd.End.IsZero() {
+		return false
+	}
+	return true
+}
 
 type CursorPayload struct {
 	MrId                int64

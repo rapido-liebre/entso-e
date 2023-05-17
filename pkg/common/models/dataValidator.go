@@ -23,60 +23,84 @@ func ExtractDate(param string, isLastDay bool) (time.Time, error) {
 	if len(params) != 2 {
 		return time.Time{}, fmt.Errorf("invalid request params %s", param)
 	}
-	yearMonth := strings.Split(params[1], "-")
-	if len(yearMonth) != 2 {
-		return time.Time{}, fmt.Errorf("invalid request params %s", params[1])
-	}
-
-	year, err := strconv.Atoi(yearMonth[0])
+	year, month, err := splitYearMonth(params[1])
 	if err != nil {
-		return time.Time{}, fmt.Errorf("invalid request params %s err:%s", yearMonth[0], err)
-	}
-	month, err := strconv.Atoi(yearMonth[1])
-	if err != nil {
-		return time.Time{}, fmt.Errorf("invalid request params %s err:%s", yearMonth[1], err)
+		return time.Time{}, err
 	}
 
 	currentLocation := time.Now().Location()
 	firstOfMonth := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, currentLocation)
 	lastOfMonth := firstOfMonth.AddDate(0, 1, 0)
-
-	//firstOfMonth = firstOfMonth.UTC()
-	//lastOfMonth = lastOfMonth.UTC()
 	fmt.Println(firstOfMonth)
 	fmt.Println(lastOfMonth)
 
-	//date, err := time.Parse(time.DateOnly, lastOfMonth)
-	//if err != nil {
-	//	return time.Time{}, err
-	//}
 	if isLastDay {
 		return lastOfMonth, nil
 	}
 	return firstOfMonth, nil
 }
 
-func FirstDayDate(yearMonth string) (time.Time, error) {
-	return time.Parse(time.DateOnly, strings.Join([]string{yearMonth, "01"}, "-"))
+func LocalTimeAsUTC(local time.Time) time.Time {
+	_, offset := local.Zone()
+	fmt.Println(offset)
+
+	return local.Add(time.Second * time.Duration(offset))
 }
 
-func LastDayDate(yearMonth string) (time.Time, error) {
-	var lastDay = "31"
-	ym := strings.Split(yearMonth, "-")
-	month, _ := strconv.Atoi(ym[1])
+func GetReportDates(startDate, endDate string) (startDt, endDt time.Time, err error) {
+	if startDt, err = firstDayDate(startDate); err != nil {
+		return time.Time{}, time.Time{}, err
+	}
+	if endDt, err = lastDayDate(endDate); err != nil {
+		return time.Time{}, time.Time{}, err
+	}
+	//extend end date for 1 day forward
+	endDt = endDt.AddDate(0, 0, 1)
+	return
+}
 
+func firstDayDate(yearMonth string) (time.Time, error) {
+	year, month, err := splitYearMonth(yearMonth)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	dt := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Now().Location())
+	return dt, nil
+}
+
+func lastDayDate(yearMonth string) (time.Time, error) {
+	year, month, err := splitYearMonth(yearMonth)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	var lastDay = 31
 	if isEven(month) {
-		lastDay = "30"
+		lastDay = 30
 		if month == 2 {
-			lastDay = "28"
-			year, _ := strconv.Atoi(ym[0])
+			lastDay = 28
 			if isLeapYear(year) {
-				lastDay = "29"
+				lastDay = 29
 			}
 		}
 	}
+	dt := time.Date(year, time.Month(month), lastDay, 0, 0, 0, 0, time.Now().Location())
+	return dt, nil
+}
 
-	return time.Parse(time.DateOnly, strings.Join([]string{yearMonth, lastDay}, "-"))
+func splitYearMonth(yearMonth string) (year, month int, err error) {
+	ym := strings.Split(yearMonth, "-")
+	if len(ym) != 2 {
+		return 0, 0, fmt.Errorf("invalid yearMonth param %s", yearMonth)
+	}
+	if year, err = strconv.Atoi(ym[0]); err != nil {
+		return 0, 0, fmt.Errorf("invalid year %s err:%s", ym[0], err)
+	}
+	if month, err = strconv.Atoi(ym[1]); err != nil {
+		return 0, 0, fmt.Errorf("invalid month %s err:%s", ym[1], err)
+	}
+	return year, month, nil
 }
 
 func isEven(n int) bool {
