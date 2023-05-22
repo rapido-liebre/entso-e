@@ -54,7 +54,7 @@ function saveKjczReport() {
     xhr.send(getJsonFromKjczForm());
 }
 
-function saveAndPublishKjczReport() {
+function publishKjczReport() {
     const xhr = new XMLHttpRequest();
     const url='http://'+ host + ':' + port + '/api/save_kjcz_publish';
     xhr.open("POST", url);
@@ -71,7 +71,11 @@ function saveAndPublishKjczReport() {
     xhr.send(getJsonFromKjczForm());
 }
 
-function generateKjczReport() {
+function exportKjczReport() {
+
+}
+
+function createNewKjczReport() {
     let dateFrom = document.getElementById("kjcz_date_from").value;
     let dateTo = document.getElementById("kjcz_date_to").value;
 

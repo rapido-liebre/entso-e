@@ -30,7 +30,7 @@ function savePzfrrReport() {
     xhr.send(getJsonFromPzfrrForm());
 }
 
-function saveAndPublishPzfrrReport() {
+function publishPzfrrReport() {
     const xhr = new XMLHttpRequest();
     const url='http://'+ host + ':' + port + '/api/save_pzfrr_publish';
     xhr.open("POST", url);
@@ -46,8 +46,11 @@ function saveAndPublishPzfrrReport() {
 
     xhr.send(getJsonFromPzfrrForm());
 }
+function exportPzfrrReport() {
 
-function generatePzfrrReport() {
+}
+
+function createNewPzfrrReport() {
     let dateFrom = document.getElementById("pzfrr_date_from").value;
     let dateTo = document.getElementById("pzfrr_date_to").value;
 
