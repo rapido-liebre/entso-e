@@ -176,7 +176,7 @@
                                                     <legend id="pzrr-published" style="font-size: 12px;">Opublikowano:</legend><button class="btn btn-primary" id="pzrr_publish" type="button" style="margin-right: 30px;" onclick="publishPzrrReport()">Publikuj</button>
                                                 </div>
                                                 <div class="col col-2" style="display: inline-grid;">
-                                                    <legend id="pzfrr-published-3" style="font-size: 12px;">.</legend><button class="btn btn-primary" id="pzrr_export" type="button" style="margin-right: 30px;" onclick="exportPzrrReport()">Eksportuj</button>
+                                                    <legend id="pzrr-exported" style="font-size: 12px;">.</legend><button class="btn btn-primary" id="pzrr_export" type="button" style="margin-right: 30px;" onclick="exportPzrrReport()">Eksportuj</button>
                                                 </div>
                                             </div>
                                             <div class="row" style="margin-bottom: 12px;">
@@ -201,26 +201,26 @@
                                                 <div class="col col-2">
                                                     <fieldset>
                                                         <legend style="font-size: 12px;">Rodzaj</legend>
-                                                        <div class="form-check" id="pzfrr_kind-1"><input class="form-check-input" type="radio" id="formCheck-2" checked=""><label class="form-check-label" for="formCheck-2">ace pl</label></div>
+                                                        <div class="form-check" id="pzrr_kind"><input class="form-check-input" type="radio" id="formCheck-2" checked=""><label class="form-check-label" for="formCheck-2">ace pl</label></div>
                                                     </fieldset>
                                                 </div>
                                             </div>
                                             <div class="row" style="margin-bottom: 12px;">
                                                 <div class="col" data-editable="true">
-                                                    <div class="table-responsive table-bordered" id="table_pzfrr-1">
+                                                    <div class="table-responsive table-bordered" id="table_pzrr">
                                                         <table class="table">
-                                                            <thead id="table_pzfrr_header-1">
-                                                                <tr id="table_pzfrr_header_row-1">
+                                                            <thead id="table_pzrr_header">
+                                                                <tr id="table_pzrr_header_row">
                                                                     <th>Quaters</th>
                                                                     <th class="text-nowrap"><input class="border-0 shadow-none" type="text" style="text-align: center;height: 30px;font-weight: bold;background: var(--bs-table-bg);width: 180px;" value="I" disabled="" readonly=""><input class="border-0 shadow-none" type="text" style="text-align: center;height: 30px;font-weight: bold;background: var(--bs-table-bg);width: 180px;" value="II" disabled="" readonly=""><input class="border-0 shadow-none" type="text" style="text-align: center;height: 30px;font-weight: bold;background: var(--bs-table-bg);width: 180px;" value="III" disabled="" readonly=""><input class="border-0 shadow-none" type="text" style="text-align: center;height: 30px;font-weight: bold;background: var(--bs-table-bg);width: 180px;" value="IV" disabled="" readonly=""></th>
                                                                 </tr>
                                                             </thead>
-                                                            <tbody id="table_pzfrr_body-1">
-                                                                <tr id="table_pzfrr_forecasted_capacity_up-1">
+                                                            <tbody id="table_pzrr_body">
+                                                                <tr id="table_pzrr_forecasted_capacity_up">
                                                                     <th class="text-truncate">Forecasted Capacity Up</th>
                                                                     <td class="text-nowrap"><input class="border-0 shadow" type="text" id="pzrr_forecast_cap_up_1" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;"><input class="border-0 shadow" type="text" id="pzrr_forecast_cap_up_2" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;background: var(--bs-table-bg);"><input class="border-0 shadow" type="text" id="pzrr_forecast_cap_up_3" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;background: var(--bs-table-bg);"><input class="border-0 shadow" type="text" id="pzrr_forecast_cap_up_4" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;background: var(--bs-table-bg);"></td>
                                                                 </tr>
-                                                                <tr id="table_pzfrr_forecasted_capacity_down-1">
+                                                                <tr id="table_pzrr_forecasted_capacity_down">
                                                                     <th class="text-truncate">Forecasted Capacity Down</th>
                                                                     <td class="text-nowrap"><input class="border-0 shadow" type="text" id="pzrr_forecast_cap_down_1" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;background: var(--bs-table-bg);"><input class="border-0 shadow" type="text" id="pzrr_forecast_cap_down_2" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;background: var(--bs-table-bg);"><input class="border-0 shadow" type="text" id="pzrr_forecast_cap_down_3" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;background: var(--bs-table-bg);"><input class="border-0 shadow" type="text" id="pzrr_forecast_cap_down_4" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;background: var(--bs-table-bg);"></td>
                                                                 </tr>
@@ -252,7 +252,7 @@
                                                     <legend id="pzfrr-published" style="font-size: 12px;">Opublikowano::</legend><button class="btn btn-primary" id="pzfrr_publish" type="button" style="margin-right: 30px;" onclick="publishPzfrrReport()">Publikuj</button>
                                                 </div>
                                                 <div class="col col-2" style="display: inline-grid;">
-                                                    <legend id="pzfrr-published-1" style="font-size: 12px;">.</legend><button class="btn btn-primary" id="pzfrr_export" type="button" style="margin-right: 30px;" onclick="exportPzfrrReport()">Eksportuj</button>
+                                                    <legend id="pzfrr-exported" style="font-size: 12px;">.</legend><button class="btn btn-primary" id="pzfrr_export" type="button" style="margin-right: 30px;" onclick="exportPzfrrReport()">Eksportuj</button>
                                                 </div>
                                             </div>
                                             <div class="row" style="margin-bottom: 12px;">
