@@ -1,6 +1,7 @@
 package models
 
 import (
+	"reflect"
 	"time"
 )
 
@@ -49,6 +50,30 @@ type KjczReport struct {
 	FRCEOutsideLevel2RangeDown          []ReportPayload
 	FRCEExceeded60PercOfFRRCapacityUp   []ReportPayload
 	FRCEExceeded60PercOfFRRCapacityDown []ReportPayload
+}
+
+func payloadsAreEqual(payload1, payload2 []ReportPayload) bool {
+	if len(payload1) != len(payload2) {
+		return false
+	}
+
+	for _, p1 := range payload1 {
+		for _, p2 := range payload2 {
+			if p2.Position != p1.Position {
+				continue
+			}
+			p1.ReportId = 0
+			p2.ReportId = 0
+			p1.SecondaryQuantity = nil
+			p2.SecondaryQuantity = nil
+
+			if !reflect.DeepEqual(p1, p2) {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 func (r *KjczReport) GetAllPayloads() (payloads []ReportPayload) {
@@ -152,7 +177,7 @@ func getPayloads(template []ReportPayload, src []BodyReportPayload) (dest []Repo
 	return
 }
 
-func (r *KjczReport) Update(payload any) {
+func (r *KjczReport) Update(payload any) (areChanges bool) {
 	p := payload.(KjczBody)
 
 	r.Data.Creator = p.Data.Creator
@@ -192,6 +217,8 @@ func (r *KjczReport) Update(payload any) {
 	//updatePayloads(&r.FRCEOutsideLevel2RangeDown, p.FrceOutsideLevel2RangeDown)
 	//updatePayloads(&r.FRCEExceeded60PercOfFRRCapacityUp, p.FrceExceeded60PercOfFRRCapacityUp)
 	//updatePayloads(&r.FRCEExceeded60PercOfFRRCapacityDown, p.FrceExceeded60PercOfFRRCapacityDown)
+
+	return
 }
 
 //func (r KjczReport) GetTestReport(reportId int64, data ReportData) any {
@@ -233,19 +260,39 @@ func (r *PzrrReport) SaveCursors(cd CursorData, cps []CursorPayload) {
 	}
 }
 
-func (r *PzrrReport) Update(payload any) {
+func (r *PzrrReport) Update(payload any) (areChanges bool) {
 	p := payload.(PzrrBody)
 
-	r.Data.Creator = p.Data.Creator
-	if r.Data.Start.IsZero() || r.Data.End.IsZero() {
-		r.Data.Start, r.Data.End, _ = GetReportDates(p.Data.Start, p.Data.End)
-		r.Data.YearMonths = calculateYearMonths(PD_BI_PZRR, r.Data.Start)
+	if r.Data.Creator != p.Data.Creator {
+		r.Data.Creator = p.Data.Creator
+		areChanges = true
 	}
+
+	//if r.Data.Start.IsZero() || r.Data.End.IsZero() {
+	dateStart, dateEnd, _ := GetReportDates(p.Data.Start, p.Data.End)
+	if r.Data.Start != dateStart || r.Data.End != dateEnd {
+		r.Data.Start = dateStart
+		r.Data.End = dateEnd
+		areChanges = true
+	}
+	r.Data.YearMonths = calculateYearMonths(PD_BI_PZRR, r.Data.Start)
+	//}
 
 	t := GetPzrrReportTemplate(r.Data)
 
-	r.ForecastedCapacityUp = getPayloads(t.ForecastedCapacityUp, p.ForecastedCapacityUp)
-	r.ForecastedCapacityDown = getPayloads(t.ForecastedCapacityDown, p.ForecastedCapacityDown)
+	forecastedCapacityUp := getPayloads(t.ForecastedCapacityUp, p.ForecastedCapacityUp)
+	if !payloadsAreEqual(r.ForecastedCapacityUp, forecastedCapacityUp) {
+		areChanges = true
+	}
+	r.ForecastedCapacityUp = forecastedCapacityUp
+
+	forecastedCapacityDown := getPayloads(t.ForecastedCapacityDown, p.ForecastedCapacityDown)
+	if !payloadsAreEqual(r.ForecastedCapacityDown, forecastedCapacityDown) {
+		areChanges = true
+	}
+	r.ForecastedCapacityDown = forecastedCapacityDown
+
+	return
 }
 
 //func (r PzrrReport) GetTestReport(reportId int64, data ReportData) any {
@@ -287,19 +334,39 @@ func (r *PzfrrReport) SaveCursors(cd CursorData, cps []CursorPayload) {
 	}
 }
 
-func (r *PzfrrReport) Update(payload any) {
+func (r *PzfrrReport) Update(payload any) (areChanges bool) {
 	p := payload.(PzfrrBody)
 
-	r.Data.Creator = p.Data.Creator
+	if r.Data.Creator != p.Data.Creator {
+		r.Data.Creator = p.Data.Creator
+		areChanges = true
+	}
+
 	if r.Data.Start.IsZero() || r.Data.End.IsZero() {
-		r.Data.Start, r.Data.End, _ = GetReportDates(p.Data.Start, p.Data.End)
+		dateStart, dateEnd, _ := GetReportDates(p.Data.Start, p.Data.End)
+		if r.Data.Start != dateStart || r.Data.End != dateEnd {
+			r.Data.Start = dateStart
+			r.Data.End = dateEnd
+			areChanges = true
+		}
 		r.Data.YearMonths = calculateYearMonths(PD_BI_PZFRR, r.Data.Start)
 	}
 
-	t := GetPzfrrReportTemplate(r.Data)
+	t := GetPzrrReportTemplate(r.Data)
 
-	r.ForecastedCapacityUp = getPayloads(t.ForecastedCapacityUp, p.ForecastedCapacityUp)
-	r.ForecastedCapacityDown = getPayloads(t.ForecastedCapacityDown, p.ForecastedCapacityDown)
+	forecastedCapacityUp := getPayloads(t.ForecastedCapacityUp, p.ForecastedCapacityUp)
+	if !payloadsAreEqual(r.ForecastedCapacityUp, forecastedCapacityUp) {
+		areChanges = true
+	}
+	r.ForecastedCapacityUp = forecastedCapacityUp
+
+	forecastedCapacityDown := getPayloads(t.ForecastedCapacityDown, p.ForecastedCapacityDown)
+	if !payloadsAreEqual(r.ForecastedCapacityDown, forecastedCapacityDown) {
+		areChanges = true
+	}
+	r.ForecastedCapacityDown = forecastedCapacityDown
+
+	return
 }
 
 //func (r PzfrrReport) GetTestReport(reportId int64, data ReportData) any {

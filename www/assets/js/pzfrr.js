@@ -1,16 +1,16 @@
 window.addEventListener('DOMContentLoaded', (event) => {
     const page = window.location.pathname.substring(1);
     console.log('DOM fully loaded and parsed, page: ', page);
-    switch (page) {
-        case "index.html":
-            createPzfrrTable(); break;
-        case "files.html":
-            setFilesForm(); break;
-        case "configuration.html":
-            setConfigurationForm(); break;
-        default:
-            break;
-    }
+    // switch (page) {
+    //     case "index.html":
+    //         createPzfrrTable(); break;
+    //     case "files.html":
+    //         setFilesForm(); break;
+    //     case "configuration.html":
+    //         setConfigurationForm(); break;
+    //     default:
+    //         break;
+    // }
 });
 
 function savePzfrrReport() {
@@ -24,7 +24,10 @@ function savePzfrrReport() {
         if (xhr.readyState === 4) {
             console.log(xhr.status);
             // console.log(xhr.responseText);
-            fillPzfrrForm(JSON.parse(xhr.responseText))
+            if (xhr.status == 200) {
+                clearPzfrrTableValues()
+                fillPzfrrForm(JSON.parse(xhr.responseText))
+            }
         }};
 
     xhr.send(getJsonFromPzfrrForm());
@@ -46,36 +49,21 @@ function publishPzfrrReport() {
 
     xhr.send(getJsonFromPzfrrForm());
 }
+
 function exportPzfrrReport() {
 
 }
 
 function createNewPzfrrReport() {
-    let dateFrom = document.getElementById("pzfrr_date_from").value;
-    let dateTo = document.getElementById("pzfrr_date_to").value;
-
-    console.log("Get PZFRR report within dates: ", dateFrom, dateTo);
-
-    const get = async (url, params) => {
-        const response = await fetch(url + '?' + new URLSearchParams(params))
-        const respData = await response.json()
-
-        return respData
-    }
-
-    // Calling it with then:
-    get('http://'+ host + ':' + port + '/api/test_pzfrr', {
-        dateFrom: dateFrom,
-        dateTo: dateTo,
-    }).then(respData => {
-        console.log(respData)
-        fillPzfrrForm(respData)
-    })
+    clearPzfrrTableValues();
 }
 
 function getPzfrrReport() {
-    let dateFrom = document.getElementById("pzfrr_date_from").value;
-    let dateTo = document.getElementById("pzfrr_date_to").value;
+    clearPzfrrTableValues();
+
+    const year = document.getElementById("pzfrr_year").value;
+    const dateFrom = `${year}-01`;
+    const dateTo = `${year}-12`;
 
     console.log("Get PZFRR report within dates: ", dateFrom, dateTo);
 
@@ -107,7 +95,6 @@ function fillPzfrrForm(respData) {
     let forecastedCapacityDown = respData["ForecastedCapacityDown"];
 
     fillPzfrrData(data)
-    fillPzfrrTableHeaderValues("table_pzfrr_header_row", data);
     fillPzfrrTableValues("table_pzfrr_forecasted_capacity_up", forecastedCapacityUp);
     fillPzfrrTableValues("table_pzfrr_forecasted_capacity_down", forecastedCapacityDown);
 
@@ -131,32 +118,18 @@ function setPzfrrDates(created, saved, published) {
     let pzfrr_saved = document.getElementById("pzfrr-saved");
     let pzfrr_published = document.getElementById("pzfrr-published");
 
-    pzfrr_created.textContent = "Data utworzenia: " + convertDate(created);
-    pzfrr_saved.textContent = "Data zapisu: " + convertDate(saved);
-    pzfrr_published.textContent = "Data publikacji: " + convertDate(published);
-}
-
-function fillPzfrrTableHeaderValues(row, values) {
-    clearPzfrrTableValues(row);
-
-    let tr = document.getElementById(row);
-    const yearMonths = values["YearMonths"]
-
-    const setHeaderDate = function (value, index, array) {
-        tr.insertCell(index+1).innerHTML = value
-    };
-    if (yearMonths != null) {
-        yearMonths.forEach(setHeaderDate);
-    }
+    pzfrr_created.textContent = "Utworzono: " + convertDate(created);
+    pzfrr_saved.textContent = "Zapisano: " + convertDate(saved);
+    pzfrr_published.textContent = "Opublikowano: " + convertDate(published);
 }
 
 function fillPzfrrTableValues(row, values) {
-    clearPzfrrTableValues(row)
+    let flowDirection = pzfrrGetFlowDirection(row)
 
-    let tr = document.getElementById(row);
     for (let i in values) {
-        const index = values[i]["position"];
-        tr.insertCell(index).innerHTML = values[i]["Quantity"];
+        const index = values[i]["Position"];
+        let cell = document.getElementById("pzfrr_forecast_cap_" + flowDirection + "_" + index);
+        cell.value = values[i]["Quantity"];
     }
 }
 
@@ -177,41 +150,56 @@ function getJsonFromPzfrrForm() {
 
 function pzfrrDataToJson() {
     const author = document.getElementById("pzfrr_author").value;
-    // const rev = document.getElementById("pzrr_rev").innerHTML;
-    const date_from = document.getElementById("pzfrr_date_from").value;
-    const date_to = document.getElementById("pzfrr_date_to").value;
+    // const rev = document.getElementById("pzfrr_rev").innerHTML;
+
+    const year = document.getElementById("pzfrr_year").value;
+    const dateFrom = `${year}-01`;
+    const dateTo = `${year}-12`;
 
     let data = {};
     data.creator = author;
-    data.start = date_from;
-    data.end = date_to;
+    data.start = dateFrom;
+    data.end = dateTo;
 
     return data;
 }
 
-function pzfrrTableValuesToJson(row) {
-    let tr = document.getElementById(row);
-    let array = [];
+function pzfrrGetFlowDirection(row) {
+    switch (row) {
+        case "table_pzfrr_forecasted_capacity_up":
+            return "up";
+        case "table_pzfrr_forecasted_capacity_down":
+            return "down";
+    }
+}
 
-    for (let i in tr.cells) {
-        if (i === 0) continue;
-        // console.log(tr.cells[i].innerHTML);
+function pzfrrTableValuesToJson(row) {
+    let array = [];
+    let flowDirection = pzfrrGetFlowDirection(row)
+
+    for (let i = 1; i <= 4; i++) {
+        let cell = document.getElementById("pzfrr_forecast_cap_" + flowDirection + "_" + i);
         let obj = {};
         obj.position = parseInt(i);
-        obj.quantity = parseFloat(tr.cells[i].innerHTML);
-
+        obj.quantity = parseFloat(cell.value);
         array[i-1] = obj;
     }
 
     return array;
 }
 
-function clearPzfrrTableValues(row) {
-    let tr = document.getElementById(row);
+function clearPzfrrTableValues() {
+    document.getElementById("pzfrr_author").value = "";
+    document.getElementById("pzfrr_rev").value = "";
 
-    while (tr.cells.length > 1) {
-        tr.deleteCell(tr.cells.length - 1)
+    for (let i = 1; i <= 4; i++) {
+        document.getElementById("pzfrr_forecast_cap_up_" + i).value = "";
+        document.getElementById("pzfrr_forecast_cap_down_" + i).value = "";
     }
+
+    document.getElementById("pzfrr-created").textContent = "Utworzono: ";
+    document.getElementById("pzfrr-saved").textContent = "Zapisano: ";
+    document.getElementById("pzfrr-published").textContent = "Opublikowano: ";
 }
 
 function createPzfrrTable() {

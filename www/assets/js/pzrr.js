@@ -1,16 +1,16 @@
 window.addEventListener('DOMContentLoaded', (event) => {
     const page = window.location.pathname.substring(1);
     console.log('DOM fully loaded and parsed, page: ', page);
-    switch (page) {
-        case "index.html":
-            createPzrrTable(); break;
-        case "files.html":
-            setFilesForm(); break;
-        case "configuration.html":
-            setConfigurationForm(); break;
-        default:
-            break;
-    }
+    // switch (page) {
+    //     case "index.html":
+    //         createPzrrTable(); break;
+    //     case "files.html":
+    //         setFilesForm(); break;
+    //     case "configuration.html":
+    //         setConfigurationForm(); break;
+    //     default:
+    //         break;
+    // }
 });
 
 function savePzrrReport() {
@@ -24,6 +24,7 @@ function savePzrrReport() {
         if (xhr.readyState === 4) {
             console.log(xhr.status);
             // console.log(xhr.responseText);
+            clearPzrrTableValues()
             fillPzrrForm(JSON.parse(xhr.responseText))
         }};
 
@@ -52,31 +53,15 @@ function exportPzrrReport() {
 }
 
 function createNewPzrrReport() {
-    let dateFrom = document.getElementById("pzrr_date_from").value;
-    let dateTo = document.getElementById("pzrr_date_to").value;
-
-    console.log("Get PZRR report within dates: ", dateFrom, dateTo);
-
-    const get = async (url, params) => {
-        const response = await fetch(url + '?' + new URLSearchParams(params))
-        const respData = await response.json()
-
-        return respData
-    }
-
-    // Calling it with then:
-    get('http://'+ host + ':' + port + '/api/test_pzrr', {
-        dateFrom: dateFrom,
-        dateTo: dateTo,
-    }).then(respData => {
-        console.log(respData)
-        fillPzrrForm(respData)
-    })
+    clearPzrrTableValues();
 }
 
 function getPzrrReport() {
-    let dateFrom = document.getElementById("pzrr_date_from").value;
-    let dateTo = document.getElementById("pzrr_date_to").value;
+    clearPzrrTableValues();
+
+    const year = document.getElementById("pzrr_year").value;
+    const dateFrom = `${year}-01`;
+    const dateTo = `${year}-12`;
 
     console.log("Get PZRR report within dates: ", dateFrom, dateTo);
 
@@ -108,7 +93,6 @@ function fillPzrrForm(respData) {
     let forecastedCapacityDown = respData["ForecastedCapacityDown"];
 
     fillPzrrData(data)
-    fillPzrrTableHeaderValues("table_pzrr_header_row", data);
     fillPzrrTableValues("table_pzrr_forecasted_capacity_up", forecastedCapacityUp);
     fillPzrrTableValues("table_pzrr_forecasted_capacity_down", forecastedCapacityDown);
 
@@ -132,32 +116,18 @@ function setPzrrDates(created, saved, published) {
     let pzrr_saved = document.getElementById("pzrr-saved");
     let pzrr_published = document.getElementById("pzrr-published");
 
-    pzrr_created.textContent = "Data utworzenia: " + convertDate(created);
-    pzrr_saved.textContent = "Data zapisu: " + convertDate(saved);
-    pzrr_published.textContent = "Data publikacji: " + convertDate(published);
-}
-
-function fillPzrrTableHeaderValues(row, values) {
-    clearPzrrTableValues(row);
-
-    let tr = document.getElementById(row);
-    const yearMonths = values["YearMonths"]
-
-    const setHeaderDate = function (value, index, array) {
-        tr.insertCell(index+1).innerHTML = value
-    };
-    if (yearMonths != null) {
-        yearMonths.forEach(setHeaderDate);
-    }
+    pzrr_created.textContent = "Utworzono: " + convertDate(created);
+    pzrr_saved.textContent = "Zapisano: " + convertDate(saved);
+    pzrr_published.textContent = "Opublikowano: " + convertDate(published);
 }
 
 function fillPzrrTableValues(row, values) {
-    clearPzrrTableValues(row)
+    let flowDirection = pzrrGetFlowDirection(row)
 
-    let tr = document.getElementById(row);
     for (let i in values) {
-        const index = values[i]["position"];
-        tr.insertCell(index).innerHTML = values[i]["Quantity"];
+        const index = values[i]["Position"];
+        let cell = document.getElementById("pzrr_forecast_cap_" + flowDirection + "_" + index);
+        cell.value = values[i]["Quantity"];
     }
 }
 
@@ -179,62 +149,77 @@ function getJsonFromPzrrForm() {
 function pzrrDataToJson() {
     const author = document.getElementById("pzrr_author").value;
     // const rev = document.getElementById("pzrr_rev").innerHTML;
-    const date_from = document.getElementById("pzrr_date_from").value;
-    const date_to = document.getElementById("pzrr_date_to").value;
+
+    const year = document.getElementById("pzrr_year").value;
+    const dateFrom = `${year}-01`;
+    const dateTo = `${year}-12`;
 
     let data = {};
     data.creator = author;
-    data.start = date_from;
-    data.end = date_to;
+    data.start = dateFrom;
+    data.end = dateTo;
 
     return data;
 }
 
-function pzrrTableValuesToJson(row) {
-    let tr = document.getElementById(row);
-    let array = [];
+function pzrrGetFlowDirection(row) {
+    switch (row) {
+        case "table_pzrr_forecasted_capacity_up":
+            return "up";
+        case "table_pzrr_forecasted_capacity_down":
+            return "down";
+    }
+}
 
-    for (let i in tr.cells) {
-        if (i === 0) continue;
-        // console.log(tr.cells[i].innerHTML);
+function pzrrTableValuesToJson(row) {
+    let array = [];
+    let flowDirection = pzrrGetFlowDirection(row)
+
+    for (let i = 1; i <= 4; i++) {
+        let cell = document.getElementById("pzrr_forecast_cap_" + flowDirection + "_" + i);
         let obj = {};
         obj.position = parseInt(i);
-        obj.quantity = parseFloat(tr.cells[i].innerHTML);
-
+        obj.quantity = parseFloat(cell.value);
         array[i-1] = obj;
     }
 
     return array;
 }
 
-function clearPzrrTableValues(row) {
-    let tr = document.getElementById(row);
+function clearPzrrTableValues() {
+    document.getElementById("pzrr_author").value = "";
+    document.getElementById("pzrr_rev").value = "";
 
-    while (tr.cells.length > 1) {
-        tr.deleteCell(tr.cells.length - 1)
+    for (let i = 1; i <= 4; i++) {
+        document.getElementById("pzrr_forecast_cap_up_" + i).value = "";
+        document.getElementById("pzrr_forecast_cap_down_" + i).value = "";
     }
+
+    document.getElementById("pzrr-created").textContent = "Utworzono: ";
+    document.getElementById("pzrr-saved").textContent = "Zapisano: ";
+    document.getElementById("pzrr-published").textContent = "Opublikowano: ";
 }
 
-function createPzrrTable() {
-    let thr = document.getElementById("table_pzrr_header_row");
-
-    // let tr = tb.insertRow(-1);
-    thr.insertCell(1).innerHTML = "1";
-    thr.insertCell(2).innerHTML = "2";
-    thr.insertCell(3).innerHTML = "3";
-    thr.insertCell(4).innerHTML = "4";
-
-    let tr = document.getElementById("table_pzrr_forecasted_capacity_up");
-    tr.insertCell(1).innerHTML = "1500.0";
-    tr.insertCell(2).innerHTML = "1500.0";
-    tr.insertCell(3).innerHTML = "1500.0";
-    tr.insertCell(4).innerHTML = "1500.0";
-
-    tr = document.getElementById("table_pzrr_forecasted_capacity_down");
-    tr.insertCell(1).innerHTML = "0.0";
-    tr.insertCell(2).innerHTML = "0.0";
-    tr.insertCell(3).innerHTML = "0.0";
-    tr.insertCell(4).innerHTML = "0.0";
-
-
-}
+// function createPzrrTable() {
+//     let thr = document.getElementById("table_pzrr_header_row");
+//
+//     // let tr = tb.insertRow(-1);
+//     thr.insertCell(1).innerHTML = "1";
+//     thr.insertCell(2).innerHTML = "2";
+//     thr.insertCell(3).innerHTML = "3";
+//     thr.insertCell(4).innerHTML = "4";
+//
+//     let tr = document.getElementById("table_pzrr_forecasted_capacity_up");
+//     tr.insertCell(1).innerHTML = "1500.0";
+//     tr.insertCell(2).innerHTML = "1500.0";
+//     tr.insertCell(3).innerHTML = "1500.0";
+//     tr.insertCell(4).innerHTML = "1500.0";
+//
+//     tr = document.getElementById("table_pzrr_forecasted_capacity_down");
+//     tr.insertCell(1).innerHTML = "0.0";
+//     tr.insertCell(2).innerHTML = "0.0";
+//     tr.insertCell(3).innerHTML = "0.0";
+//     tr.insertCell(4).innerHTML = "0.0";
+//
+//
+// }

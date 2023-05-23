@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
 )
 
@@ -54,7 +53,7 @@ func TestReportData(rt ReportType, start time.Time) ReportData {
 	tEnd, _ := time.Parse(time.DateOnly, dateRanges[index+1])
 
 	return ReportData{
-		Creator:    creators[rand.Intn(len(creators))],
+		Creator:    "", //creators[rand.Intn(len(creators))],
 		Revision:   0,
 		Start:      tStart,
 		End:        tEnd,

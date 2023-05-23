@@ -494,8 +494,9 @@ func (dbc *dbConnector) callSaveReport() error {
 	defer cursorPayload.Close()
 
 	var (
-		cd  models.CursorData
-		cps []models.CursorPayload
+		cd       models.CursorData
+		cps      []models.CursorPayload
+		reportId int64
 	)
 
 	//fetch report data
@@ -504,7 +505,7 @@ func (dbc *dbConnector) callSaveReport() error {
 		return err
 	}
 	for dataRows.Next_() {
-		err = dataRows.Scan(&cd.ReportType, &cd.Revision, &cd.Creator, &cd.Created, &cd.Start, &cd.End, &cd.Saved, &cd.Reported)
+		err = dataRows.Scan(&reportId, &cd.ReportType, &cd.Revision, &cd.Creator, &cd.Created, &cd.Start, &cd.End, &cd.Saved, &cd.Reported)
 		if err != nil {
 			return err
 		}
@@ -531,18 +532,27 @@ func (dbc *dbConnector) callSaveReport() error {
 		if cd.IsValid() {
 			report.SaveCursors(cd, cps)
 		}
-		report.Update(dbc.data.Payload)
-		if err = dbc.callPutReport(report); err != nil {
-			return err
-		}
-		//sync revision to corresponding in DB
-		report.Data.Revision += 1
-		report.Data.Saved = time.Now()
-		if report.Data.Created.IsZero() {
-			report.Data.Created = report.Data.Saved
+		if areChanges := report.Update(dbc.data.Payload); areChanges == true {
+			if err = dbc.callPutReport(report); err != nil {
+				return err
+			}
+			//sync revision to corresponding in DB
+			report.Data.Revision += 1
+			report.Data.Saved = time.Now()
+			if report.Data.Created.IsZero() {
+				report.Data.Created = report.Data.Saved
+			}
+			report.Data.Reported = time.Time{}
+			//reset reportId to avoid publish old revision of the report
+			reportId = 0
 		}
 		if dbc.data.Publish {
-			report.Data.Reported = report.Data.Saved
+			if reportId > 0 {
+				statement = models.GetSetReported(reportId)
+				if _, err = dbc.db.Exec(statement); err != nil {
+					return err
+				}
+			}
 			if err = dbc.callInicjujPozyskanie(report.Data); err != nil {
 				if dbc.config.Params.FakePublish {
 					fmt.Println("Fake publish triggered")
@@ -550,6 +560,7 @@ func (dbc *dbConnector) callSaveReport() error {
 					return err
 				}
 			}
+			report.Data.Reported = time.Now()
 		}
 		dbc.channels.KjczReport <- report
 	case models.PD_BI_PZRR:
@@ -557,18 +568,27 @@ func (dbc *dbConnector) callSaveReport() error {
 		if cd.IsValid() {
 			report.SaveCursors(cd, cps)
 		}
-		report.Update(dbc.data.Payload)
-		if err = dbc.callPutReport(report); err != nil {
-			return err
-		}
-		//sync revision to corresponding in DB
-		report.Data.Revision += 1
-		report.Data.Saved = time.Now()
-		if report.Data.Created.IsZero() {
-			report.Data.Created = report.Data.Saved
+		if areChanges := report.Update(dbc.data.Payload); areChanges == true {
+			if err = dbc.callPutReport(report); err != nil {
+				return err
+			}
+			//sync revision to corresponding in DB
+			report.Data.Revision += 1
+			report.Data.Saved = time.Now()
+			if report.Data.Created.IsZero() {
+				report.Data.Created = report.Data.Saved
+			}
+			report.Data.Reported = time.Time{}
+			//reset reportId to avoid publish old revision of the report
+			reportId = 0
 		}
 		if dbc.data.Publish {
-			report.Data.Reported = report.Data.Saved
+			if reportId > 0 {
+				statement = models.GetSetReported(reportId)
+				if _, err = dbc.db.Exec(statement); err != nil {
+					return err
+				}
+			}
 			if err = dbc.callInicjujPozyskanie(report.Data); err != nil {
 				if dbc.config.Params.FakePublish {
 					fmt.Println("Fake publish triggered")
@@ -576,6 +596,7 @@ func (dbc *dbConnector) callSaveReport() error {
 					return err
 				}
 			}
+			report.Data.Reported = time.Now()
 		}
 		dbc.channels.PzrrReport <- report
 	case models.PD_BI_PZFRR:
@@ -583,18 +604,27 @@ func (dbc *dbConnector) callSaveReport() error {
 		if cd.IsValid() {
 			report.SaveCursors(cd, cps)
 		}
-		report.Update(dbc.data.Payload)
-		if err = dbc.callPutReport(report); err != nil {
-			return err
-		}
-		//sync revision to corresponding in DB
-		report.Data.Revision += 1
-		report.Data.Saved = time.Now()
-		if report.Data.Created.IsZero() {
-			report.Data.Created = report.Data.Saved
+		if areChanges := report.Update(dbc.data.Payload); areChanges == true {
+			if err = dbc.callPutReport(report); err != nil {
+				return err
+			}
+			//sync revision to corresponding in DB
+			report.Data.Revision += 1
+			report.Data.Saved = time.Now()
+			if report.Data.Created.IsZero() {
+				report.Data.Created = report.Data.Saved
+			}
+			report.Data.Reported = time.Time{}
+			//reset reportId to avoid publish old revision of the report
+			reportId = 0
 		}
 		if dbc.data.Publish {
-			report.Data.Reported = report.Data.Saved
+			if reportId > 0 {
+				statement = models.GetSetReported(reportId)
+				if _, err = dbc.db.Exec(statement); err != nil {
+					return err
+				}
+			}
 			if err = dbc.callInicjujPozyskanie(report.Data); err != nil {
 				if dbc.config.Params.FakePublish {
 					fmt.Println("Fake publish triggered")
@@ -602,6 +632,7 @@ func (dbc *dbConnector) callSaveReport() error {
 					return err
 				}
 			}
+			report.Data.Reported = time.Now()
 		}
 		dbc.channels.PzfrrReport <- report
 	}
@@ -632,8 +663,9 @@ func (dbc *dbConnector) callGetReport() error {
 	defer cursorPayload.Close()
 
 	var (
-		cd  models.CursorData
-		cps []models.CursorPayload
+		cd       models.CursorData
+		cps      []models.CursorPayload
+		reportId int64
 	)
 
 	//fetch report data
@@ -642,7 +674,7 @@ func (dbc *dbConnector) callGetReport() error {
 		return err
 	}
 	for dataRows.Next_() {
-		err = dataRows.Scan(&cd.ReportType, &cd.Revision, &cd.Creator, &cd.Created, &cd.Start, &cd.End, &cd.Saved, &cd.Reported)
+		err = dataRows.Scan(&reportId, &cd.ReportType, &cd.Revision, &cd.Creator, &cd.Created, &cd.Start, &cd.End, &cd.Saved, &cd.Reported)
 		if err != nil {
 			return err
 		}

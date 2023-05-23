@@ -1,17 +1,17 @@
 window.addEventListener('DOMContentLoaded', (event) => {
     const page = window.location.pathname.substring(1);
     console.log('DOM fully loaded and parsed, page: ', page);
-    switch (page) {
-        case "index.html":
-            createKjczTable(); break;
-        case "files.html":
-            setFilesForm(); break;
-        case "configuration.html":
-            setConfigurationForm(); break;
-        default:
-            // ReadConfigFile();
-            break;
-    }
+    // switch (page) {
+    //     case "index.html":
+    //         createKjczTable(); break;
+    //     case "files.html":
+    //         setFilesForm(); break;
+    //     case "configuration.html":
+    //         setConfigurationForm(); break;
+    //     default:
+    //         // ReadConfigFile();
+    //         break;
+    // }
 });
 
 // function loadFiles() {
@@ -76,8 +76,28 @@ function exportKjczReport() {
 }
 
 function createNewKjczReport() {
-    let dateFrom = document.getElementById("kjcz_date_from").value;
-    let dateTo = document.getElementById("kjcz_date_to").value;
+    const year = document.getElementById("kjcz_year").value;
+    const quarter = document.getElementById("kjcz_quarter").value;
+    let dateFrom = "";
+    let dateTo = "";
+    switch (quarter) {
+        case '1':
+            dateFrom = `${year}-01`;
+            dateTo = `${year}-03`;
+            break;
+        case '2':
+            dateFrom = `${year}-04`;
+            dateTo = `${year}-06`;
+            break;
+        case '3':
+            dateFrom = `${year}-07`;
+            dateTo = `${year}-09`;
+            break;
+        case '4':
+            dateFrom = `${year}-10`;
+            dateTo = `${year}-12`;
+            break;
+    }
 
     console.log("Get KJCZ report within dates: ", dateFrom, dateTo);
 
@@ -180,9 +200,9 @@ function setKjczDates(created, saved, published) {
     let kjcz_saved = document.getElementById("kjcz-saved");
     let kjcz_published = document.getElementById("kjcz-published");
 
-    kjcz_created.textContent = "Data utworzenia: " + convertDate(created);
-    kjcz_saved.textContent = "Data zapisu: " + convertDate(saved);
-    kjcz_published.textContent = "Data publikacji: " + convertDate(published);
+    kjcz_created.textContent = "Utworzono: " + convertDate(created);
+    kjcz_saved.textContent = "Zapisano: " + convertDate(saved);
+    kjcz_published.textContent = "Opublikowano: " + convertDate(published);
 }
 
 function fillKjczTableHeaderValues(row, values) {
