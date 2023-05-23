@@ -75,7 +75,7 @@ function exportKjczReport() {
 
 }
 
-function createNewKjczReport() {
+function getDates() {
     const year = document.getElementById("kjcz_year").value;
     const quarter = document.getElementById("kjcz_quarter").value;
     let dateFrom = "";
@@ -98,8 +98,12 @@ function createNewKjczReport() {
             dateTo = `${year}-12`;
             break;
     }
+    return [dateFrom, dateTo];
+}
 
-    console.log("Get KJCZ report within dates: ", dateFrom, dateTo);
+function createNewKjczReport() {
+    const [dateFrom, dateTo] = getDates();
+    console.log("Create new KJCZ report within dates: ", dateFrom, dateTo);
 
     const get = async (url, params) => {
         const response = await fetch(url + '?' + new URLSearchParams(params))
@@ -119,9 +123,7 @@ function createNewKjczReport() {
 }
 
 function getKjczReport() {
-    let dateFrom = document.getElementById("kjcz_date_from").value;
-    let dateTo = document.getElementById("kjcz_date_to").value;
-
+    const [dateFrom, dateTo] = getDates();
     console.log("Get KJCZ report within dates: ", dateFrom, dateTo);
 
     const get = async (url, params) => {
@@ -279,13 +281,12 @@ function getJsonFromKjczForm() {
 function kjczDataToJson() {
     const author = document.getElementById("kjcz_author").value;
     // const rev = document.getElementById("kjcz_rev").innerHTML;
-    const date_from = document.getElementById("kjcz_date_from").value;
-    const date_to = document.getElementById("kjcz_date_to").value;
+    const [dateFrom, dateTo] = getDates();
 
     let data = {};
     data.creator = author;
-    data.start = date_from;
-    data.end = date_to;
+    data.start = dateFrom;
+    data.end = dateTo;
 
     return data;
 }

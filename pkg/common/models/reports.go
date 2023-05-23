@@ -180,43 +180,74 @@ func getPayloads(template []ReportPayload, src []BodyReportPayload) (dest []Repo
 func (r *KjczReport) Update(payload any) (areChanges bool) {
 	p := payload.(KjczBody)
 
-	r.Data.Creator = p.Data.Creator
-	if r.Data.Start.IsZero() || r.Data.End.IsZero() {
-		r.Data.Start, r.Data.End, _ = GetReportDates(p.Data.Start, p.Data.End)
-		r.Data.YearMonths = calculateYearMonths(PR_SO_KJCZ, r.Data.Start)
+	if r.Data.Creator != p.Data.Creator {
+		r.Data.Creator = p.Data.Creator
+		areChanges = true
 	}
+
+	//if r.Data.Start.IsZero() || r.Data.End.IsZero() {
+	dateStart, dateEnd, _ := GetReportDates(p.Data.Start, p.Data.End)
+	if r.Data.Start != dateStart || r.Data.End != dateEnd {
+		r.Data.Start = dateStart
+		r.Data.End = dateEnd
+		areChanges = true
+	}
+	r.Data.YearMonths = calculateYearMonths(PR_SO_KJCZ, r.Data.Start)
+	//}
 
 	t := GetKjczReportTemplate(r.Data)
 
-	r.MeanValue = getPayloads(t.MeanValue, p.MeanValue)
-	r.StandardDeviation = getPayloads(t.StandardDeviation, p.StandardDeviation)
-	r.Percentile1 = getPayloads(t.Percentile1, p.Percentile1)
-	r.Percentile5 = getPayloads(t.Percentile5, p.Percentile5)
-	r.Percentile10 = getPayloads(t.Percentile10, p.Percentile10)
-	r.Percentile90 = getPayloads(t.Percentile90, p.Percentile90)
-	r.Percentile95 = getPayloads(t.Percentile95, p.Percentile95)
-	r.Percentile99 = getPayloads(t.Percentile99, p.Percentile99)
-	r.FRCEOutsideLevel1RangeUp = getPayloads(t.FRCEOutsideLevel1RangeUp, p.FrceOutsideLevel1RangeUp)
-	r.FRCEOutsideLevel1RangeDown = getPayloads(t.FRCEOutsideLevel1RangeDown, p.FrceOutsideLevel1RangeDown)
-	r.FRCEOutsideLevel2RangeUp = getPayloads(t.FRCEOutsideLevel2RangeUp, p.FrceOutsideLevel2RangeUp)
-	r.FRCEOutsideLevel2RangeDown = getPayloads(t.FRCEOutsideLevel2RangeDown, p.FrceOutsideLevel2RangeDown)
-	r.FRCEExceeded60PercOfFRRCapacityUp = getPayloads(t.FRCEExceeded60PercOfFRRCapacityUp, p.FrceExceeded60PercOfFRRCapacityUp)
-	r.FRCEExceeded60PercOfFRRCapacityDown = getPayloads(t.FRCEExceeded60PercOfFRRCapacityDown, p.FrceExceeded60PercOfFRRCapacityDown)
+	updatePayloads := func(template []ReportPayload, src []BodyReportPayload, dst *[]ReportPayload) (diff bool) {
+		payloads := getPayloads(template, src)
+		if !payloadsAreEqual(*dst, payloads) {
+			diff = true
+		}
+		*dst = payloads
+		return
+	}
 
-	//updatePayloads(&r.MeanValue, p.MeanValue)
-	//updatePayloads(&r.StandardDeviation, p.StandardDeviation)
-	//updatePayloads(&r.Percentile1, p.Percentile1)
-	//updatePayloads(&r.Percentile5, p.Percentile5)
-	//updatePayloads(&r.Percentile10, p.Percentile10)
-	//updatePayloads(&r.Percentile90, p.Percentile90)
-	//updatePayloads(&r.Percentile95, p.Percentile95)
-	//updatePayloads(&r.Percentile99, p.Percentile99)
-	//updatePayloads(&r.FRCEOutsideLevel1RangeUp, p.FrceOutsideLevel1RangeUp)
-	//updatePayloads(&r.FRCEOutsideLevel1RangeDown, p.FrceOutsideLevel1RangeDown)
-	//updatePayloads(&r.FRCEOutsideLevel2RangeUp, p.FrceOutsideLevel2RangeUp)
-	//updatePayloads(&r.FRCEOutsideLevel2RangeDown, p.FrceOutsideLevel2RangeDown)
-	//updatePayloads(&r.FRCEExceeded60PercOfFRRCapacityUp, p.FrceExceeded60PercOfFRRCapacityUp)
-	//updatePayloads(&r.FRCEExceeded60PercOfFRRCapacityDown, p.FrceExceeded60PercOfFRRCapacityDown)
+	if updatePayloads(t.MeanValue, p.MeanValue, &r.MeanValue) {
+		areChanges = true
+	}
+	if updatePayloads(t.StandardDeviation, p.StandardDeviation, &r.StandardDeviation) {
+		areChanges = true
+	}
+	if updatePayloads(t.Percentile1, p.Percentile1, &r.Percentile1) {
+		areChanges = true
+	}
+	if updatePayloads(t.Percentile5, p.Percentile5, &r.Percentile5) {
+		areChanges = true
+	}
+	if updatePayloads(t.Percentile10, p.Percentile10, &r.Percentile10) {
+		areChanges = true
+	}
+	if updatePayloads(t.Percentile90, p.Percentile90, &r.Percentile90) {
+		areChanges = true
+	}
+	if updatePayloads(t.Percentile95, p.Percentile95, &r.Percentile95) {
+		areChanges = true
+	}
+	if updatePayloads(t.Percentile99, p.Percentile99, &r.Percentile99) {
+		areChanges = true
+	}
+	if updatePayloads(t.FRCEOutsideLevel1RangeUp, p.FrceOutsideLevel1RangeUp, &r.FRCEOutsideLevel1RangeUp) {
+		areChanges = true
+	}
+	if updatePayloads(t.FRCEOutsideLevel1RangeDown, p.FrceOutsideLevel1RangeDown, &r.FRCEOutsideLevel1RangeDown) {
+		areChanges = true
+	}
+	if updatePayloads(t.FRCEOutsideLevel2RangeUp, p.FrceOutsideLevel2RangeUp, &r.FRCEOutsideLevel2RangeUp) {
+		areChanges = true
+	}
+	if updatePayloads(t.FRCEOutsideLevel2RangeDown, p.FrceOutsideLevel2RangeDown, &r.FRCEOutsideLevel2RangeDown) {
+		areChanges = true
+	}
+	if updatePayloads(t.FRCEExceeded60PercOfFRRCapacityUp, p.FrceExceeded60PercOfFRRCapacityUp, &r.FRCEExceeded60PercOfFRRCapacityUp) {
+		areChanges = true
+	}
+	if updatePayloads(t.FRCEExceeded60PercOfFRRCapacityDown, p.FrceExceeded60PercOfFRRCapacityDown, &r.FRCEExceeded60PercOfFRRCapacityDown) {
+		areChanges = true
+	}
 
 	return
 }
