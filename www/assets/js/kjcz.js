@@ -38,6 +38,12 @@ window.addEventListener('DOMContentLoaded', (event) => {
 // }
 
 function saveKjczReport() {
+    const err = validateKjcz();
+    if (err.length > 0) {
+        showKjczMessage(err, MessageType.Error)
+        return
+    }
+
     const xhr = new XMLHttpRequest();
     const url='http://'+ host + ':' + port + '/api/save_kjcz';
     xhr.open("POST", url);
@@ -48,13 +54,24 @@ function saveKjczReport() {
         if (xhr.readyState === 4) {
             console.log(xhr.status);
             // console.log(xhr.responseText);
-            fillKjczForm(JSON.parse(xhr.responseText))
+            if (xhr.status == 200) {
+                fillKjczForm(JSON.parse(xhr.responseText))
+            }
+            else {
+                showKjczMessage("Brak komunikacji z serwerem", MessageType.Error);
+            }
         }};
 
     xhr.send(getJsonFromKjczForm());
 }
 
 function publishKjczReport() {
+    const err = validateKjcz();
+    if (err.length > 0) {
+        showKjczMessage(err, MessageType.Error)
+        return
+    }
+
     const xhr = new XMLHttpRequest();
     const url='http://'+ host + ':' + port + '/api/save_kjcz_publish';
     xhr.open("POST", url);
@@ -65,14 +82,19 @@ function publishKjczReport() {
         if (xhr.readyState === 4) {
             console.log(xhr.status);
             // console.log(xhr.responseText);
-            fillKjczForm(JSON.parse(xhr.responseText))
+            if (xhr.status == 200) {
+                fillKjczForm(JSON.parse(xhr.responseText))
+            }
+            else {
+                showKjczMessage("Brak komunikacji z serwerem", MessageType.Error);
+            }
         }};
 
     xhr.send(getJsonFromKjczForm());
 }
 
 function exportKjczReport() {
-
+    showKjczMessage("I Herkules dupa kiedy ludzi kupa!", MessageType.Error);
 }
 
 function getDates() {
@@ -120,8 +142,16 @@ function createNewKjczReport() {
         dateTo: dateTo,
     }).then(respData => {
         console.log(respData)
-        fillKjczForm(respData)
-    })
+        // if (xhr.status == 200) {
+            fillKjczForm(respData)
+        // }
+        // else {
+        //     showKjczMessage("Brak komunikacji z serwerem", MessageType.Error);
+        // }
+
+    }).catch(error => {
+        showKjczMessage("Brak komunikacji z serwerem", MessageType.Error);
+    });
 }
 
 function getKjczReport() {
@@ -144,7 +174,9 @@ function getKjczReport() {
     }).then(respData => {
         console.log(respData)
         fillKjczForm(respData)
-    })
+    }).catch(error => {
+        showKjczMessage("Brak komunikacji z serwerem", MessageType.Error);
+    });
 }
 
 function fillKjczForm(respData) {
@@ -314,6 +346,34 @@ function kjczTableValuesToJson(field) {
     }
 
     return array;
+}
+
+function validateKjcz() {
+    if (document.getElementById("kjcz_author").value === "") {
+        return "Błędna wartość w polu Autor";
+    }
+
+    for (let i = 1; i <= 3; i++) {
+        if (!validateNumber(document.getElementById("kjcz_mean_value_" + i))) return "Błędna wartość w polu Mean Value, kolumna " + i;
+        if (!validateNumber(document.getElementById("kjcz_st_deviation_" + i))) return "Błędna wartość w polu Standard Deviation, kolumna " + i;
+        if (!validateNumber(document.getElementById("kjcz_percentile1_" + i))) return "Błędna wartość w polu Percentile-1, kolumna " + i;
+        if (!validateNumber(document.getElementById("kjcz_percentile5_" + i))) return "Błędna wartość w polu Percentile-5, kolumna " + i;
+        if (!validateNumber(document.getElementById("kjcz_percentile10_" + i))) return "Błędna wartość w polu Percentile-10, kolumna " + i;
+        if (!validateNumber(document.getElementById("kjcz_percentile90_" + i))) return "Błędna wartość w polu Percentile-90, kolumna " + i;
+        if (!validateNumber(document.getElementById("kjcz_percentile95_" + i))) return "Błędna wartość w polu Percentile-95, kolumna " + i;
+        if (!validateNumber(document.getElementById("kjcz_percentile99_" + i))) return "Błędna wartość w polu Percentile-99, kolumna " + i;
+        if (!validateNumber(document.getElementById("kjcz_frce_out_level1_up_" + i))) return "Błędna wartość w polu FRCE Outside Level 1 Range Up, kolumna " + i;
+        if (!validateNumber(document.getElementById("kjcz_frce_out_level1_down_" + i))) return "Błędna wartość w polu FRCE Outside Level 1 Range Down, kolumna " + i;
+        if (!validateNumber(document.getElementById("kjcz_frce_out_level2_up_" + i))) return "Błędna wartość w polu FRCE Outside Level 2 Range Up, kolumna " + i;
+        if (!validateNumber(document.getElementById("kjcz_frce_out_level2_down_" + i))) return "Błędna wartość w polu FRCE Outside Level 2 Range Down, kolumna " + i;
+        if (!validateNumber(document.getElementById("kjcz_frce_exc60_cap_up_" + i))) return "Błędna wartość w polu FRCE Exceeded 60% of FRR Capacity Up, kolumna " + i;
+        if (!validateNumber(document.getElementById("kjcz_frce_exc60_cap_down_" + i))) return "Błędna wartość w polu FRCE Exceeded 60% of FRR Capacity Down, kolumna " + i;
+    }
+    return "";
+}
+
+function showKjczMessage(text, msgType) {
+    showMessage(text, msgType, document.getElementById("kjcz_message"))
 }
 
 function hello(page) {

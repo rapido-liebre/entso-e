@@ -14,6 +14,12 @@ window.addEventListener('DOMContentLoaded', (event) => {
 });
 
 function savePzrrReport() {
+    const err = validatePzrr();
+    if (err.length > 0) {
+        showPzrrMessage(err, MessageType.Error)
+        return
+    }
+
     const xhr = new XMLHttpRequest();
     const url='http://'+ host + ':' + port + '/api/save_pzrr';
     xhr.open("POST", url);
@@ -24,14 +30,24 @@ function savePzrrReport() {
         if (xhr.readyState === 4) {
             console.log(xhr.status);
             // console.log(xhr.responseText);
-            clearPzrrTableValues()
-            fillPzrrForm(JSON.parse(xhr.responseText))
+            if (xhr.status == 200) {
+                fillPzrrForm(JSON.parse(xhr.responseText))
+            }
+            else {
+                showPzrrMessage("Brak komunikacji z serwerem", MessageType.Error);
+            }
         }};
 
     xhr.send(getJsonFromPzrrForm());
 }
 
 function publishPzrrReport() {
+    const err = validatePzrr();
+    if (err.length > 0) {
+        showPzrrMessage(err, MessageType.Error)
+        return
+    }
+
     const xhr = new XMLHttpRequest();
     const url='http://'+ host + ':' + port + '/api/save_pzrr_publish';
     xhr.open("POST", url);
@@ -42,14 +58,19 @@ function publishPzrrReport() {
         if (xhr.readyState === 4) {
             console.log(xhr.status);
             // console.log(xhr.responseText);
-            fillPzrrForm(JSON.parse(xhr.responseText))
+            if (xhr.status == 200) {
+                fillPzrrForm(JSON.parse(xhr.responseText))
+            }
+            else {
+                showPzrrMessage("Brak komunikacji z serwerem", MessageType.Error);
+            }
         }};
 
     xhr.send(getJsonFromPzrrForm());
 }
 
 function exportPzrrReport() {
-
+    showPzrrMessage("Slim Shady!", MessageType.Info);
 }
 
 function createNewPzrrReport() {
@@ -79,7 +100,9 @@ function getPzrrReport() {
     }).then(respData => {
         console.log(respData)
         fillPzrrForm(respData)
-    })
+    }).catch(error => {
+        showPzrrMessage("Brak komunikacji z serwerem", MessageType.Error);
+    });
 }
 
 function fillPzrrForm(respData) {
@@ -198,4 +221,20 @@ function clearPzrrTableValues() {
     document.getElementById("pzrr-created").textContent = "Utworzono: ";
     document.getElementById("pzrr-saved").textContent = "Zapisano: ";
     document.getElementById("pzrr-published").textContent = "Opublikowano: ";
+}
+
+function validatePzrr() {
+    if (document.getElementById("pzrr_author").value === "") {
+        return "Błędna wartość w polu Autor";
+    }
+
+    for (let i = 1; i <= 4; i++) {
+        if (!validateNumber(document.getElementById("pzrr_forecast_cap_up_" + i))) return "Błędna wartość w polu Forecasted Capacity Up, kolumna " + i;
+        if (!validateNumber(document.getElementById("pzrr_forecast_cap_down_" + i))) return "Błędna wartość w polu Forecasted Capacity Down, kolumna " + i;
+    }
+    return "";
+}
+
+function showPzrrMessage(text, msgType) {
+    showMessage(text, msgType, document.getElementById("pzrr_message"))
 }

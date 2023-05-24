@@ -14,6 +14,12 @@ window.addEventListener('DOMContentLoaded', (event) => {
 });
 
 function savePzfrrReport() {
+    const err = validatePzfrr();
+    if (err.length > 0) {
+        showPzfrrMessage(err, MessageType.Error)
+        return
+    }
+
     const xhr = new XMLHttpRequest();
     const url='http://'+ host + ':' + port + '/api/save_pzfrr';
     xhr.open("POST", url);
@@ -25,8 +31,10 @@ function savePzfrrReport() {
             console.log(xhr.status);
             // console.log(xhr.responseText);
             if (xhr.status == 200) {
-                clearPzfrrTableValues()
                 fillPzfrrForm(JSON.parse(xhr.responseText))
+            }
+            else {
+                showPzfrrMessage("Brak komunikacji z serwerem", MessageType.Error);
             }
         }};
 
@@ -34,6 +42,12 @@ function savePzfrrReport() {
 }
 
 function publishPzfrrReport() {
+    const err = validatePzfrr();
+    if (err.length > 0) {
+        showPzfrrMessage(err, MessageType.Error)
+        return
+    }
+
     const xhr = new XMLHttpRequest();
     const url='http://'+ host + ':' + port + '/api/save_pzfrr_publish';
     xhr.open("POST", url);
@@ -44,14 +58,19 @@ function publishPzfrrReport() {
         if (xhr.readyState === 4) {
             console.log(xhr.status);
             // console.log(xhr.responseText);
-            fillPzfrrForm(JSON.parse(xhr.responseText))
+            if (xhr.status == 200) {
+                fillPzfrrForm(JSON.parse(xhr.responseText))
+            }
+            else {
+                showPzfrrMessage("Brak komunikacji z serwerem", MessageType.Error);
+            }
         }};
 
     xhr.send(getJsonFromPzfrrForm());
 }
 
 function exportPzfrrReport() {
-
+    showPzfrrMessage("Everybody follow me", MessageType.Info);
 }
 
 function createNewPzfrrReport() {
@@ -81,7 +100,9 @@ function getPzfrrReport() {
     }).then(respData => {
         console.log(respData)
         fillPzfrrForm(respData)
-    })
+    }).catch(error => {
+        showPzfrrMessage("Brak komunikacji z serwerem", MessageType.Error);
+    });
 }
 
 function fillPzfrrForm(respData) {
@@ -200,6 +221,22 @@ function clearPzfrrTableValues() {
     document.getElementById("pzfrr-created").textContent = "Utworzono: ";
     document.getElementById("pzfrr-saved").textContent = "Zapisano: ";
     document.getElementById("pzfrr-published").textContent = "Opublikowano: ";
+}
+
+function validatePzfrr() {
+    if (document.getElementById("pzfrr_author").value === "") {
+        return "Błędna wartość w polu Autor";
+    }
+
+    for (let i = 1; i <= 4; i++) {
+        if (!validateNumber(document.getElementById("pzfrr_forecast_cap_up_" + i))) return "Błędna wartość w polu Forecasted Capacity Up, kolumna " + i;
+        if (!validateNumber(document.getElementById("pzfrr_forecast_cap_down_" + i))) return "Błędna wartość w polu Forecasted Capacity Down, kolumna " + i;
+    }
+    return "";
+}
+
+function showPzfrrMessage(text, msgType) {
+    showMessage(text, msgType, document.getElementById("pzfrr_message"))
 }
 
 function createPzfrrTable() {
