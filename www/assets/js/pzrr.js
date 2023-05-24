@@ -199,27 +199,3 @@ function clearPzrrTableValues() {
     document.getElementById("pzrr-saved").textContent = "Zapisano: ";
     document.getElementById("pzrr-published").textContent = "Opublikowano: ";
 }
-
-// function createPzrrTable() {
-//     let thr = document.getElementById("table_pzrr_header_row");
-//
-//     // let tr = tb.insertRow(-1);
-//     thr.insertCell(1).innerHTML = "1";
-//     thr.insertCell(2).innerHTML = "2";
-//     thr.insertCell(3).innerHTML = "3";
-//     thr.insertCell(4).innerHTML = "4";
-//
-//     let tr = document.getElementById("table_pzrr_forecasted_capacity_up");
-//     tr.insertCell(1).innerHTML = "1500.0";
-//     tr.insertCell(2).innerHTML = "1500.0";
-//     tr.insertCell(3).innerHTML = "1500.0";
-//     tr.insertCell(4).innerHTML = "1500.0";
-//
-//     tr = document.getElementById("table_pzrr_forecasted_capacity_down");
-//     tr.insertCell(1).innerHTML = "0.0";
-//     tr.insertCell(2).innerHTML = "0.0";
-//     tr.insertCell(3).innerHTML = "0.0";
-//     tr.insertCell(4).innerHTML = "0.0";
-//
-//
-// }

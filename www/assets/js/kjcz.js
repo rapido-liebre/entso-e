@@ -102,6 +102,8 @@ function getDates() {
 }
 
 function createNewKjczReport() {
+    clearKjczTableValues();
+
     const [dateFrom, dateTo] = getDates();
     console.log("Create new KJCZ report within dates: ", dateFrom, dateTo);
 
@@ -123,6 +125,8 @@ function createNewKjczReport() {
 }
 
 function getKjczReport() {
+    clearKjczTableValues();
+
     const [dateFrom, dateTo] = getDates();
     console.log("Get KJCZ report within dates: ", dateFrom, dateTo);
 
@@ -165,24 +169,22 @@ function fillKjczForm(respData) {
     let frceExceeded60PercOfFRRCapacityUp = respData["FRCEExceeded60PercOfFRRCapacityUp"];
     let frceExceeded60PercOfFRRCapacityDown = respData["FRCEExceeded60PercOfFRRCapacityDown"];
 
-    fillKjczData(data)
+    fillKjczData(data);
     fillKjczTableHeaderValues("table_kjcz_header_row", data);
-    fillKjczTableValues("table_kjcz_mean_value_row", meanValue);
-    fillKjczTableValues("table_kjcz_standard_deviation_row", standardDeviation);
-    fillKjczTableValues("table_kjcz_1_percintile_row", percentile1);
-    fillKjczTableValues("table_kjcz_5_percintile_row", percentile5);
-    fillKjczTableValues("table_kjcz_10_percintile_row", percentile10);
-    fillKjczTableValues("table_kjcz_90_percintile_row", percentile90);
-    fillKjczTableValues("table_kjcz_95_percintile_row", percentile95);
-    fillKjczTableValues("table_kjcz_99_percintile_row", percentile99);
-    fillKjczTableValues("table_kjcz_frce_outside_lev1_range_up_row", frceOutsideLevel1RangeUp);
-    fillKjczTableValues("table_kjcz_frce_outside_lev1_range_down_row", frceOutsideLevel1RangeDown);
-    fillKjczTableValues("table_kjcz_frce_outside_lev2_range_up_row", frceOutsideLevel2RangeUp);
-    fillKjczTableValues("table_kjcz_frce_outside_lev2_range_down_row", frceOutsideLevel2RangeDown);
-    fillKjczTableValues("table_kjcz_frce_exceeded_60_frr_capacity_up_row", frceExceeded60PercOfFRRCapacityUp);
-    fillKjczTableValues("table_kjcz_frce_exceeded_60_frr_capacity_down_row", frceExceeded60PercOfFRRCapacityDown);
-
-    // createKjczTable();
+    fillKjczTableValues("kjcz_mean_value_", meanValue);
+    fillKjczTableValues("kjcz_st_deviation_", standardDeviation);
+    fillKjczTableValues("kjcz_percentile1_", percentile1);
+    fillKjczTableValues("kjcz_percentile5_", percentile5);
+    fillKjczTableValues("kjcz_percentile10_", percentile10);
+    fillKjczTableValues("kjcz_percentile90_", percentile90);
+    fillKjczTableValues("kjcz_percentile95_", percentile95);
+    fillKjczTableValues("kjcz_percentile99_", percentile99);
+    fillKjczTableValues("kjcz_frce_out_level1_up_", frceOutsideLevel1RangeUp);
+    fillKjczTableValues("kjcz_frce_out_level1_down_", frceOutsideLevel1RangeDown);
+    fillKjczTableValues("kjcz_frce_out_level2_up_", frceOutsideLevel2RangeUp);
+    fillKjczTableValues("kjcz_frce_out_level2_down_", frceOutsideLevel2RangeDown);
+    fillKjczTableValues("kjcz_frce_exc60_cap_up_", frceExceeded60PercOfFRRCapacityUp);
+    fillKjczTableValues("kjcz_frce_exc60_cap_down_", frceExceeded60PercOfFRRCapacityDown);
 }
 
 function fillKjczData(data) {
@@ -208,55 +210,65 @@ function setKjczDates(created, saved, published) {
 }
 
 function fillKjczTableHeaderValues(row, values) {
-    clearKjczTableValues(row);
-
-    let tr = document.getElementById(row);
     const yearMonths = values["YearMonths"]
 
-    const setHeaderDate = function (value, index, array) {
-        tr.insertCell(index+1).innerHTML = value
-    };
-    if (yearMonths != null) {
-        yearMonths.forEach(setHeaderDate);
+    for (let i = 1; i <= 3; i++) {
+        document.getElementById("kjcz_header_m" + i).value = yearMonths[i-1];
     }
 }
 
-function fillKjczTableValues(row, values) {
-    clearKjczTableValues(row);
-
-    let tr = document.getElementById(row);
-
+function fillKjczTableValues(field, values) {
     for (let i in values) {
-        const index = values[i]["position"];
-        tr.insertCell(index).innerHTML = values[i]["Quantity"];
+        const index = values[i]["Position"];
+
+        document.getElementById(field + index).value = values[i]["Quantity"];
     }
 }
 
 function clearKjczTableValues(row) {
-    let tr = document.getElementById(row);
+    document.getElementById("kjcz_author").value = "";
+    document.getElementById("kjcz_rev").value = "";
 
-    while (tr.cells.length > 1) {
-        tr.deleteCell(tr.cells.length - 1)
+    for (let i = 1; i <= 3; i++) {
+        document.getElementById("kjcz_header_m" + i).value = "";
+        document.getElementById("kjcz_mean_value_" + i).value = "";
+        document.getElementById("kjcz_st_deviation_" + i).value = "";
+        document.getElementById("kjcz_percentile1_" + i).value = "";
+        document.getElementById("kjcz_percentile5_" + i).value = "";
+        document.getElementById("kjcz_percentile10_" + i).value = "";
+        document.getElementById("kjcz_percentile90_" + i).value = "";
+        document.getElementById("kjcz_percentile95_" + i).value = "";
+        document.getElementById("kjcz_percentile99_" + i).value = "";
+        document.getElementById("kjcz_frce_out_level1_up_" + i).value = "";
+        document.getElementById("kjcz_frce_out_level1_down_" + i).value = "";
+        document.getElementById("kjcz_frce_out_level2_up_" + i).value = "";
+        document.getElementById("kjcz_frce_out_level2_down_" + i).value = "";
+        document.getElementById("kjcz_frce_exc60_cap_up_" + i).value = "";
+        document.getElementById("kjcz_frce_exc60_cap_down_" + i).value = "";
     }
+
+    document.getElementById("kjcz-created").textContent = "Utworzono: ";
+    document.getElementById("kjcz-saved").textContent = "Zapisano: ";
+    document.getElementById("kjcz-published").textContent = "Opublikowano: ";
 }
 
 function getJsonFromKjczForm() {
     //convert object to json string
     const data = kjczDataToJson();
-    const meanValue = kjczTableValuesToJson("table_kjcz_mean_value_row");
-    const standardDeviation = kjczTableValuesToJson("table_kjcz_standard_deviation_row");
-    const percentile1 = kjczTableValuesToJson("table_kjcz_1_percintile_row");
-    const percentile5 = kjczTableValuesToJson("table_kjcz_5_percintile_row");
-    const percentile10 = kjczTableValuesToJson("table_kjcz_10_percintile_row");
-    const percentile90 = kjczTableValuesToJson("table_kjcz_90_percintile_row");
-    const percentile95 = kjczTableValuesToJson("table_kjcz_95_percintile_row");
-    const percentile99 = kjczTableValuesToJson("table_kjcz_99_percintile_row");
-    const frceOutsideLevel1RangeUp = kjczTableValuesToJson("table_kjcz_frce_outside_lev1_range_up_row");
-    const frceOutsideLevel1RangeDown = kjczTableValuesToJson("table_kjcz_frce_outside_lev1_range_down_row");
-    const frceOutsideLevel2RangeUp = kjczTableValuesToJson("table_kjcz_frce_outside_lev2_range_up_row");
-    const frceOutsideLevel2RangeDown = kjczTableValuesToJson("table_kjcz_frce_outside_lev2_range_down_row");
-    const frceExceeded60PercOfFRRCapacityUp = kjczTableValuesToJson("table_kjcz_frce_exceeded_60_frr_capacity_up_row");
-    const frceExceeded60PercOfFRRCapacityDown = kjczTableValuesToJson("table_kjcz_frce_exceeded_60_frr_capacity_down_row");
+    const meanValue = kjczTableValuesToJson("kjcz_mean_value_");
+    const standardDeviation = kjczTableValuesToJson("kjcz_st_deviation_");
+    const percentile1 = kjczTableValuesToJson("kjcz_percentile1_");
+    const percentile5 = kjczTableValuesToJson("kjcz_percentile5_");
+    const percentile10 = kjczTableValuesToJson("kjcz_percentile10_");
+    const percentile90 = kjczTableValuesToJson("kjcz_percentile90_");
+    const percentile95 = kjczTableValuesToJson("kjcz_percentile95_");
+    const percentile99 = kjczTableValuesToJson("kjcz_percentile99_");
+    const frceOutsideLevel1RangeUp = kjczTableValuesToJson("kjcz_frce_out_level1_up_");
+    const frceOutsideLevel1RangeDown = kjczTableValuesToJson("kjcz_frce_out_level1_down_");
+    const frceOutsideLevel2RangeUp = kjczTableValuesToJson("kjcz_frce_out_level2_up_");
+    const frceOutsideLevel2RangeDown = kjczTableValuesToJson("kjcz_frce_out_level2_down_");
+    const frceExceeded60PercOfFRRCapacityUp = kjczTableValuesToJson("kjcz_frce_exc60_cap_up_");
+    const frceExceeded60PercOfFRRCapacityDown = kjczTableValuesToJson("kjcz_frce_exc60_cap_down_");
 
     const obj = {};
     obj.data = data;
@@ -291,99 +303,17 @@ function kjczDataToJson() {
     return data;
 }
 
-function kjczTableValuesToJson(row) {
-    let tr = document.getElementById(row);
+function kjczTableValuesToJson(field) {
     let array = [];
 
-    for (let i in tr.cells) {
-        if (i === 0) continue;
-        // console.log(tr.cells[i].innerHTML);
+    for (let i = 1; i <= 3; i++) {
         let obj = {};
-        obj.position = parseInt(i);
-        obj.quantity = parseFloat(tr.cells[i].innerHTML);
-
+        obj.position = i;
+        obj.quantity = parseFloat(document.getElementById(field + i).value);
         array[i-1] = obj;
     }
 
     return array;
-}
-
-function createKjczTable() {
-    let thr = document.getElementById("table_kjcz_header_row");
-
-    thr.insertCell(1).innerHTML = "2022-10";
-    thr.insertCell(2).innerHTML = "2022-11";
-    thr.insertCell(3).innerHTML = "2022-12";
-
-    let tr = document.getElementById("table_kjcz_mean_value_row");
-    tr.insertCell(1).innerHTML = "3.309";
-    tr.insertCell(2).innerHTML = "1.388";
-    tr.insertCell(3).innerHTML = "-1.941";
-
-    tr = document.getElementById("table_kjcz_standard_deviation_row");
-    tr.insertCell(1).innerHTML = "56.739";
-    tr.insertCell(2).innerHTML = "61.257";
-    tr.insertCell(3).innerHTML = "58.645";
-
-    tr = document.getElementById("table_kjcz_1_percintile_row");
-    tr.insertCell(1).innerHTML = "-132.749";
-    tr.insertCell(2).innerHTML = "-154.430";
-    tr.insertCell(3).innerHTML = "-162.567";
-
-    tr = document.getElementById("table_kjcz_5_percintile_row");
-    tr.insertCell(1).innerHTML = "-132.749";
-    tr.insertCell(2).innerHTML = "-154.430";
-    tr.insertCell(3).innerHTML = "-162.567";
-
-    tr = document.getElementById("table_kjcz_10_percintile_row");
-    tr.insertCell(1).innerHTML = "-132.749";
-    tr.insertCell(2).innerHTML = "-154.430";
-    tr.insertCell(3).innerHTML = "-162.567";
-
-    tr = document.getElementById("table_kjcz_90_percintile_row");
-    tr.insertCell(1).innerHTML = "-132.749";
-    tr.insertCell(2).innerHTML = "-154.430";
-    tr.insertCell(3).innerHTML = "-162.567";
-
-    tr = document.getElementById("table_kjcz_95_percintile_row");
-    tr.insertCell(1).innerHTML = "-132.749";
-    tr.insertCell(2).innerHTML = "-154.430";
-    tr.insertCell(3).innerHTML = "-162.567";
-
-    tr = document.getElementById("table_kjcz_99_percintile_row");
-    tr.insertCell(1).innerHTML = "-132.749";
-    tr.insertCell(2).innerHTML = "-154.430";
-    tr.insertCell(3).innerHTML = "-162.567";
-
-    tr = document.getElementById("table_kjcz_frce_outside_lev1_range_up_row");
-    tr.insertCell(1).innerHTML = "64";
-    tr.insertCell(2).innerHTML = "39";
-    tr.insertCell(3).innerHTML = "32";
-
-    tr = document.getElementById("table_kjcz_frce_outside_lev1_range_down_row");
-    tr.insertCell(1).innerHTML = "28";
-    tr.insertCell(2).innerHTML = "50";
-    tr.insertCell(3).innerHTML = "51";
-
-    tr = document.getElementById("table_kjcz_frce_outside_lev2_range_up_row");
-    tr.insertCell(1).innerHTML = "6";
-    tr.insertCell(2).innerHTML = "8";
-    tr.insertCell(3).innerHTML = "0";
-
-    tr = document.getElementById("table_kjcz_frce_outside_lev2_range_down_row");
-    tr.insertCell(1).innerHTML = "3";
-    tr.insertCell(2).innerHTML = "8";
-    tr.insertCell(3).innerHTML = "10";
-
-    tr = document.getElementById("table_kjcz_frce_exceeded_60_frr_capacity_up_row");
-    tr.insertCell(1).innerHTML = "7";
-    tr.insertCell(2).innerHTML = "2";
-    tr.insertCell(3).innerHTML = "0";
-
-    tr = document.getElementById("table_kjcz_frce_exceeded_60_frr_capacity_down_row");
-    tr.insertCell(1).innerHTML = "1";
-    tr.insertCell(2).innerHTML = "3";
-    tr.insertCell(3).innerHTML = "6";
 }
 
 function hello(page) {
