@@ -201,6 +201,10 @@ function fillKjczForm(respData) {
     console.log("-------")
 
     let data = respData["Data"];
+    if (data["Creator"] === "" && data["Revision"] === 0 && data["YearMonths"] == null) {
+        showKjczMessage("Brak zapisanego raportu KJCZ dla tego zakresu dat", MessageType.Warning);
+    }
+
     let meanValue = respData["MeanValue"];
     let standardDeviation = respData["StandardDeviation"];
     let percentile1 = respData["Percentile1"];
@@ -258,6 +262,9 @@ function setKjczDates(created, saved, published) {
 
 function fillKjczTableHeaderValues(row, values) {
     const yearMonths = values["YearMonths"]
+    if (yearMonths == null) {
+        return
+    }
 
     for (let i = 1; i <= 3; i++) {
         document.getElementById("kjcz_header_m" + i).value = yearMonths[i-1];

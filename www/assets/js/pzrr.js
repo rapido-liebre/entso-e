@@ -127,6 +127,10 @@ function fillPzrrForm(respData) {
     console.log("-------")
 
     let data = respData["Data"];
+    if (data["Creator"] === "" && data["Revision"] === 0) {
+        showPzrrMessage("Brak zapisanego raportu PZRR dla tego zakresu dat", MessageType.Warning);
+    }
+
     let forecastedCapacityUp = respData["ForecastedCapacityUp"];
     let forecastedCapacityDown = respData["ForecastedCapacityDown"];
 

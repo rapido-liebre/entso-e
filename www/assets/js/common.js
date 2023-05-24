@@ -1,6 +1,7 @@
 
 const MessageType = {
     Info: Symbol("info"),
+    Warning: Symbol("warning"),
     Error: Symbol("error")
 }
 
@@ -38,6 +39,9 @@ function showMessage(text, msgType, msgLabel) {
     switch (msgType) {
         case MessageType.Info:
             msgLabel.style.color = 'ForestGreen';
+            break;
+        case MessageType.Warning:
+            msgLabel.style.color = 'orange';
             break;
         case MessageType.Error:
             msgLabel.style.color = 'red';
