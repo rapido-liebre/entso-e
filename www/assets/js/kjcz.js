@@ -62,7 +62,7 @@ function saveKjczReport() {
             }
         }};
 
-    xhr.send(getJsonFromKjczForm());
+    xhr.send(JSON.stringify(getJsonObjectFromKjczForm()));
 }
 
 function publishKjczReport() {
@@ -90,11 +90,26 @@ function publishKjczReport() {
             }
         }};
 
-    xhr.send(getJsonFromKjczForm());
+    xhr.send(JSON.stringify(getJsonObjectFromKjczForm()));
 }
 
 function exportKjczReport() {
-    showKjczMessage("I Herkules dupa kiedy ludzi kupa!", MessageType.Error);
+    const err = validateKjcz();
+    if (err.length > 0) {
+        showKjczMessage(err, MessageType.Error)
+        return
+    }
+
+    const xml = JSONtoXML(getJsonObjectFromKjczForm());
+    console.log(xml);
+
+    let currentDate = new Date().toJSON().slice(0, 10);
+    let fileName = `raport_kjcz_${currentDate}.xml`;
+    const mimeType = 'text/plain';
+
+    downloadFile(xml, fileName, mimeType);
+
+    showKjczMessage("Raport KJCZ zapisany do pliku " + fileName, MessageType.Info);
 }
 
 function getDates() {
@@ -284,7 +299,7 @@ function clearKjczTableValues(row) {
     document.getElementById("kjcz-published").textContent = "Opublikowano: ";
 }
 
-function getJsonFromKjczForm() {
+function getJsonObjectFromKjczForm() {
     //convert object to json string
     const data = kjczDataToJson();
     const meanValue = kjczTableValuesToJson("kjcz_mean_value_");
@@ -319,7 +334,7 @@ function getJsonFromKjczForm() {
     obj.frceExceeded60PercOfFRRCapacityUp = frceExceeded60PercOfFRRCapacityUp;
     obj.frceExceeded60PercOfFRRCapacityDown = frceExceeded60PercOfFRRCapacityDown;
 
-    return JSON.stringify(obj);
+    return obj;
 }
 
 function kjczDataToJson() {

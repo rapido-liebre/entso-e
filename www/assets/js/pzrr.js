@@ -38,7 +38,7 @@ function savePzrrReport() {
             }
         }};
 
-    xhr.send(getJsonFromPzrrForm());
+    xhr.send(JSON.stringify(getJsonObjectFromPzrrForm()));
 }
 
 function publishPzrrReport() {
@@ -66,11 +66,26 @@ function publishPzrrReport() {
             }
         }};
 
-    xhr.send(getJsonFromPzrrForm());
+    xhr.send(JSON.stringify(getJsonObjectFromPzrrForm()));
 }
 
 function exportPzrrReport() {
-    showPzrrMessage("Slim Shady!", MessageType.Info);
+    const err = validatePzrr();
+    if (err.length > 0) {
+        showPzrrMessage(err, MessageType.Error)
+        return
+    }
+
+    const xml = JSONtoXML(getJsonObjectFromPzrrForm());
+    console.log(xml);
+
+    let currentDate = new Date().toJSON().slice(0, 10);
+    let fileName = `raport_pzrr_${currentDate}.xml`;
+    const mimeType = 'text/plain';
+
+    downloadFile(xml, fileName, mimeType);
+
+    showPzrrMessage("Raport PZRR zapisany do pliku " + fileName, MessageType.Info);
 }
 
 function createNewPzrrReport() {
@@ -154,7 +169,7 @@ function fillPzrrTableValues(row, values) {
     }
 }
 
-function getJsonFromPzrrForm() {
+function getJsonObjectFromPzrrForm() {
     //convert object to json string
     const data = pzrrDataToJson();
     const forecastedCapacityUp = pzrrTableValuesToJson("table_pzrr_forecasted_capacity_up");
@@ -166,7 +181,7 @@ function getJsonFromPzrrForm() {
     obj.forecastedCapacityUp = forecastedCapacityUp;
     obj.forecastedCapacityDown = forecastedCapacityDown;
 
-    return JSON.stringify(obj);
+    return obj;
 }
 
 function pzrrDataToJson() {

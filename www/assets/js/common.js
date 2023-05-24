@@ -37,7 +37,7 @@ function showMessage(text, msgType, msgLabel) {
 
     switch (msgType) {
         case MessageType.Info:
-            msgLabel.style.color = 'green';
+            msgLabel.style.color = 'ForestGreen';
             break;
         case MessageType.Error:
             msgLabel.style.color = 'red';
@@ -46,4 +46,42 @@ function showMessage(text, msgType, msgLabel) {
             console.log('message type not defined')
     }
     setTimeout(clearMessage, 4000);
+}
+
+function downloadFile(content, fileName, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const downloadLink = document.createElement('a');
+
+    downloadLink.href = url;
+    downloadLink.download = fileName;
+
+    // Append download link to the DOM and trigger a click to start the download
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+
+    // Clean up after the download is complete
+    document.body.removeChild(downloadLink);
+    URL.revokeObjectURL(url);
+}
+
+function JSONtoXML(obj) {
+    let xml = '';
+    for (let prop in obj) {
+        xml += obj[prop] instanceof Array ? '' : '<' + prop + '>';
+        if (obj[prop] instanceof Array) {
+            for (let array in obj[prop]) {
+                xml += '\n<' + prop + '>\n';
+                xml += JSONtoXML(new Object(obj[prop][array]));
+                xml += '</' + prop + '>';
+            }
+        } else if (typeof obj[prop] == 'object') {
+            xml += JSONtoXML(new Object(obj[prop]));
+        } else {
+            xml += obj[prop];
+        }
+        xml += obj[prop] instanceof Array ? '' : '</' + prop + '>\n';
+    }
+    xml = xml.replace(/<\/?[0-9]{1,}>/g, '');
+    return xml;
 }

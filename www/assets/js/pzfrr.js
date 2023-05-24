@@ -38,7 +38,7 @@ function savePzfrrReport() {
             }
         }};
 
-    xhr.send(getJsonFromPzfrrForm());
+    xhr.send(JSON.stringify(getJsonObjectFromPzfrrForm()));
 }
 
 function publishPzfrrReport() {
@@ -66,11 +66,26 @@ function publishPzfrrReport() {
             }
         }};
 
-    xhr.send(getJsonFromPzfrrForm());
+    xhr.send(JSON.stringify(getJsonObjectFromPzfrrForm()));
 }
 
 function exportPzfrrReport() {
-    showPzfrrMessage("Everybody follow me", MessageType.Info);
+    const err = validatePzfrr();
+    if (err.length > 0) {
+        showPzfrrMessage(err, MessageType.Error)
+        return
+    }
+
+    const xml = JSONtoXML(getJsonObjectFromPzfrrForm());
+    console.log(xml);
+
+    let currentDate = new Date().toJSON().slice(0, 10);
+    let fileName = `raport_pzfrr_${currentDate}.xml`;
+    const mimeType = 'text/plain';
+
+    downloadFile(xml, fileName, mimeType);
+
+    showPzfrrMessage("Raport PZFRR zapisany do pliku " + fileName, MessageType.Info);
 }
 
 function createNewPzfrrReport() {
@@ -154,7 +169,7 @@ function fillPzfrrTableValues(row, values) {
     }
 }
 
-function getJsonFromPzfrrForm() {
+function getJsonObjectFromPzfrrForm() {
     //convert object to json string
     const data = pzfrrDataToJson();
     const forecastedCapacityUp = pzfrrTableValuesToJson("table_pzfrr_forecasted_capacity_up");
@@ -166,7 +181,7 @@ function getJsonFromPzfrrForm() {
     obj.forecastedCapacityUp = forecastedCapacityUp;
     obj.forecastedCapacityDown = forecastedCapacityDown;
 
-    return JSON.stringify(obj);
+    return obj;
 }
 
 function pzfrrDataToJson() {
