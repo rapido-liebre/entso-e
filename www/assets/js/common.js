@@ -89,3 +89,56 @@ function JSONtoXML(obj) {
     xml = xml.replace(/<\/?[0-9]{1,}>/g, '');
     return xml;
 }
+
+// function jsonToCsv(items) {
+//     const aaa = items[0]
+//     const header = Object.keys(items[0]);
+//
+//     const headerString = header.join(',');
+//
+//     // handle null or undefined values here
+//     const replacer = (key, value) => value ?? '';
+//
+//     const rowItems = items.map((row) =>
+//         header
+//             .map((fieldName) => JSON.stringify(row[fieldName], replacer))
+//             .join(',')
+//     );
+//
+//     // join header and body, and break into separate lines
+//     const csv = [headerString, ...rowItems].join('\r\n');
+//
+//     return csv;
+// }
+
+function toUpperCase(text) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+const getDataRows = function (jsonObj, itemName) {
+    let obj = jsonObj[itemName];
+    const header = Object.keys(obj);
+    const upperCaseHeaders = [];
+    header.forEach(element => upperCaseHeaders.push(toUpperCase(element)));
+    const headerString = upperCaseHeaders.join(',');
+
+    const values = Object.values(obj);
+    const valuesString = values.join(',');
+
+    const emptyLine = "";
+
+    const itemRows = [headerString, valuesString, emptyLine].join('\r\n');
+    return itemRows;
+}
+
+const getItemsRow = function (jsonObjArray, itemName) {
+    const row = [];
+    row.push(itemName);
+    jsonObjArray.forEach((item) => {
+        console.log(item);
+        row.push(item["quantity"]);
+    });
+
+    let itemsRow = row.join(',');
+    return itemsRow;
+}

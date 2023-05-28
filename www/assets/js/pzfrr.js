@@ -76,14 +76,33 @@ function exportPzfrrReport() {
         return
     }
 
-    const xml = JSONtoXML(getJsonObjectFromPzfrrForm());
-    console.log(xml);
+    const jsonObj = getJsonObjectFromPzfrrForm();
+
+    const quarters = ["I", "II", "III", "IV"];
+    const headers = [];
+    for (let i = 0; i < 4; i++) {
+        let obj = {};
+        obj.quantity = quarters[i];
+        headers[i] = obj;
+    }
+
+    let forecastedCapacityUp = jsonObj["forecastedCapacityUp"];
+    let forecastedCapacityDown = jsonObj["forecastedCapacityDown"];
+
+    const csv = [
+        getDataRows(jsonObj, "data"),
+        getItemsRow(headers, "Quarters"),
+        getItemsRow(forecastedCapacityUp, "Forecasted Capacity Up"),
+        getItemsRow(forecastedCapacityDown, "Forecasted Capacity Down"),
+
+    ].join('\r\n');
+    console.log(csv);
 
     let currentDate = new Date().toJSON().slice(0, 10);
-    let fileName = `raport_pzfrr_${currentDate}.xml`;
+    let fileName = `raport_pzfrr_${currentDate}.csv`;
     const mimeType = 'text/plain';
 
-    downloadFile(xml, fileName, mimeType);
+    downloadFile(csv, fileName, mimeType);
 
     showPzfrrMessage("Raport PZFRR zapisany do pliku " + fileName, MessageType.Info);
 }

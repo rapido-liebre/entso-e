@@ -100,14 +100,51 @@ function exportKjczReport() {
         return
     }
 
-    const xml = JSONtoXML(getJsonObjectFromKjczForm());
-    console.log(xml);
+    const jsonObj = getJsonObjectFromKjczForm();
+
+    const headers = kjczTableHeadersToJson("kjcz_header_m");
+    const meanValue = jsonObj["meanValue"];
+    const standardDeviation = jsonObj["standardDeviation"];
+    const percentile1 = jsonObj["percentile1"];
+    const percentile5 = jsonObj["percentile5"];
+    const percentile10 = jsonObj["percentile10"];
+    const percentile90 = jsonObj["percentile90"];
+    const percentile95 = jsonObj["percentile95"];
+    const percentile99 = jsonObj["percentile99"];
+    const frceOutsideLevel1RangeUp = jsonObj["frceOutsideLevel1RangeUp"];
+    const frceOutsideLevel1RangeDown = jsonObj["frceOutsideLevel1RangeDown"];
+    const frceOutsideLevel2RangeUp = jsonObj["frceOutsideLevel2RangeUp"];
+    const frceOutsideLevel2RangeDown = jsonObj["frceOutsideLevel2RangeDown"];
+    const frceExceeded60PercOfFRRCapacityUp = jsonObj["frceExceeded60PercOfFRRCapacityUp"];
+    const frceExceeded60PercOfFRRCapacityDown = jsonObj["frceExceeded60PercOfFRRCapacityDown"];
+
+
+    const csv = [
+        getDataRows(jsonObj, "data"),
+        getItemsRow(headers, "Months"),
+        getItemsRow(meanValue, "Mean Value"),
+        getItemsRow(standardDeviation, "Standard Deviation"),
+        getItemsRow(percentile1, "1 - Percentile"),
+        getItemsRow(percentile5, "5 - Percentile"),
+        getItemsRow(percentile10, "10 - Percentile"),
+        getItemsRow(percentile90, "90 - Percentile"),
+        getItemsRow(percentile95, "95 - Percentile"),
+        getItemsRow(percentile99, "99 - Percentile"),
+        "\r\nNo. of Time Intervals",
+        getItemsRow(frceOutsideLevel1RangeUp, "FRCE Outside Level 1 Range Up (positive)"),
+        getItemsRow(frceOutsideLevel1RangeDown, "FRCE Outside Level 1 Range Down (negative)"),
+        getItemsRow(frceOutsideLevel2RangeUp, "FRCE Outside Level 2 Range Up (positive)"),
+        getItemsRow(frceOutsideLevel2RangeDown, "FRCE Outside Level 2 Range Down (negative)"),
+        getItemsRow(frceExceeded60PercOfFRRCapacityUp, "FRCE Exceeded 60% of FRR Capacity Up (positive)"),
+        getItemsRow(frceExceeded60PercOfFRRCapacityDown, "FRCE Exceeded 60% of FRR Capacity Down (negative)")
+    ].join('\r\n');
+    console.log(csv);
 
     let currentDate = new Date().toJSON().slice(0, 10);
-    let fileName = `raport_kjcz_${currentDate}.xml`;
+    let fileName = `raport_kjcz_${currentDate}.csv`;
     const mimeType = 'text/plain';
 
-    downloadFile(xml, fileName, mimeType);
+    downloadFile(csv, fileName, mimeType);
 
     showKjczMessage("Raport KJCZ zapisany do pliku " + fileName, MessageType.Info);
 }
@@ -370,6 +407,19 @@ function kjczTableValuesToJson(field) {
     return array;
 }
 
+function kjczTableHeadersToJson(field) {
+    let array = [];
+
+    for (let i = 1; i <= 3; i++) {
+        let obj = {};
+        obj.position = i;
+        obj.quantity = document.getElementById(field + i).value;
+        array[i-1] = obj;
+    }
+
+    return array;
+}
+
 function validateKjcz() {
     if (document.getElementById("kjcz_author").value === "") {
         return "Błędna wartość w polu Autor";
@@ -397,6 +447,47 @@ function validateKjcz() {
 function showKjczMessage(text, msgType) {
     showMessage(text, msgType, document.getElementById("kjcz_message"))
 }
+
+// function getCsvFromKjczForm() {
+//     const author = document.getElementById("kjcz_author").value;
+//     // const rev = document.getElementById("kjcz_rev").innerHTML;
+//     const [dateFrom, dateTo] = getDates();
+//
+//
+//     const meanValue = kjczTableValuesToJson("kjcz_mean_value_");
+//     const standardDeviation = kjczTableValuesToJson("kjcz_st_deviation_");
+//     const percentile1 = kjczTableValuesToJson("kjcz_percentile1_");
+//     const percentile5 = kjczTableValuesToJson("kjcz_percentile5_");
+//     const percentile10 = kjczTableValuesToJson("kjcz_percentile10_");
+//     const percentile90 = kjczTableValuesToJson("kjcz_percentile90_");
+//     const percentile95 = kjczTableValuesToJson("kjcz_percentile95_");
+//     const percentile99 = kjczTableValuesToJson("kjcz_percentile99_");
+//     const frceOutsideLevel1RangeUp = kjczTableValuesToJson("kjcz_frce_out_level1_up_");
+//     const frceOutsideLevel1RangeDown = kjczTableValuesToJson("kjcz_frce_out_level1_down_");
+//     const frceOutsideLevel2RangeUp = kjczTableValuesToJson("kjcz_frce_out_level2_up_");
+//     const frceOutsideLevel2RangeDown = kjczTableValuesToJson("kjcz_frce_out_level2_down_");
+//     const frceExceeded60PercOfFRRCapacityUp = kjczTableValuesToJson("kjcz_frce_exc60_cap_up_");
+//     const frceExceeded60PercOfFRRCapacityDown = kjczTableValuesToJson("kjcz_frce_exc60_cap_down_");
+//
+//     const obj = {};
+//     obj.data = data;
+//     obj.meanValue = meanValue;
+//     obj.standardDeviation = standardDeviation;
+//     obj.percentile1 = percentile1;
+//     obj.percentile5 = percentile5;
+//     obj.percentile10 = percentile10;
+//     obj.percentile90 = percentile90;
+//     obj.percentile95 = percentile95;
+//     obj.percentile99 = percentile99;
+//     obj.frceOutsideLevel1RangeUp = frceOutsideLevel1RangeUp;
+//     obj.frceOutsideLevel1RangeDown = frceOutsideLevel1RangeDown;
+//     obj.frceOutsideLevel2RangeUp = frceOutsideLevel2RangeUp;
+//     obj.frceOutsideLevel2RangeDown = frceOutsideLevel2RangeDown;
+//     obj.frceExceeded60PercOfFRRCapacityUp = frceExceeded60PercOfFRRCapacityUp;
+//     obj.frceExceeded60PercOfFRRCapacityDown = frceExceeded60PercOfFRRCapacityDown;
+//
+//     return obj;
+// }
 
 function hello(page) {
     alert("Hello " + page);
