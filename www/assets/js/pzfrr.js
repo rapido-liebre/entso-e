@@ -90,6 +90,7 @@ function exportPzfrrReport() {
     let forecastedCapacityDown = jsonObj["forecastedCapacityDown"];
 
     const csv = [
+        "Article: 188.3 - Outlook of the reserve capacities on FRR\r\n",
         getDataRows(jsonObj, "data"),
         getItemsRow(headers, "Quarters"),
         getItemsRow(forecastedCapacityUp, "Forecasted Capacity Up"),

@@ -120,6 +120,7 @@ function exportKjczReport() {
 
 
     const csv = [
+        "Article: 185.4 - Values of frequency quality evaluation (Part B)\r\n",
         getDataRows(jsonObj, "data"),
         getItemsRow(headers, "Months"),
         getItemsRow(meanValue, "Mean Value"),
