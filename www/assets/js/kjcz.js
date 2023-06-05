@@ -176,11 +176,26 @@ function getDates() {
     return [dateFrom, dateTo];
 }
 
+function getTimeIntervalsParams() {
+    const lev1 = document.getElementById("kjcz_frce_out_level1").value;
+    const lev2 = document.getElementById("kjcz_frce_out_level2").value;
+    const excCapUp = document.getElementById("kjcz_frce_exc60_cap_up").value;
+    const excCapDown = document.getElementById("kjcz_frce_exc60_cap_down").value;
+
+    return [lev1, lev2, excCapUp, excCapDown];
+}
+
 function createNewKjczReport() {
     clearKjczTableValues();
+    const err = validateExtraParametersKjcz();
+    if (err.length > 0) {
+        showKjczMessage(err, MessageType.Error)
+        return
+    }
 
     const [dateFrom, dateTo] = getDates();
     console.log("Create new KJCZ report within dates: ", dateFrom, dateTo);
+    const [lev1, lev2, excCapUp, excCapDown] = getTimeIntervalsParams();
 
     const get = async (url, params) => {
         const response = await fetch(url + '?' + new URLSearchParams(params))
@@ -193,6 +208,10 @@ function createNewKjczReport() {
     get('http://'+ host + ':' + port + '/api/test_kjcz', {
         dateFrom: dateFrom,
         dateTo: dateTo,
+        level1: lev1,
+        level2: lev2,
+        excCapacityUp: excCapUp,
+        excCapacityDown: excCapDown,
     }).then(respData => {
         console.log(respData)
         // if (xhr.status == 200) {
@@ -442,6 +461,17 @@ function validateKjcz() {
         if (!validateNumber(document.getElementById("kjcz_frce_exc60_cap_up_" + i))) return "Błędna wartość w polu FRCE Exceeded 60% of FRR Capacity Up, kolumna " + i;
         if (!validateNumber(document.getElementById("kjcz_frce_exc60_cap_down_" + i))) return "Błędna wartość w polu FRCE Exceeded 60% of FRR Capacity Down, kolumna " + i;
     }
+    return "";
+}
+
+function validateExtraParametersKjcz() {
+    const [lev1, lev2, excCapUp, excCapDown] = getTimeIntervalsParams();
+
+    if (!validateNumberOrEmpty(lev1)) return "Błędna wartość w polu FRCE Outside Level 1";
+    if (!validateNumberOrEmpty(lev2)) return "Błędna wartość w polu FRCE Outside Level 2";
+    if (!validateNumberOrEmpty(excCapUp)) return "Błędna wartość w polu FRCE Exceeded 60% of FRR Capacity Up";
+    if (!validateNumberOrEmpty(excCapDown)) return "Błędna wartość w polu FRCE Exceeded 60% of FRR Capacity Down";
+
     return "";
 }
 

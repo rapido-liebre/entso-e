@@ -6,6 +6,7 @@ import (
 	"entso-e_reports/pkg/common/models"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"strings"
 	"time"
 )
 
@@ -43,7 +44,7 @@ func (h handler) SendTest(ctx *fiber.Ctx, rt models.ReportType, publish bool) er
 }
 
 func (h handler) SendTestKjcz(ctx *fiber.Ctx) error {
-	rd, err := getCommonReportData(ctx)
+	rd, err := getCommonReportData(ctx, 6)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -64,7 +65,7 @@ func (h handler) SendTestKjcz(ctx *fiber.Ctx) error {
 }
 
 func (h handler) SendTestPzrr(ctx *fiber.Ctx) error {
-	rd, err := getCommonReportData(ctx)
+	rd, err := getCommonReportData(ctx, 2)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -85,7 +86,7 @@ func (h handler) SendTestPzrr(ctx *fiber.Ctx) error {
 }
 
 func (h handler) SendTestPzfrr(ctx *fiber.Ctx) error {
-	rd, err := getCommonReportData(ctx)
+	rd, err := getCommonReportData(ctx, 2)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -156,8 +157,8 @@ func (h handler) GetPzfrrReport(rd models.ReportData) (models.PzfrrReport, error
 	return report, nil
 }
 
-func getCommonReportData(ctx *fiber.Ctx) (models.ReportData, error) {
-	params, err := models.ParseQueryParams(ctx, 2)
+func getCommonReportData(ctx *fiber.Ctx, expectedParamsCount int) (models.ReportData, error) {
+	params, err := models.ParseQueryParams(ctx, expectedParamsCount)
 	if err != nil {
 		return models.ReportData{}, err
 	}
@@ -176,15 +177,20 @@ func getCommonReportData(ctx *fiber.Ctx) (models.ReportData, error) {
 	}
 
 	rd := models.ReportData{
-		Start: dateFrom,
-		End:   dateTo,
+		Start:       dateFrom,
+		End:         dateTo,
+		ExtraParams: map[string]string{},
+	}
+	for i := 2; i < len(params); i++ {
+		ep := strings.Split(params[i], "=")
+		rd.ExtraParams[ep[0]] = ep[1]
 	}
 
 	return rd, nil
 }
 
 func (h handler) GetKjcz(ctx *fiber.Ctx) error {
-	rd, err := getCommonReportData(ctx)
+	rd, err := getCommonReportData(ctx, 2)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -203,7 +209,7 @@ func (h handler) GetKjcz(ctx *fiber.Ctx) error {
 }
 
 func (h handler) GetPzrr(ctx *fiber.Ctx) error {
-	rd, err := getCommonReportData(ctx)
+	rd, err := getCommonReportData(ctx, 2)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -222,7 +228,7 @@ func (h handler) GetPzrr(ctx *fiber.Ctx) error {
 }
 
 func (h handler) GetPzfrr(ctx *fiber.Ctx) error {
-	rd, err := getCommonReportData(ctx)
+	rd, err := getCommonReportData(ctx, 2)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}

@@ -12,15 +12,16 @@ type Reporter interface {
 }
 
 type ReportData struct {
-	Creator    string
-	Revision   int64
-	Start      time.Time
-	End        time.Time
-	Created    time.Time
-	Saved      time.Time
-	Reported   time.Time
-	YearMonths []string
-	Error      error
+	Creator     string
+	Revision    int64
+	Start       time.Time
+	End         time.Time
+	Created     time.Time
+	Saved       time.Time
+	Reported    time.Time
+	YearMonths  []string
+	Error       error
+	ExtraParams map[string]string
 }
 
 type ReportPayload struct {

@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"sort"
+	"strconv"
 	"time"
 )
 
@@ -13,7 +14,7 @@ type ReportCalculator struct {
 	data1min  map[Year]map[time.Month][]LfcAce
 }
 
-func (rc *ReportCalculator) Calculate(lfcAce15 []LfcAce, lfcAce1 []LfcAce) KjczReport {
+func (rc *ReportCalculator) Calculate(lfcAce15 []LfcAce, lfcAce1 []LfcAce, extraParams map[string]string) KjczReport {
 	if rc.data15min == nil {
 		rc.data15min = make(map[Year]map[time.Month][]LfcAce)
 	}
@@ -24,6 +25,24 @@ func (rc *ReportCalculator) Calculate(lfcAce15 []LfcAce, lfcAce1 []LfcAce) KjczR
 	rc.splitToYearsMonths(lfcAce15, FETCH_15_MIN)
 	rc.splitToYearsMonths(lfcAce1, FETCH_1_MIN)
 
+	var level1, level2, excCapacityUp, excCapacityDown *float64
+	if len(extraParams["level1"]) > 0 {
+		level1 = new(float64)
+		*level1, _ = strconv.ParseFloat(extraParams["level1"], 64)
+	}
+	if len(extraParams["level2"]) > 0 {
+		level2 = new(float64)
+		*level2, _ = strconv.ParseFloat(extraParams["level2"], 64)
+	}
+	if len(extraParams["excCapacityUp"]) > 0 {
+		excCapacityUp = new(float64)
+		*excCapacityUp, _ = strconv.ParseFloat(extraParams["excCapacityUp"], 64)
+	}
+	if len(extraParams["excCapacityDown"]) > 0 {
+		excCapacityDown = new(float64)
+		*excCapacityDown, _ = strconv.ParseFloat(extraParams["excCapacityDown"], 64)
+	}
+
 	kjczBody := &KjczBody{}
 	var yearMonths []string
 
@@ -31,8 +50,8 @@ func (rc *ReportCalculator) Calculate(lfcAce15 []LfcAce, lfcAce1 []LfcAce) KjczR
 		position := 1
 		for month, measurements := range months {
 			yearMonth := fmt.Sprintf("%d-%02d", year, month)
-			CalculateReportData15min(measurements, position, kjczBody, yearMonth)
-			CalculateReportData1min(measurements, position, kjczBody, yearMonth)
+			CalculateReportData15min(measurements, position, kjczBody, yearMonth, level1, level2)
+			CalculateReportData1min(measurements, position, kjczBody, yearMonth, excCapacityUp, excCapacityDown)
 			yearMonths = append(yearMonths, yearMonth)
 			position += 1
 		}
@@ -98,9 +117,17 @@ func (rc *ReportCalculator) splitToYearsMonths(lfcAce []LfcAce, rt ReportType) {
 	}
 }
 
-func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, yearMonth string) {
-	const level1 = 124.964
-	const level2 = 236.326
+func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, yearMonth string, lev1, lev2 *float64) {
+	var level1, level2 float64
+	level1 = 124.964
+	level2 = 236.326
+	if lev1 != nil {
+		level1 = *lev1
+	}
+	if lev2 != nil {
+		level2 = *lev2
+	}
+
 	totalCount := float64(len(lfcAce15))
 	fmt.Println(totalCount)
 
@@ -175,10 +202,25 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 	body.FrceOutsideLevel2RangeDown = append(body.FrceOutsideLevel2RangeDown, getBRPayload(lv2neg))
 }
 
-func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yearMonth string) {
-	const FRR = 1075
-	const FRR60 = FRR * 0.6
-	const FRR15 = FRR * 0.15
+func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yearMonth string, excCapacityUp, excCapacityDown *float64) {
+	//const FRR = 1075
+	//const FRR60 = FRR * 0.6
+	//const FRR15 = FRR * 0.15
+
+	var FRRpos, FRRneg float64
+	FRRpos = 1075
+	FRRneg = -1075
+	if excCapacityUp != nil {
+		FRRpos = *excCapacityUp
+	}
+	if excCapacityDown != nil {
+		FRRneg = *excCapacityDown
+	}
+
+	FRR60pos := FRRpos * 0.6
+	FRR15pos := FRRpos * 0.15
+	FRR60neg := FRRneg * 0.6
+	FRR15neg := FRRneg * 0.15
 
 	totalCount := float64(len(lfcAce1))
 	fmt.Println(totalCount)
@@ -191,7 +233,7 @@ func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yea
 		//fmt.Println(k, v)
 		val := v.AvgValue
 		{
-			if -val < FRR15 && exceeding == 1 {
+			if -val < FRR15pos && exceeding == 1 {
 				if exceedingTime > 14 {
 					plus += 1
 				}
@@ -199,7 +241,7 @@ func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yea
 				exceedingTime = 0
 			}
 
-			if -val > -FRR15 && exceeding == -1 {
+			if -val > FRR15neg && exceeding == -1 {
 				if exceedingTime > 14 {
 					minus += 1
 				}
@@ -207,11 +249,11 @@ func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yea
 				exceedingTime = 0
 			}
 
-			if -val > FRR60 && exceeding == 0 {
+			if -val > FRR60pos && exceeding == 0 {
 				exceeding = 1
 			}
 
-			if -val < -FRR60 && exceeding == 0 {
+			if -val < FRR60neg && exceeding == 0 {
 				exceeding = -1
 			}
 
@@ -220,6 +262,40 @@ func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yea
 			}
 		}
 	}
+
+	//for _, v := range lfcAce1 {
+	//	//fmt.Println(k, v)
+	//	val := v.AvgValue
+	//	{
+	//		if -val < FRR15 && exceeding == 1 {
+	//			if exceedingTime > 14 {
+	//				plus += 1
+	//			}
+	//			exceeding = 0
+	//			exceedingTime = 0
+	//		}
+	//
+	//		if -val > -FRR15 && exceeding == -1 {
+	//			if exceedingTime > 14 {
+	//				minus += 1
+	//			}
+	//			exceeding = 0
+	//			exceedingTime = 0
+	//		}
+	//
+	//		if -val > FRR60 && exceeding == 0 {
+	//			exceeding = 1
+	//		}
+	//
+	//		if -val < -FRR60 && exceeding == 0 {
+	//			exceeding = -1
+	//		}
+	//
+	//		if exceeding != 0 {
+	//			exceedingTime += 1
+	//		}
+	//	}
+	//}
 
 	//out14 := plus
 	//out15 := minus

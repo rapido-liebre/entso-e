@@ -253,7 +253,7 @@ func (dbc *dbConnector) callFetchLfcAce() error {
 	}
 
 	var rc models.ReportCalculator
-	report := rc.Calculate(lfcAce15min, lfcAce1min)
+	report := rc.Calculate(lfcAce15min, lfcAce1min, dbc.data.ReportData.ExtraParams)
 	//fmt.Println(report)
 
 	dbc.channels.KjczReport <- report

@@ -28,6 +28,12 @@ function validateNumber(field) {
     return !isNaN(parseFloat(field.value));
 }
 
+function validateNumberOrEmpty(value) {
+    if (value === "") return true;
+
+    return !isNaN(parseFloat(value));
+}
+
 function showMessage(text, msgType, msgLabel) {
     //set the message
     msgLabel.innerHTML = text;
