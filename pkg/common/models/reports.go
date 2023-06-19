@@ -20,7 +20,7 @@ type ReportData struct {
 	Saved       time.Time
 	Reported    time.Time
 	YearMonths  []string
-	Error       error
+	Error       string
 	ExtraParams map[string]string
 }
 

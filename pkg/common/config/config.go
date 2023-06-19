@@ -28,6 +28,9 @@ type params struct {
 	ConnString    string `mapstructure:"ORA_CONN_STRING"` // Oracle connection string with wallet
 	SrcConnString string `mapstructure:"SSIRB_CONN_STRING"`
 	FakePublish   bool   `mapstructure:"FAKE_PUBLISH"`
+	CertName      string `mapstructure:"CERT_NAME"`
+	CertServers   string `mapstructure:"CERT_SRV"`
+	CertPort      int    `mapstructure:"CERT_PORT"`
 }
 
 type Config struct {

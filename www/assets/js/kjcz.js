@@ -1,41 +1,7 @@
 window.addEventListener('DOMContentLoaded', (event) => {
     const page = window.location.pathname.substring(1);
     console.log('DOM fully loaded and parsed, page: ', page);
-    // switch (page) {
-    //     case "index.html":
-    //         createKjczTable(); break;
-    //     case "files.html":
-    //         setFilesForm(); break;
-    //     case "configuration.html":
-    //         setConfigurationForm(); break;
-    //     default:
-    //         // ReadConfigFile();
-    //         break;
-    // }
 });
-
-// function loadFiles() {
-//     const url = 'http://localhost:3055/api/bucket_objects';
-//
-//     fetch(url, {method: 'GET'})
-//         .then((response) => response.json())
-//         .then((data) => {
-//             for (const row of data) {
-//                 // console.log(row);
-//                 addRowDataToTable(row);
-//             }
-//         });
-//
-//     let tb = document.getElementById("tableBody");
-//     tb.addEventListener('click', function (e) {
-//         const cell = e.target.closest('td');
-//         if (!cell) {return;} // Quit, not clicked on a cell
-//         const rowIdx = cell.parentElement.rowIndex -1;
-//         const filename = tb.rows[rowIdx].cells[0].innerHTML;
-//         // console.log("*** ", filename, "  --- ", cell.innerHTML, rowIdx, cell.cellIndex);
-//         downloadFile(filename)
-//     });
-// }
 
 function saveKjczReport() {
     const err = validateKjcz();
@@ -259,7 +225,20 @@ function fillKjczForm(respData) {
 
     let data = respData["Data"];
     if (data["Creator"] === "" && data["Revision"] === 0 && data["YearMonths"] == null) {
-        showKjczMessage("Brak zapisanego raportu KJCZ dla tego zakresu dat", MessageType.Warning);
+        const errMsg = data["Error"]
+
+        if (errMsg.startsWith("connect to db failed: Cannot find password for a user:")) {
+            showKjczMessage("Błąd autoryzacji dostępu do bazy danych", MessageType.Warning);
+        }
+        else if (errMsg.startsWith("error pinging db: ORA-01109: baza danych nie jest otwarta")) {
+            showKjczMessage("Brak komunikacji z bazą danych", MessageType.Warning);
+        }
+        else if (errMsg.startsWith("error pinging db: ORA-01017: niepoprawna nazwa użytkownika/hasło; odmowa zalogowania")) {
+            showKjczMessage("Błąd autoryzacji dostępu do bazy danych, niepoprawna nazwa użytkownika/hasło", MessageType.Warning);
+        }
+        else {
+            showKjczMessage("Brak zapisanego raportu KJCZ dla tego zakresu dat", MessageType.Warning);
+        }
     }
 
     let meanValue = respData["MeanValue"];

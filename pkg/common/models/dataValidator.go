@@ -134,3 +134,20 @@ func GetSecondaryQuantityString(secondaryQuantity *int) string {
 	}
 	return strconv.Itoa(*secondaryQuantity)
 }
+
+func GetTextBetween(value, a, b string) string {
+	//get substring between two strings.
+	posFirst := strings.Index(value, a)
+	if posFirst == -1 {
+		return ""
+	}
+	posLast := strings.Index(value, b)
+	if posLast == -1 {
+		return ""
+	}
+	posFirstAdjusted := posFirst + len(a)
+	if posFirstAdjusted >= posLast {
+		return ""
+	}
+	return value[posFirstAdjusted:posLast]
+}

@@ -1,5 +1,13 @@
 package db_connector
 
+// #cgo CFLAGS: -I./foo
+// #cgo LDFLAGS: -L./foo -lfoo
+// #include "foo.h"
+
+// #cgo CFLAGS: -I./certPassdClient
+// #cgo LDFLAGS: -L./certPassdClient -lcertPassdClient -lssl -lcrypto
+// #include "certPassdClient.h"
+import "C"
 import (
 	"database/sql"
 	"entso-e_reports/pkg/common/config"
@@ -10,11 +18,12 @@ import (
 	"log"
 	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
-
-	_ "github.com/sijms/go-ora/v2"
 )
+
+const SUCCESS = 1
 
 type DBConnector interface {
 	Run(wg *sync.WaitGroup)
@@ -171,23 +180,47 @@ func (dbc *dbConnector) releaseChannel(err error) {
 	case models.PR_SO_KJCZ:
 		dbc.channels.KjczReport <- models.KjczReport{
 			Data: models.ReportData{
-				Error: err,
+				Error: err.Error(),
 			}}
 	case models.PD_BI_PZRR:
 		dbc.channels.PzrrReport <- models.PzrrReport{
 			Data: models.ReportData{
-				Error: err,
+				Error: err.Error(),
 			}}
 	case models.PD_BI_PZFRR:
 		dbc.channels.PzfrrReport <- models.PzfrrReport{
 			Data: models.ReportData{
-				Error: err,
+				Error: err.Error(),
 			}}
 	}
 }
 
+func (dbc *dbConnector) getPassword(certName string) (string, error) {
+	servers := strings.Split(dbc.config.Params.CertServers, ",")
+	port := dbc.config.Params.CertPort
+	byteArray := [80]byte{}
+	pass := C.CString(string(byteArray[:]))
+
+	for _, serverIp := range servers {
+		ok := C.getPasswordFromServer(C.CString(certName), pass, C.CString(serverIp), C.int(port))
+		fmt.Println(C.GoString(pass))
+		if int(ok) == SUCCESS {
+			return C.GoString(pass), nil
+		}
+	}
+
+	return "", errors.New(fmt.Sprintf("Cannot find password for a user: %s", certName))
+}
+
 func (dbc *dbConnector) connectToDB() error {
 	cfg := dbc.config.Params
+
+	passwd, err := dbc.getPassword(cfg.CertName)
+	if err != nil {
+		return fmt.Errorf("connect to db failed: %w", err)
+	}
+	fmt.Println(passwd)
+
 	//connectionString := "oracle://" + cfg.DBUser + ":" + cfg.DBPassword + "@" + cfg.DBServer + ":" + cfg.DBPort + "/" + cfg.DBService
 	//if cfg.DBDSN != "" {
 	//	connectionString += "?TRACE FILE=trace.log&SSL=enable&SSL Verify=false&WALLET=" + cfg.DBDSN //url.QueryEscape(dbParams["walletLocation"])
@@ -207,13 +240,15 @@ func (dbc *dbConnector) connectToDB() error {
 	if len(cfg.ConnString) > 0 {
 		fmt.Println("Using provided connection string")
 		connectionString = cfg.ConnString
+		unamePass := models.GetTextBetween(connectionString, "oracle://", "@")
+		connectionString = strings.Replace(connectionString, unamePass, fmt.Sprintf("%s:%s", cfg.CertName, passwd), 1)
 	}
 
 	//"oracle://10.69.9.32:1522/OSP&&wallet=/usr/lib/oracle/18.3/client64/network/wallet"
 	//"oracle://10.69.9.32:1522:OSP&&wallet=/usr/lib/oracle/18.3/client64/network/wallet"
 
 	fmt.Println(connectionString)
-	var err error
+
 	dbc.db, err = sql.Open("oracle", connectionString)
 	if err != nil {
 		return fmt.Errorf("error in sql.Open: %w", err)

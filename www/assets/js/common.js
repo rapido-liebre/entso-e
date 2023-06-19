@@ -55,7 +55,7 @@ function showMessage(text, msgType, msgLabel) {
         default:
             console.log('message type not defined')
     }
-    setTimeout(clearMessage, 4000);
+    setTimeout(clearMessage, 8000);
 }
 
 function downloadFile(content, fileName, mimeType) {

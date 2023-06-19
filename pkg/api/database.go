@@ -199,8 +199,8 @@ func (h handler) GetKjcz(ctx *fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
-	if report.Data.Error != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
+	if len(report.Data.Error) > 0 {
+		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error)
 	}
 
 	rs, _ := json.Marshal(report)
@@ -218,8 +218,8 @@ func (h handler) GetPzrr(ctx *fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
-	if report.Data.Error != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
+	if len(report.Data.Error) > 0 {
+		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error)
 	}
 
 	rs, _ := json.Marshal(report)
@@ -237,8 +237,8 @@ func (h handler) GetPzfrr(ctx *fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
-	if report.Data.Error != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
+	if len(report.Data.Error) > 0 {
+		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error)
 	}
 
 	rs, _ := json.Marshal(report)
@@ -278,8 +278,8 @@ func (h handler) saveKjczReport(ctx *fiber.Ctx, publish bool) error {
 	}
 
 	report := <-h.channels.KjczReport
-	if report.Data.Error != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
+	if len(report.Data.Error) > 0 {
+		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error)
 	}
 
 	rs, _ := json.Marshal(report)
@@ -327,8 +327,8 @@ func (h handler) savePzrrReport(ctx *fiber.Ctx, publish bool) error {
 	}
 
 	report := <-h.channels.PzrrReport
-	if report.Data.Error != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
+	if len(report.Data.Error) > 0 {
+		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error)
 	}
 
 	rs, _ := json.Marshal(report)
@@ -376,8 +376,8 @@ func (h handler) savePzfrrReport(ctx *fiber.Ctx, publish bool) error {
 	}
 
 	report := <-h.channels.PzfrrReport
-	if report.Data.Error != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error.Error())
+	if len(report.Data.Error) > 0 {
+		return fiber.NewError(fiber.StatusInternalServerError, report.Data.Error)
 	}
 
 	rs, _ := json.Marshal(report)
