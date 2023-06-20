@@ -4,8 +4,8 @@ package db_connector
 // #cgo LDFLAGS: -L./foo -lfoo
 // #include "foo.h"
 
-// #cgo CFLAGS: -I./certPassdClient
-// #cgo LDFLAGS: -L./certPassdClient -lcertPassdClient -lssl -lcrypto
+// #cgo CFLAGS: -I./certPassdClient_CentOS
+// #cgo LDFLAGS: -L./certPassdClient_CentOS -lcertPassdClient -lssl -lcrypto
 // #include "certPassdClient.h"
 import "C"
 import (
