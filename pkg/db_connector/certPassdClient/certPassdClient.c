@@ -147,8 +147,9 @@ bool getPasswordFromServer(const char *name, char *pass, const char *certPassHos
       if(rlen>0){
           if(strncmp(pass,name,rlen)==0){
               sprintf(strError, "pass and name are equal");
+              return false;
           }
-        return (true);
+        return true;
       }
   }
   close(sockfd);

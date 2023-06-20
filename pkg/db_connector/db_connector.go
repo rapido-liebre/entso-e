@@ -24,6 +24,7 @@ import (
 )
 
 const SUCCESS = 1
+const PREFIX = "entso-e"
 
 type DBConnector interface {
 	Run(wg *sync.WaitGroup)
@@ -215,7 +216,8 @@ func (dbc *dbConnector) getPassword(certName string) (string, error) {
 func (dbc *dbConnector) connectToDB() error {
 	cfg := dbc.config.Params
 
-	passwd, err := dbc.getPassword(cfg.CertName)
+	certName := strings.Join([]string{PREFIX, cfg.CertName}, ":")
+	passwd, err := dbc.getPassword(certName)
 	if err != nil {
 		return fmt.Errorf("connect to db failed: %w", err)
 	}

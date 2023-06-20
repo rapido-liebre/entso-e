@@ -3,7 +3,7 @@
 int main( int argc, char** argv )
 {
     char pass[MAX];
-    char certName[4096]="czesio";
+    char certName[4096]="entso-e:ssir";
     char passSrvAddr[4096]="127.0.0.1";
     int port = 0;
 
