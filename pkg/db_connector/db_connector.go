@@ -328,6 +328,9 @@ func (dbc *dbConnector) fetchRawLfcAce(rt models.ReportType) ([]models.LfcAce, e
 	}
 	fmt.Printf("len(%s): %d\n", rt.Shortly(), len(lfcAce))
 	fmt.Println("Finish call store procedure: ", time.Now().Sub(t))
+	if len(lfcAce) == 0 {
+		return lfcAce, errors.New("no data within date range")
+	}
 
 	return lfcAce, nil
 }

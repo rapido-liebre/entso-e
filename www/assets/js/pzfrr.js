@@ -202,7 +202,7 @@ function fillPzfrrTableValues(row, values) {
     for (let i in values) {
         const index = values[i]["Position"];
         let cell = document.getElementById("pzfrr_forecast_cap_" + flowDirection + "_" + index);
-        cell.value = values[i]["Quantity"];
+        cell.value = values[index-1]["Quantity"];
     }
 }
 

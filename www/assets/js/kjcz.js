@@ -311,7 +311,7 @@ function fillKjczTableValues(field, values) {
     for (let i in values) {
         const index = values[i]["Position"];
 
-        document.getElementById(field + index).value = values[i]["Quantity"];
+        document.getElementById(field + index).value = values[index-1]["Quantity"];
     }
 }
 
