@@ -52,7 +52,10 @@
                                                     <legend id="kjcz-published" style="font-size: 12px;">Opublikowano:</legend><button class="btn btn-primary" id="kjcz_publish" type="button" style="margin-right: 30px;" onclick="publishKjczReport()">Publikuj</button>
                                                 </div>
                                                 <div class="col col-2" style="display: inline-grid;">
-                                                    <legend id="pzfrr-published-5" style="font-size: 12px;">Eksport do CSV</legend><button class="btn btn-primary" id="kjcz_export" type="button" style="margin-right: 30px;" onclick="exportKjczReport()">Eksportuj</button>
+                                                    <legend id="pzfrr-published-5" style="font-size: 12px;">Eksport do CSV</legend>
+                                                    <div class="dropdown d-grid" style="margin-right: 30px;"><button class="btn btn-primary dropdown-toggle" aria-expanded="false" data-bs-toggle="dropdown" type="button">Eksportuj&nbsp;</button>
+                                                        <div class="dropdown-menu"><a class="dropdown-item" id="kjcz_export_quarter" href="#" onclick="exportQuarterKjczReport()">Bieżący kwartał</a><a class="dropdown-item" id="kjcz_export_year" href="#" onclick="exportYearKjczReport()">Bieżący rok</a></div>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="row" style="margin-bottom: 12px;">
@@ -151,7 +154,7 @@
                                                                     <td class="text-nowrap">
                                                                         <fieldset>
                                                                             <legend style="font-size: 12px;">Up (positive) / Down (negative)</legend>
-                                                                        </fieldset><input class="border-0 shadow" type="text" id="kjcz_frce_out_level1" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;">
+                                                                        </fieldset><input class="border-0 shadow" type="text" id="kjcz_frce_out_level1" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;"><i class="fas fa-sync-alt fs-5 text-primary" id="refresh_level_1" style="margin-left: 10px;" onclick="updateLevel1()"></i>
                                                                     </td>
                                                                 </tr>
                                                                 <tr id="table_kjcz_frce_outside_lev1_range_up_row">
@@ -167,7 +170,7 @@
                                                                     <td class="text-nowrap">
                                                                         <fieldset>
                                                                             <legend style="font-size: 12px;">Up (positive) / Down (negative)</legend>
-                                                                        </fieldset><input class="border-0 shadow" type="text" id="kjcz_frce_out_level2" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;">
+                                                                        </fieldset><input class="border-0 shadow" type="text" id="kjcz_frce_out_level2" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;"><i class="fas fa-sync-alt fs-5 text-primary" id="refresh_level_2" style="margin-left: 10px;" onclick="updateLevel2()"></i>
                                                                     </td>
                                                                 </tr>
                                                                 <tr id="table_kjcz_frce_outside_lev2_range_up_row">
@@ -183,7 +186,7 @@
                                                                     <td class="text-nowrap">
                                                                         <fieldset>
                                                                             <legend style="font-size: 12px;">Up (positive)&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Down (negative)</legend>
-                                                                        </fieldset><input class="border-0 shadow" type="text" id="kjcz_frce_exc60_cap_up" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;"><input class="border-0 shadow" type="text" id="kjcz_frce_exc60_cap_down" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;background: var(--bs-table-bg);">
+                                                                        </fieldset><input class="border-0 shadow" type="text" id="kjcz_frce_exc60_cap_up" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;"><input class="border-0 shadow" type="text" id="kjcz_frce_exc60_cap_down" autocomplete="off" inputmode="numeric" style="text-align: center;height: 30px;background: var(--bs-table-bg);"><i class="fas fa-sync-alt fs-5 text-primary" id="refresh_capacity" style="margin-left: 10px;" onclick="updateCapacity()"></i>
                                                                     </td>
                                                                 </tr>
                                                                 <tr id="table_kjcz_frce_exceeded_60_frr_capacity_up_row">
@@ -375,7 +378,7 @@
             </div>
             <footer class="bg-white sticky-footer">
                 <div class="container my-auto">
-                    <div class="text-center my-auto copyright"><span id="version" style="position: absolute;left: 25px;">Ver. 1.0.8</span></div>
+                    <div class="text-center my-auto copyright"><span id="version" style="position: absolute;left: 25px;">Ver. 1.0.9</span></div>
                     <div class="text-center my-auto copyright"><span>Copyright © PSE Innowacje 2023</span></div>
                 </div>
             </footer>
