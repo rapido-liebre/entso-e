@@ -151,16 +151,16 @@ function fillPzrrForm(respData) {
         const errMsg = data["Error"]
 
         if (errMsg.startsWith("connect to db failed: Cannot find password for a user:")) {
-            showKjczMessage("Błąd autoryzacji dostępu do bazy danych", MessageType.Warning);
+            showPzrrMessage("Błąd autoryzacji dostępu do bazy danych", MessageType.Warning);
         }
         else if (errMsg.startsWith("error pinging db: ORA-01109: baza danych nie jest otwarta")) {
-            showKjczMessage("Brak komunikacji z bazą danych", MessageType.Warning);
+            showPzrrMessage("Brak komunikacji z bazą danych", MessageType.Warning);
         }
         else if (errMsg.startsWith("error pinging db: ORA-01017: niepoprawna nazwa użytkownika/hasło; odmowa zalogowania")) {
-            showKjczMessage("Błąd autoryzacji dostępu do bazy danych, niepoprawna nazwa użytkownika/hasło", MessageType.Warning);
+            showPzrrMessage("Błąd autoryzacji dostępu do bazy danych, niepoprawna nazwa użytkownika/hasło", MessageType.Warning);
         }
         else {
-            showKjczMessage("Brak zapisanego raportu PZRR dla tego zakresu dat", MessageType.Warning);
+            showPzrrMessage("Brak zapisanego raportu PZRR dla tego zakresu dat", MessageType.Warning);
         }
     }
 

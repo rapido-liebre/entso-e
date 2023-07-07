@@ -41,7 +41,7 @@ func (r Resolution) String() string {
 }
 
 func GetAddPayloadEntryBody(payload ReportPayload) string {
-	rdata := fmt.Sprintf("hl_entsoe_reports_pk.add_payload_entry("+
+	rdata := fmt.Sprintf("ssir.hl_entsoe_reports_pk.add_payload_entry("+
 		"p_reportid => %d, "+
 		"p_mrid => %d, "+
 		"p_businesstype => '%s', "+
@@ -57,7 +57,7 @@ func GetAddPayloadEntryBody(payload ReportPayload) string {
 }
 
 func GetAddPayloadEntryBody2(payload ReportPayload) string {
-	rdata := fmt.Sprintf("insert into hl_entsoe_report_payloads("+
+	rdata := fmt.Sprintf("insert into ssir.hl_entsoe_report_payloads("+
 		"reportid, mrid, businesstype, flowdirection, quantitymeasureunit, position, quantity, secondaryquantity) "+
 		"values (%d, %d, '%s', '%s', '%s', %d, %.3f, %s);", payload.ReportId, payload.MrId, payload.BusinessType, payload.FlowDirection,
 		payload.QuantityMeasureUnit, payload.Position, payload.Quantity, GetSecondaryQuantityString(payload.SecondaryQuantity))
@@ -67,7 +67,7 @@ func GetAddPayloadEntryBody2(payload ReportPayload) string {
 }
 
 func GetPutReportBody(rd ReportData, rt ReportType) string {
-	rdata := fmt.Sprintf(":1 := hl_entsoe_reports_pk.put_%s_report("+
+	rdata := fmt.Sprintf(":1 := ssir.hl_entsoe_reports_pk.put_%s_report("+
 		"p_creator => '%s', "+
 		"p_report_start => timestamp '%s.0000', "+
 		"p_report_end   => timestamp '%s.0000');", rt.Shortly(), rd.Creator, rd.Start.UTC().Format(time.DateTime), rd.End.UTC().Format(time.DateTime))
@@ -76,7 +76,7 @@ func GetPutReportBody(rd ReportData, rt ReportType) string {
 }
 
 func GetLastReport(rd ReportData, rt ReportType) string {
-	rdata := fmt.Sprintf("hl_entsoe_reports_pk.get_last_%s("+
+	rdata := fmt.Sprintf("ssir.hl_entsoe_reports_pk.get_last_%s("+
 		"timestamp '%s.0000', "+
 		"timestamp '%s.0000', "+
 		":1, "+
@@ -86,13 +86,13 @@ func GetLastReport(rd ReportData, rt ReportType) string {
 }
 
 func GetSetReported(reportId int64) string {
-	rdata := fmt.Sprintf("hl_entsoe_reports_pk.set_reported(p_id => %d);", reportId)
+	rdata := fmt.Sprintf("ssir.hl_entsoe_reports_pk.set_reported(p_id => %d);", reportId)
 
 	return strings.Join([]string{"begin", rdata, "end;"}, " ")
 }
 
 func GetInicjujPozyskanie(rd ReportData, rt ReportType) string {
-	rdata := fmt.Sprintf(" inicjujPozyskanie('%s', null, null, '%s', "+
+	rdata := fmt.Sprintf(" ssir.inicjujPozyskanie('%s', null, null, '%s', "+
 		"to_date('%s', 'yyyy-mm-dd'), to_date('%s', 'yyyy-mm-dd'), null, null);",
 		rt.String(), getResolution(rt), rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
 
