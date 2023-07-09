@@ -17,7 +17,7 @@ const (
 )
 
 func (rt ReportType) String() string {
-	return []string{"PD_BI_PZFRR", "PD_BI_PZRR", "PR_SO_KJCZ", "RC_AVG15m_LFC_ACE_X", "RC_AVG1m_LFC_ACE%"}[rt]
+	return []string{"PD_BI_PZFRR", "PD_BI_PZRR", "PR_SO_KJCZ", "RC_AVG15m_LFC_ACE_X", "RC_AVG1m_LFC_ACE"}[rt]
 }
 func (rt ReportType) Shortly() string {
 	return []string{"pzfrr", "pzrr", "kjcz", "avg_15", "avg_1"}[rt]
