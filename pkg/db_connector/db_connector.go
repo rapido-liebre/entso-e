@@ -16,6 +16,8 @@ import (
 	"fmt"
 	go_ora "github.com/sijms/go-ora/v2"
 	"log"
+	"os"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -104,8 +106,7 @@ func (dbc *dbConnector) connect() {
 	fmt.Println("*** Using only go_ora package (no additional client software)")
 	fmt.Println("Local Database, simple connect string ")
 
-	os := runtime.GOOS
-	switch os {
+	switch runtime.GOOS {
 	case "windows":
 		fmt.Println("This service is not dedicated to running on Windows")
 	case "darwin":
@@ -138,6 +139,37 @@ linux:
 			if err := dbc.connectToDB(); err != nil {
 				dbc.errch <- err
 			}
+
+			pwd, _ := os.Getwd()
+			avg15m := "2020_2_15"
+			avg1m := "2020_2_1m"
+
+			p15 := Parser{}
+			p15.Parse(filepath.Join(pwd, "bin", avg15m))
+
+			p1 := Parser{}
+			p1.Parse(filepath.Join(pwd, "bin", avg1m))
+
+			saveToLfc := func(data []models.LfcAce, tableName string) {
+				for _, m := range data {
+					statement := fmt.Sprintf("INSERT INTO SSIR.%s (avg_time, save_time, avg_name, avg_value, avg_status, system_site)"+
+						" VALUES (to_date('%s','yyyy-mm-dd HH24:MI:SS'), to_date('%s','yyyy-mm-dd HH24:MI:SS'), '%s', %f, %d, '%s');",
+						tableName,
+						m.AvgTime.Format(time.DateTime),
+						m.SaveTime.Format(time.DateTime),
+						m.AvgName,
+						m.AvgValue,
+						m.AvgStatus,
+						m.SystemSite)
+					s := strings.Join([]string{"begin", statement, "end;"}, " ")
+
+					if _, err := dbc.db.Exec(s); err != nil {
+						panic(err)
+					}
+				}
+			}
+			saveToLfc(p15.Data, models.FETCH_15_MIN.Shortly())
+			saveToLfc(p1.Data, models.FETCH_1_MIN.Shortly())
 		}
 
 		goto end

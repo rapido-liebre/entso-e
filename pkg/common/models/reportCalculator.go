@@ -43,50 +43,75 @@ func (rc *ReportCalculator) Calculate(lfcAce15 []LfcAce, lfcAce1 []LfcAce, extra
 		*excCapacityDown, _ = strconv.ParseFloat(extraParams["excCapacityDown"], 64)
 	}
 
-	kjczBody := &KjczBody{}
+	// get year-month(s)
 	var yearMonths []string
-
 	for year, months := range rc.data15min {
-		position := 1
-		for month, measurements := range months {
+		for month, _ := range months {
 			yearMonth := fmt.Sprintf("%d-%02d", year, month)
-			CalculateReportData15min(measurements, position, kjczBody, yearMonth, level1, level2)
-			CalculateReportData1min(measurements, position, kjczBody, yearMonth, excCapacityUp, excCapacityDown)
 			yearMonths = append(yearMonths, yearMonth)
-			position += 1
 		}
 	}
 	sort.Strings(yearMonths)
 
+	calculations := make(map[string]*KjczBody)
+
+	// calculate avg15m
+	for year, months := range rc.data15min {
+		position := 1
+		for month, measurements := range months {
+			kjczBody := &KjczBody{}
+			yearMonth := fmt.Sprintf("%d-%02d", year, month)
+			CalculateReportData15min(measurements, position, kjczBody, yearMonth, level1, level2)
+			calculations[yearMonth] = kjczBody
+			position += 1
+		}
+	}
+	// calculate avg1m
+	for year, months := range rc.data1min {
+		position := 1
+		for month, measurements := range months {
+			yearMonth := fmt.Sprintf("%d-%02d", year, month)
+			CalculateReportData1min(measurements, position, calculations[yearMonth], yearMonth, excCapacityUp, excCapacityDown)
+			position += 1
+		}
+	}
+
+	report := fillReport(calculations, yearMonths)
+
+	return report
+}
+
+func fillReport(calculations map[string]*KjczBody, yearMonths []string) KjczReport {
 	var report KjczReport
 	startDate, _ := time.Parse(time.DateOnly, fmt.Sprintf("%s-01", yearMonths[0]))
 	report.Data = TestReportData(PR_SO_KJCZ, startDate)
 	report.Data.YearMonths = yearMonths
 
-	var secondaryQuantity *int
-	secondaryQuantity = new(int)
-	report.MeanValue = getReportPayload(1, MeanValue.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, kjczBody.MeanValue)
-	report.StandardDeviation = getReportPayload(2, StandardDeviation.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, kjczBody.StandardDeviation)
-	*secondaryQuantity = 1
-	report.Percentile1 = getReportPayload(3, Percentile.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, kjczBody.Percentile1)
-	*secondaryQuantity = 5
-	report.Percentile5 = getReportPayload(4, Percentile.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, kjczBody.Percentile5)
-	*secondaryQuantity = 10
-	report.Percentile10 = getReportPayload(5, Percentile.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, kjczBody.Percentile10)
-	*secondaryQuantity = 90
-	report.Percentile90 = getReportPayload(6, Percentile.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, kjczBody.Percentile90)
-	*secondaryQuantity = 95
-	report.Percentile95 = getReportPayload(7, Percentile.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, kjczBody.Percentile95)
-	*secondaryQuantity = 99
-	report.Percentile99 = getReportPayload(8, Percentile.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, kjczBody.Percentile99)
-	secondaryQuantity = new(int)
-	report.FRCEOutsideLevel1RangeUp = getReportPayload(9, FRCEOutsideLevel1Range.String(), Up.String(), C62.String(), secondaryQuantity, kjczBody.FrceOutsideLevel1RangeUp)
-	report.FRCEOutsideLevel1RangeDown = getReportPayload(10, FRCEOutsideLevel1Range.String(), Down.String(), C62.String(), secondaryQuantity, kjczBody.FrceOutsideLevel1RangeDown)
-	report.FRCEOutsideLevel2RangeUp = getReportPayload(11, FRCEOutsideLevel2Range.String(), Up.String(), C62.String(), secondaryQuantity, kjczBody.FrceOutsideLevel2RangeUp)
-	report.FRCEOutsideLevel2RangeDown = getReportPayload(12, FRCEOutsideLevel2Range.String(), Down.String(), C62.String(), secondaryQuantity, kjczBody.FrceOutsideLevel2RangeDown)
-	report.FRCEExceeded60PercOfFRRCapacityUp = getReportPayload(13, FRCEExceeded60PercOfFRRCapacity.String(), Up.String(), C62.String(), secondaryQuantity, kjczBody.FrceExceeded60PercOfFRRCapacityUp)
-	report.FRCEExceeded60PercOfFRRCapacityDown = getReportPayload(14, FRCEExceeded60PercOfFRRCapacity.String(), Down.String(), C62.String(), secondaryQuantity, kjczBody.FrceExceeded60PercOfFRRCapacityDown)
-
+	for _, yearMonth := range yearMonths {
+		var secondaryQuantity *int
+		secondaryQuantity = new(int)
+		report.MeanValue = append(report.MeanValue, getReportPayload(1, MeanValue.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, calculations[yearMonth].MeanValue)...)
+		report.StandardDeviation = append(report.StandardDeviation, getReportPayload(2, StandardDeviation.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, calculations[yearMonth].StandardDeviation)...)
+		*secondaryQuantity = 1
+		report.Percentile1 = append(report.Percentile1, getReportPayload(3, Percentile.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, calculations[yearMonth].Percentile1)...)
+		*secondaryQuantity = 5
+		report.Percentile5 = append(report.Percentile5, getReportPayload(4, Percentile.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, calculations[yearMonth].Percentile5)...)
+		*secondaryQuantity = 10
+		report.Percentile10 = append(report.Percentile10, getReportPayload(5, Percentile.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, calculations[yearMonth].Percentile10)...)
+		*secondaryQuantity = 90
+		report.Percentile90 = append(report.Percentile90, getReportPayload(6, Percentile.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, calculations[yearMonth].Percentile90)...)
+		*secondaryQuantity = 95
+		report.Percentile95 = append(report.Percentile95, getReportPayload(7, Percentile.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, calculations[yearMonth].Percentile95)...)
+		*secondaryQuantity = 99
+		report.Percentile99 = append(report.Percentile99, getReportPayload(8, Percentile.String(), UpAndDown.String(), MAW.String(), secondaryQuantity, calculations[yearMonth].Percentile99)...)
+		secondaryQuantity = new(int)
+		report.FRCEOutsideLevel1RangeUp = append(report.FRCEOutsideLevel1RangeUp, getReportPayload(9, FRCEOutsideLevel1Range.String(), Up.String(), C62.String(), secondaryQuantity, calculations[yearMonth].FrceOutsideLevel1RangeUp)...)
+		report.FRCEOutsideLevel1RangeDown = append(report.FRCEOutsideLevel1RangeDown, getReportPayload(10, FRCEOutsideLevel1Range.String(), Down.String(), C62.String(), secondaryQuantity, calculations[yearMonth].FrceOutsideLevel1RangeDown)...)
+		report.FRCEOutsideLevel2RangeUp = append(report.FRCEOutsideLevel2RangeUp, getReportPayload(11, FRCEOutsideLevel2Range.String(), Up.String(), C62.String(), secondaryQuantity, calculations[yearMonth].FrceOutsideLevel2RangeUp)...)
+		report.FRCEOutsideLevel2RangeDown = append(report.FRCEOutsideLevel2RangeDown, getReportPayload(12, FRCEOutsideLevel2Range.String(), Down.String(), C62.String(), secondaryQuantity, calculations[yearMonth].FrceOutsideLevel2RangeDown)...)
+		report.FRCEExceeded60PercOfFRRCapacityUp = append(report.FRCEExceeded60PercOfFRRCapacityUp, getReportPayload(13, FRCEExceeded60PercOfFRRCapacity.String(), Up.String(), C62.String(), secondaryQuantity, calculations[yearMonth].FrceExceeded60PercOfFRRCapacityUp)...)
+		report.FRCEExceeded60PercOfFRRCapacityDown = append(report.FRCEExceeded60PercOfFRRCapacityDown, getReportPayload(14, FRCEExceeded60PercOfFRRCapacity.String(), Down.String(), C62.String(), secondaryQuantity, calculations[yearMonth].FrceExceeded60PercOfFRRCapacityDown)...)
+	}
 	return report
 }
 
@@ -132,7 +157,9 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 	fmt.Println(totalCount)
 
 	var (
-		sum, sumq, lv1pos, lv1neg, lv2pos, lv2neg, perc1, perc5, perc10, perc90, perc95, perc99 float64
+		sum, sumq, lv1pos, lv1neg, lv2pos, lv2neg    float64
+		p1, p5, p10, p90, p95, p99                   float64
+		perc1, perc5, perc10, perc90, perc95, perc99 float64
 	)
 
 	for _, v := range lfcAce15 {
@@ -153,32 +180,61 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 	}
 
 	avg := sum / totalCount
-	fmt.Println(avg)
+	fmt.Println("Avg:", avg)
 
 	for _, v := range lfcAce15 {
 		sumq += math.Pow(v.AvgValue-avg, 2)
 	}
 
 	dev := math.Sqrt(sumq / totalCount)
-	fmt.Println(dev)
+	fmt.Println("Deviation:", dev)
 
 	fmt.Println("Level1 +:", lv1pos)
 	fmt.Println("Level1 -:", lv1neg)
 	fmt.Println("Level2 +:", lv2pos)
 	fmt.Println("Level2 -:", lv2neg)
 
-	perc1 = totalCount / float64(100*(100-1))
-	perc5 = totalCount / float64(100*(100-5))
-	perc10 = totalCount / float64(100*(100-10))
-	perc90 = totalCount / float64(100*(100-90))
-	perc95 = totalCount / float64(100*(100-95))
-	perc99 = totalCount / float64(100*(100-99))
-	fmt.Println("Perc 1:", perc1)
-	fmt.Println("Perc 5:", perc5)
-	fmt.Println("Perc 10:", perc10)
-	fmt.Println("Perc 90:", perc90)
-	fmt.Println("Perc 95:", perc95)
-	fmt.Println("Perc 99:", perc99)
+	var vals []float64
+	for _, v := range lfcAce15 {
+		vals = append(vals, v.AvgValue)
+	}
+	sort.Float64s(vals)
+
+	// percentile indexes
+	p1 = math.Round(1 * totalCount / float64(100))
+	p5 = math.Round(5 * totalCount / float64(100))
+	p10 = math.Round(10 * totalCount / float64(100))
+	p90 = math.Round(90 * totalCount / float64(100))
+	p95 = math.Round(95 * totalCount / float64(100))
+	p99 = math.Round(99 * totalCount / float64(100))
+
+	for i, v := range vals {
+		if i == int(p1) {
+			perc1 = v
+		}
+		if i == int(p5) {
+			perc5 = v
+		}
+		if i == int(p10) {
+			perc10 = v
+		}
+		if i == int(p90) {
+			perc90 = v
+		}
+		if i == int(p95) {
+			perc95 = v
+		}
+		if i == int(p99) {
+			perc99 = v
+		}
+	}
+
+	fmt.Println("Perc 1:", perc1, p1)
+	fmt.Println("Perc 5:", perc5, p5)
+	fmt.Println("Perc 10:", perc10, p10)
+	fmt.Println("Perc 90:", perc90, p90)
+	fmt.Println("Perc 95:", perc95, p95)
+	fmt.Println("Perc 99:", perc99, p99)
 
 	getBRPayload := func(quantity float64) BodyReportPayload {
 		return BodyReportPayload{
@@ -300,6 +356,9 @@ func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yea
 	//out14 := plus
 	//out15 := minus
 	//out16 := totalCount
+
+	fmt.Println("60% Exc Plus:", plus)
+	fmt.Println("60% Exc Minus:", minus)
 
 	getBRPayload := func(quantity float64) BodyReportPayload {
 		return BodyReportPayload{
