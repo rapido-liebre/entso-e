@@ -202,31 +202,31 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 	sort.Float64s(vals)
 
 	// percentile indexes
-	p1 = math.Round(1 * totalCount / float64(100))
-	p5 = math.Round(5 * totalCount / float64(100))
-	p10 = math.Round(10 * totalCount / float64(100))
-	p90 = math.Round(90 * totalCount / float64(100))
-	p95 = math.Round(95 * totalCount / float64(100))
-	p99 = math.Round(99 * totalCount / float64(100))
+	p1 = math.Round((100 - 1) * totalCount / float64(100))
+	p5 = math.Round((100 - 5) * totalCount / float64(100))
+	p10 = math.Round((100 - 10) * totalCount / float64(100))
+	p90 = math.Round((100 - 90) * totalCount / float64(100))
+	p95 = math.Round((100 - 95) * totalCount / float64(100))
+	p99 = math.Round((100 - 99) * totalCount / float64(100))
 
 	for i, v := range vals {
 		if i == int(p1) {
-			perc1 = v
+			perc1 = -v
 		}
 		if i == int(p5) {
-			perc5 = v
+			perc5 = -v
 		}
 		if i == int(p10) {
-			perc10 = v
+			perc10 = -v
 		}
 		if i == int(p90) {
-			perc90 = v
+			perc90 = -v
 		}
 		if i == int(p95) {
-			perc95 = v
+			perc95 = -v
 		}
 		if i == int(p99) {
-			perc99 = v
+			perc99 = -v
 		}
 	}
 
