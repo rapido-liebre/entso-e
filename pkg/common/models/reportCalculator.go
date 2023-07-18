@@ -163,18 +163,19 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 	)
 
 	for _, v := range lfcAce15 {
-		sum += v.AvgValue
+		avgValue := -v.AvgValue
+		sum += avgValue
 
-		if -v.AvgValue > level1 {
+		if avgValue > level1 {
 			lv1pos += 1
 		}
-		if -v.AvgValue < -level1 {
+		if avgValue < -level1 {
 			lv1neg += 1
 		}
-		if -v.AvgValue > level2 {
+		if avgValue > level2 {
 			lv2pos += 1
 		}
-		if -v.AvgValue < -level2 {
+		if avgValue < -level2 {
 			lv2neg += 1
 		}
 	}
@@ -244,7 +245,7 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 		}
 	}
 
-	body.MeanValue = append(body.MeanValue, getBRPayload(-avg))
+	body.MeanValue = append(body.MeanValue, getBRPayload(avg))
 	body.StandardDeviation = append(body.StandardDeviation, getBRPayload(dev))
 	body.Percentile1 = append(body.Percentile1, getBRPayload(perc1))
 	body.Percentile5 = append(body.Percentile5, getBRPayload(perc5))
@@ -318,44 +319,6 @@ func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yea
 			}
 		}
 	}
-
-	//for _, v := range lfcAce1 {
-	//	//fmt.Println(k, v)
-	//	val := v.AvgValue
-	//	{
-	//		if -val < FRR15 && exceeding == 1 {
-	//			if exceedingTime > 14 {
-	//				plus += 1
-	//			}
-	//			exceeding = 0
-	//			exceedingTime = 0
-	//		}
-	//
-	//		if -val > -FRR15 && exceeding == -1 {
-	//			if exceedingTime > 14 {
-	//				minus += 1
-	//			}
-	//			exceeding = 0
-	//			exceedingTime = 0
-	//		}
-	//
-	//		if -val > FRR60 && exceeding == 0 {
-	//			exceeding = 1
-	//		}
-	//
-	//		if -val < -FRR60 && exceeding == 0 {
-	//			exceeding = -1
-	//		}
-	//
-	//		if exceeding != 0 {
-	//			exceedingTime += 1
-	//		}
-	//	}
-	//}
-
-	//out14 := plus
-	//out15 := minus
-	//out16 := totalCount
 
 	fmt.Println("60% Exc Plus:", plus)
 	fmt.Println("60% Exc Minus:", minus)
