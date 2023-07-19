@@ -154,7 +154,7 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 	}
 
 	totalCount := float64(len(lfcAce15))
-	fmt.Println(totalCount)
+	fmt.Println("lfcAce15m count:", totalCount)
 
 	var (
 		sum, sumq, lv1pos, lv1neg, lv2pos, lv2neg    float64
@@ -212,21 +212,27 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 	for i, v := range vals {
 		if i == int(p1) {
 			perc1 = -v
+			logPercentile(1, i, vals)
 		}
 		if i == int(p5) {
 			perc5 = -v
+			logPercentile(5, i, vals)
 		}
 		if i == int(p10) {
 			perc10 = -v
+			logPercentile(10, i, vals)
 		}
 		if i == int(p90) {
 			perc90 = -v
+			logPercentile(90, i, vals)
 		}
 		if i == int(p95) {
 			perc95 = -v
+			logPercentile(95, i, vals)
 		}
 		if i == int(p99) {
 			perc99 = -v
+			logPercentile(99, i, vals)
 		}
 	}
 
@@ -259,11 +265,13 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 	body.FrceOutsideLevel2RangeDown = append(body.FrceOutsideLevel2RangeDown, getBRPayload(lv2neg))
 }
 
-func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yearMonth string, excCapacityUp, excCapacityDown *float64) {
-	//const FRR = 1075
-	//const FRR60 = FRR * 0.6
-	//const FRR15 = FRR * 0.15
+func logPercentile(perc, i int, vals []float64) {
+	fmt.Println(fmt.Sprintf("\nPos[%d]  Perc %d:%3f", perc, i-1, -vals[i-1]))
+	fmt.Println(fmt.Sprintf("Pos[%d] *Perc %d:%3f", perc, i, -vals[i]))
+	fmt.Println(fmt.Sprintf("Pos[%d]  Perc %d:%3f", perc, i+1, -vals[i+1]))
+}
 
+func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yearMonth string, excCapacityUp, excCapacityDown *float64) {
 	var FRRpos, FRRneg float64
 	FRRpos = 1075
 	FRRneg = -1075
@@ -278,9 +286,10 @@ func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yea
 	FRR15pos := FRRpos * 0.15
 	FRR60neg := FRRneg * 0.6
 	FRR15neg := FRRneg * 0.15
+	fmt.Println(fmt.Sprintf("FRR60pos: %3f\nFRR15pos: %3f\nFRR60neg: %3f\nFRR15neg: %3f", FRR60pos, FRR15pos, FRR60neg, FRR15neg))
 
 	totalCount := float64(len(lfcAce1))
-	fmt.Println(totalCount)
+	fmt.Println("lfcAce1m count:", totalCount)
 
 	var (
 		exceeding, exceedingTime, plus, minus int
@@ -293,6 +302,7 @@ func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yea
 			if -val < FRR15pos && exceeding == 1 {
 				if exceedingTime > 14 {
 					plus += 1
+					fmt.Println(fmt.Sprintf("[+] Exceeding time: %d, lfcAce1: %3f [AVG time: %s]", exceedingTime, -val, v.AvgTime.String()))
 				}
 				exceeding = 0
 				exceedingTime = 0
@@ -301,6 +311,7 @@ func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yea
 			if -val > FRR15neg && exceeding == -1 {
 				if exceedingTime > 14 {
 					minus += 1
+					fmt.Println(fmt.Sprintf("[-] Exceeding time: %d, lfcAce1: %3f [AVG time: %s]", exceedingTime, -val, v.AvgTime.String()))
 				}
 				exceeding = 0
 				exceedingTime = 0
@@ -308,10 +319,12 @@ func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yea
 
 			if -val > FRR60pos && exceeding == 0 {
 				exceeding = 1
+				fmt.Println(fmt.Sprintf("[e=1] Exceeding time: %d, lfcAce1: %3f [AVG time: %s]", exceedingTime, -val, v.AvgTime.String()))
 			}
 
 			if -val < FRR60neg && exceeding == 0 {
 				exceeding = -1
+				fmt.Println(fmt.Sprintf("[e=-1] Exceeding time: %d, lfcAce1: %3f [AVG time: %s]", exceedingTime, -val, v.AvgTime.String()))
 			}
 
 			if exceeding != 0 {
