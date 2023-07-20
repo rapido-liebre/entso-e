@@ -108,18 +108,9 @@ func getResolution(rt ReportType) string {
 }
 
 func GetFetchSourceData(rd ReportData, rt ReportType) string {
-	rdata := fmt.Sprintf("SELECT avg_time, save_time, avg_name, avg_value, avg_status, system_site "+
+	rdata := fmt.Sprintf("SELECT from_tz(cast(avg_time as TIMESTAMP), 'UTC') at time zone 'CET' as avg_local_time, save_time, avg_name, avg_value, avg_status, system_site "+
 		"FROM ssir.%s WHERE avg_time >= to_date('%s','yyyy-mm-dd HH24:MI:SS') AND avg_time < to_date('%s','yyyy-mm-dd HH24:MI:SS') AND avg_name LIKE '%s'",
-		rt.Shortly(), rd.Start.Local().Format(time.DateTime), rd.End.Local().Format(time.DateTime), rt.String())
+		rt.Shortly(), rd.Start.UTC().Format(time.DateTime), rd.End.UTC().Format(time.DateTime), rt.String())
 
 	return rdata
 }
-
-//func GetFetchSourceData1min(rd ReportData) string {
-//	rdata := fmt.Sprintf("SELECT avg_value, avg_time FROM avg_1 WHERE avg_time >= '%s' AND avg_time < '%s' "+
-//		"AND avg_name = 'RC_AVG1M_LFC_ACE_PL' ORDER BY avg_time;", rd.Start.Format(time.DateOnly), rd.End.Format(time.DateOnly))
-//
-//	return strings.Join([]string{"begin", rdata, "end;"}, " ")
-//}
-
-//SELECT avg_value FROM avg_1mon WHERE avg_time = '$bar-01 00:00:00' AND avg_name = 'RC_AVG1MON_LFC_Pp_max';

@@ -202,37 +202,37 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 	sort.Float64s(vals)
 
 	// percentile indexes
-	p1 = math.Round((100 - 1) * totalCount / float64(100))
-	p5 = math.Round((100 - 5) * totalCount / float64(100))
-	p10 = math.Round((100 - 10) * totalCount / float64(100))
-	p90 = math.Round((100 - 90) * totalCount / float64(100))
-	p95 = math.Round((100 - 95) * totalCount / float64(100))
-	p99 = math.Round((100 - 99) * totalCount / float64(100))
+	p1 = (100 - 1) * totalCount / float64(100)
+	p5 = (100 - 5) * totalCount / float64(100)
+	p10 = (100 - 10) * totalCount / float64(100)
+	p90 = (100 - 90) * totalCount / float64(100)
+	p95 = (100 - 95) * totalCount / float64(100)
+	p99 = (100 - 99) * totalCount / float64(100)
 
-	for i, v := range vals {
-		if i == int(p1) {
-			perc1 = -v
-			logPercentile(1, i, vals)
+	for i, _ := range vals {
+		if isPerc, val := isPercentile(p99, i, vals); isPerc {
+			perc99 = -val
+			logPercentile(99, i, vals)
 		}
-		if i == int(p5) {
-			perc5 = -v
-			logPercentile(5, i, vals)
-		}
-		if i == int(p10) {
-			perc10 = -v
-			logPercentile(10, i, vals)
-		}
-		if i == int(p90) {
-			perc90 = -v
-			logPercentile(90, i, vals)
-		}
-		if i == int(p95) {
-			perc95 = -v
+		if isPerc, val := isPercentile(p95, i, vals); isPerc {
+			perc95 = -val
 			logPercentile(95, i, vals)
 		}
-		if i == int(p99) {
-			perc99 = -v
-			logPercentile(99, i, vals)
+		if isPerc, val := isPercentile(p90, i, vals); isPerc {
+			perc90 = -val
+			logPercentile(90, i, vals)
+		}
+		if isPerc, val := isPercentile(p10, i, vals); isPerc {
+			perc10 = -val
+			logPercentile(10, i, vals)
+		}
+		if isPerc, val := isPercentile(p5, i, vals); isPerc {
+			perc5 = -val
+			logPercentile(5, i, vals)
+		}
+		if isPerc, val := isPercentile(p1, i, vals); isPerc {
+			perc1 = -val
+			logPercentile(1, i, vals)
 		}
 	}
 
@@ -266,9 +266,29 @@ func CalculateReportData15min(lfcAce15 []LfcAce, position int, body *KjczBody, y
 }
 
 func logPercentile(perc, i int, vals []float64) {
-	fmt.Println(fmt.Sprintf("\nPos[%d]  Perc %d:%3f", perc, i-1, -vals[i-1]))
+	if i > 0 {
+		fmt.Println(fmt.Sprintf("\nPos[%d]  Perc %d:%3f", perc, i-1, -vals[i-1]))
+	}
 	fmt.Println(fmt.Sprintf("Pos[%d] *Perc %d:%3f", perc, i, -vals[i]))
-	fmt.Println(fmt.Sprintf("Pos[%d]  Perc %d:%3f", perc, i+1, -vals[i+1]))
+	if i < len(vals)-1 {
+		fmt.Println(fmt.Sprintf("Pos[%d]  Perc %d:%3f", perc, i+1, -vals[i+1]))
+	}
+}
+
+func isPercentile(p float64, i int, vals []float64) (bool, float64) {
+	// value is percentile if both are equal
+	if p == float64(i) {
+		return true, vals[i]
+	}
+	// check is i out of bounds
+	if i+1 >= len(vals) {
+		return false, vals[i]
+	}
+	// percentile is within range
+	if p > float64(i) && p < float64(i+1) {
+		return true, (vals[i] + vals[i+1]) / 2
+	}
+	return false, vals[i]
 }
 
 func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yearMonth string, excCapacityUp, excCapacityDown *float64) {
