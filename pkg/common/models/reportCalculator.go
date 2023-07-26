@@ -315,23 +315,31 @@ func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yea
 		exceeding, exceedingTime, plus, minus int
 	)
 
+	//sort measurements
+	sort.Slice(lfcAce1, func(p, q int) bool {
+		return lfcAce1[p].AvgTime.Before(lfcAce1[q].AvgTime)
+	})
+
 	for _, v := range lfcAce1 {
 		//fmt.Println(k, v)
 		val := v.AvgValue
 		{
+			fmt.Printf("exceeding/exceedingTime [%d/%d]  lfcAce1: %3f [AVG time: %s]\n", exceeding, exceedingTime, -val, v.AvgTime.String())
 			if -val < FRR15pos && exceeding == 1 {
+				fmt.Printf("%3f < %3f\n", -val, FRR15pos)
 				if exceedingTime > 14 {
 					plus += 1
-					fmt.Println(fmt.Sprintf("[+] Exceeding time: %d, lfcAce1: %3f [AVG time: %s]", exceedingTime, -val, v.AvgTime.String()))
+					fmt.Println(fmt.Sprintf("[+] *** Exceeding time: %d, lfcAce1: %3f [AVG time: %s]\n", exceedingTime, -val, v.AvgTime.String()))
 				}
 				exceeding = 0
 				exceedingTime = 0
 			}
 
 			if -val > FRR15neg && exceeding == -1 {
+				fmt.Printf("%3f > %3f\n", -val, FRR15neg)
 				if exceedingTime > 14 {
 					minus += 1
-					fmt.Println(fmt.Sprintf("[-] Exceeding time: %d, lfcAce1: %3f [AVG time: %s]", exceedingTime, -val, v.AvgTime.String()))
+					fmt.Println(fmt.Sprintf("[-] *** Exceeding time: %d, lfcAce1: %3f [AVG time: %s]\n", exceedingTime, -val, v.AvgTime.String()))
 				}
 				exceeding = 0
 				exceedingTime = 0
@@ -339,15 +347,18 @@ func CalculateReportData1min(lfcAce1 []LfcAce, position int, body *KjczBody, yea
 
 			if -val > FRR60pos && exceeding == 0 {
 				exceeding = 1
-				fmt.Println(fmt.Sprintf("[e=1] Exceeding time: %d, lfcAce1: %3f [AVG time: %s]", exceedingTime, -val, v.AvgTime.String()))
+				fmt.Printf("%3f > %3f\n", -val, FRR60pos)
+				fmt.Printf("[exc=1] Exceeding time: %d, lfcAce1: %3f [AVG time: %s]\n", exceedingTime, -val, v.AvgTime.String())
 			}
 
 			if -val < FRR60neg && exceeding == 0 {
 				exceeding = -1
-				fmt.Println(fmt.Sprintf("[e=-1] Exceeding time: %d, lfcAce1: %3f [AVG time: %s]", exceedingTime, -val, v.AvgTime.String()))
+				fmt.Printf("%3f < %3f\n", -val, FRR60neg)
+				fmt.Printf("[exc=-1] Exceeding time: %d, lfcAce1: %3f [AVG time: %s]\n", exceedingTime, -val, v.AvgTime.String())
 			}
 
 			if exceeding != 0 {
+				fmt.Println("exceedingTime +1")
 				exceedingTime += 1
 			}
 		}
