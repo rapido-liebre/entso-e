@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/gofiber/fiber/v2 v2.32.0
 	github.com/gookit/validate v1.4.4
+	github.com/lib/pq v1.10.9
 	github.com/onsi/ginkgo/v2 v2.2.0
 	github.com/sijms/go-ora/v2 v2.6.3
 	github.com/spf13/viper v1.11.0

@@ -108,8 +108,14 @@ func getResolution(rt ReportType) string {
 }
 
 func GetFetchSourceData(rd ReportData, rt ReportType) string {
-	rdata := fmt.Sprintf("SELECT from_tz(cast(avg_time as TIMESTAMP), 'UTC') at time zone 'CET' as avg_local_time, save_time, avg_name, avg_value, avg_status, system_site "+
-		"FROM ssir.%s WHERE avg_time >= to_date('%s','yyyy-mm-dd HH24:MI:SS') AND avg_time < to_date('%s','yyyy-mm-dd HH24:MI:SS') AND avg_name LIKE '%s'",
+	//oracle
+	//rdata := fmt.Sprintf("SELECT from_tz(cast(avg_time as TIMESTAMP), 'UTC') at time zone 'CET' as avg_local_time, save_time, avg_name, avg_value, avg_status, system_site "+
+	//	"FROM ssir.%s WHERE avg_time >= to_date('%s','yyyy-mm-dd HH24:MI:SS') AND avg_time < to_date('%s','yyyy-mm-dd HH24:MI:SS') AND avg_name LIKE '%s'",
+	//	rt.Shortly(), rd.Start.UTC().Format(time.DateTime), rd.End.UTC().Format(time.DateTime), rt.String())
+
+	//postgres
+	rdata := fmt.Sprintf("SELECT avg_time, save_time, avg_name, avg_value, avg_status, system_site "+
+		"FROM %s WHERE avg_time >= '%s' AND avg_time < '%s' AND avg_name LIKE '%s' order by avg_time",
 		rt.Shortly(), rd.Start.UTC().Format(time.DateTime), rd.End.UTC().Format(time.DateTime), rt.String())
 
 	return rdata

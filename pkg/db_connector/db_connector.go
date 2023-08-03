@@ -14,6 +14,7 @@ import (
 	"entso-e_reports/pkg/common/models"
 	"errors"
 	"fmt"
+	_ "github.com/lib/pq"
 	go_ora "github.com/sijms/go-ora/v2"
 	"log"
 	"os"
@@ -138,22 +139,30 @@ linux:
 		} else {
 			if err := dbc.connectToDB(); err != nil {
 				dbc.errch <- err
+				panic(err)
 			}
 
+			return
+
 			pwd, _ := os.Getwd()
-			avg15m := "2020_2_15"
-			avg1m := "2020_2_1m"
+			avg15m := "2023_1_15"
+			avg1m := "2023_1_1m"
 
 			p15 := Parser{}
-			p15.Parse(filepath.Join(pwd, "bin", avg15m))
+			p15.Parse2(filepath.Join(pwd, "bin", avg15m))
 
 			p1 := Parser{}
-			p1.Parse(filepath.Join(pwd, "bin", avg1m))
+			p1.Parse2(filepath.Join(pwd, "bin", avg1m))
 
 			saveToLfc := func(data []models.LfcAce, tableName string) {
 				for _, m := range data {
-					statement := fmt.Sprintf("INSERT INTO SSIR.%s (avg_time, save_time, avg_name, avg_value, avg_status, system_site)"+
-						" VALUES (to_date('%s','yyyy-mm-dd HH24:MI:SS'), to_date('%s','yyyy-mm-dd HH24:MI:SS'), '%s', %f, %d, '%s');",
+					//oracle
+					//statement := fmt.Sprintf("INSERT INTO SSIR.%s (avg_time, save_time, avg_name, avg_value, avg_status, system_site)"+
+					//	" VALUES (to_date('%s','yyyy-mm-dd HH24:MI:SS'), to_date('%s','yyyy-mm-dd HH24:MI:SS'), '%s', %f, %d, '%s');",
+
+					//postgres
+					statement := fmt.Sprintf("INSERT INTO %s (avg_time, save_time, avg_name, avg_value, avg_status, system_site)"+
+						" VALUES ('%s', '%s', '%s', %f, %d, '%s');",
 						tableName,
 						m.AvgTime.Format(time.DateTime),
 						m.SaveTime.Format(time.DateTime),
@@ -161,7 +170,10 @@ linux:
 						m.AvgValue,
 						m.AvgStatus,
 						m.SystemSite)
-					s := strings.Join([]string{"begin", statement, "end;"}, " ")
+					//oracle
+					//s := strings.Join([]string{"begin", statement, "end;"}, " ")
+					//postgres
+					s := strings.Join([]string{statement, "commit;"}, " ")
 
 					if _, err := dbc.db.Exec(s); err != nil {
 						panic(err)
@@ -253,37 +265,46 @@ func (dbc *dbConnector) connectToDB() error {
 	if err != nil {
 		return fmt.Errorf("connect to db failed: %w", err)
 	}
-	fmt.Println(passwd)
+	//fmt.Println(passwd)
 
-	//connectionString := "oracle://" + cfg.DBUser + ":" + cfg.DBPassword + "@" + cfg.DBServer + ":" + cfg.DBPort + "/" + cfg.DBService
-	//if cfg.DBDSN != "" {
-	//	connectionString += "?TRACE FILE=trace.log&SSL=enable&SSL Verify=false&WALLET=" + cfg.DBDSN //url.QueryEscape(dbParams["walletLocation"])
-	//}
+	var connectionString string
 
-	port, _ := strconv.Atoi(cfg.DBPort)
+	switch cfg.DBEngine {
+	case "oracle":
+		//connectionString := "oracle://" + cfg.DBUser + ":" + cfg.DBPassword + "@" + cfg.DBServer + ":" + cfg.DBPort + "/" + cfg.DBService
+		//if cfg.DBDSN != "" {
+		//	connectionString += "?TRACE FILE=trace.log&SSL=enable&SSL Verify=false&WALLET=" + cfg.DBDSN //url.QueryEscape(dbParams["walletLocation"])
+		//}
 
-	urlOptions := map[string]string{
-		"TRACE FILE": "trace.log",
-		"AUTH TYPE":  "TCPS",
-		"SSL":        "TRUE",
-		"SSL VERIFY": "FALSE",
-		"WALLET":     cfg.DBWallet,
-	}
-	connectionString := go_ora.BuildUrl(cfg.DBServer, port, cfg.DBService, "", "", urlOptions)
+		port, _ := strconv.Atoi(cfg.OraDBPort)
 
-	if len(cfg.ConnString) > 0 {
-		fmt.Println("Using provided connection string")
-		connectionString = cfg.ConnString
-		unamePass := models.GetTextBetween(connectionString, "oracle://", "@")
-		connectionString = strings.Replace(connectionString, unamePass, fmt.Sprintf("%s:%s", cfg.CertName, passwd), 1)
-	}
+		urlOptions := map[string]string{
+			"TRACE FILE": "trace.log",
+			"AUTH TYPE":  "TCPS",
+			"SSL":        "TRUE",
+			"SSL VERIFY": "FALSE",
+			"WALLET":     cfg.DBWallet,
+		}
+		connectionString = go_ora.BuildUrl(cfg.OraDBServer, port, cfg.OraDBService, "", "", urlOptions)
+
+		if len(cfg.ConnString) > 0 {
+			fmt.Println("Using provided connection string")
+			connectionString = cfg.ConnString
+			unamePass := models.GetTextBetween(connectionString, "oracle://", "@")
+			connectionString = strings.Replace(connectionString, unamePass, fmt.Sprintf("%s:%s", cfg.CertName, passwd), 1)
+		}
 
 	//"oracle://10.69.9.32:1522/OSP&&wallet=/usr/lib/oracle/18.3/client64/network/wallet"
 	//"oracle://10.69.9.32:1522:OSP&&wallet=/usr/lib/oracle/18.3/client64/network/wallet"
 
-	fmt.Println(connectionString)
+	case "postgres":
+		connectionString = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+			cfg.PgDBServer, cfg.PgDBPort, cfg.PgDBUser, cfg.PgDBPassword, cfg.PgDBService)
+	}
 
-	dbc.db, err = sql.Open("oracle", connectionString)
+	fmt.Printf("connection string: %s\n", connectionString)
+
+	dbc.db, err = sql.Open(cfg.DBEngine, connectionString)
 	if err != nil {
 		return fmt.Errorf("error in sql.Open: %w", err)
 	}
@@ -298,6 +319,8 @@ func (dbc *dbConnector) connectToDB() error {
 	if err != nil {
 		return fmt.Errorf("error pinging db: %w", err)
 	}
+
+	log.Println("Connect to db successful!")
 	return nil
 }
 
