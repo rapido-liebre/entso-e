@@ -29,9 +29,20 @@ import (
 const SUCCESS = 1
 const PREFIX = "entso-e"
 
+type DBEngine int
+
+const (
+	Oracle DBEngine = iota
+	Postgres
+)
+
+func (dbe DBEngine) String() string {
+	return []string{"oracle", "postgres"}[dbe]
+}
+
 type DBConnector interface {
 	Run(wg *sync.WaitGroup)
-	connect()
+	process()
 }
 
 type Status int
@@ -48,7 +59,8 @@ type dbConnector struct {
 	channels  *config.Channels
 	errch     chan error
 	data      config.DBAction
-	db        *sql.DB
+	dbOra     *sql.DB
+	dbPg      *sql.DB
 }
 
 // NewService returns new DBConnector instance
@@ -76,7 +88,7 @@ func (dbc *dbConnector) Run(wg *sync.WaitGroup) {
 			if dbc.isRunning { //TODO check if dbConnector is ready
 				if dbc.status == Ready {
 					dbc.status = Processing
-					go dbc.connect()
+					go dbc.process()
 				}
 			}
 		case dbc.isRunning = <-dbc.channels.DBConnectorIsRunning:
@@ -103,7 +115,7 @@ func (dbc *dbConnector) Run(wg *sync.WaitGroup) {
 	}
 }
 
-func (dbc *dbConnector) connect() {
+func (dbc *dbConnector) process() {
 	fmt.Println("*** Using only go_ora package (no additional client software)")
 	fmt.Println("Local Database, simple connect string ")
 
@@ -122,8 +134,14 @@ func (dbc *dbConnector) connect() {
 
 linux:
 	defer func() {
-		if dbc.db != nil {
-			err := dbc.db.Close()
+		if dbc.dbOra != nil {
+			err := dbc.dbOra.Close()
+			if err != nil {
+				fmt.Println("Can't close connection: ", err)
+			}
+		}
+		if dbc.dbPg != nil {
+			err := dbc.dbPg.Close()
 			if err != nil {
 				fmt.Println("Can't close connection: ", err)
 			}
@@ -141,8 +159,6 @@ linux:
 				dbc.errch <- err
 				panic(err)
 			}
-
-			return
 
 			pwd, _ := os.Getwd()
 			avg15m := "2023_1_15"
@@ -175,7 +191,7 @@ linux:
 					//postgres
 					s := strings.Join([]string{statement, "commit;"}, " ")
 
-					if _, err := dbc.db.Exec(s); err != nil {
+					if _, err := dbc.dbPg.Exec(s); err != nil {
 						panic(err)
 					}
 				}
@@ -269,58 +285,72 @@ func (dbc *dbConnector) connectToDB() error {
 
 	var connectionString string
 
-	switch cfg.DBEngine {
-	case "oracle":
-		//connectionString := "oracle://" + cfg.DBUser + ":" + cfg.DBPassword + "@" + cfg.DBServer + ":" + cfg.DBPort + "/" + cfg.DBService
-		//if cfg.DBDSN != "" {
-		//	connectionString += "?TRACE FILE=trace.log&SSL=enable&SSL Verify=false&WALLET=" + cfg.DBDSN //url.QueryEscape(dbParams["walletLocation"])
-		//}
+	// ORACLE --------------------------------------------------------
 
-		port, _ := strconv.Atoi(cfg.OraDBPort)
+	//connectionString := "oracle://" + cfg.DBUser + ":" + cfg.DBPassword + "@" + cfg.DBServer + ":" + cfg.DBPort + "/" + cfg.DBService
+	//if cfg.DBDSN != "" {
+	//	connectionString += "?TRACE FILE=trace.log&SSL=enable&SSL Verify=false&WALLET=" + cfg.DBDSN //url.QueryEscape(dbParams["walletLocation"])
+	//}
 
-		urlOptions := map[string]string{
-			"TRACE FILE": "trace.log",
-			"AUTH TYPE":  "TCPS",
-			"SSL":        "TRUE",
-			"SSL VERIFY": "FALSE",
-			"WALLET":     cfg.DBWallet,
-		}
-		connectionString = go_ora.BuildUrl(cfg.OraDBServer, port, cfg.OraDBService, "", "", urlOptions)
+	port, _ := strconv.Atoi(cfg.OraDBPort)
 
-		if len(cfg.ConnString) > 0 {
-			fmt.Println("Using provided connection string")
-			connectionString = cfg.ConnString
-			unamePass := models.GetTextBetween(connectionString, "oracle://", "@")
-			connectionString = strings.Replace(connectionString, unamePass, fmt.Sprintf("%s:%s", cfg.CertName, passwd), 1)
-		}
+	urlOptions := map[string]string{
+		"TRACE FILE": "trace.log",
+		"AUTH TYPE":  "TCPS",
+		"SSL":        "TRUE",
+		"SSL VERIFY": "FALSE",
+		"WALLET":     cfg.DBWallet,
+	}
+	connectionString = go_ora.BuildUrl(cfg.OraDBServer, port, cfg.OraDBService, "", "", urlOptions)
+
+	if len(cfg.ConnString) > 0 {
+		fmt.Println("Using provided connection string")
+		connectionString = cfg.ConnString
+		unamePass := models.GetTextBetween(connectionString, "oracle://", "@")
+		connectionString = strings.Replace(connectionString, unamePass, fmt.Sprintf("%s:%s", cfg.CertName, passwd), 1)
+	}
 
 	//"oracle://10.69.9.32:1522/OSP&&wallet=/usr/lib/oracle/18.3/client64/network/wallet"
 	//"oracle://10.69.9.32:1522:OSP&&wallet=/usr/lib/oracle/18.3/client64/network/wallet"
 
-	case "postgres":
-		connectionString = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-			cfg.PgDBServer, cfg.PgDBPort, cfg.PgDBUser, cfg.PgDBPassword, cfg.PgDBService)
+	err = dbc.connect(Oracle, connectionString)
+	if err != nil {
+		return err
 	}
 
-	fmt.Printf("connection string: %s\n", connectionString)
+	// POSTGRES --------------------------------------------------------
+	connectionString = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		cfg.PgDBServer, cfg.PgDBPort, cfg.PgDBUser, cfg.PgDBPassword, cfg.PgDBService)
 
-	dbc.db, err = sql.Open(cfg.DBEngine, connectionString)
+	err = dbc.connect(Postgres, connectionString)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (dbc *dbConnector) connect(dbe DBEngine, connectionString string) error {
+	fmt.Printf("connection string: %s\n", connectionString)
+	db, err := sql.Open(dbe.String(), connectionString)
 	if err != nil {
 		return fmt.Errorf("error in sql.Open: %w", err)
 	}
-	//defer func() {
-	//	err = db.Close()
-	//	if err != nil {
-	//		fmt.Println("Can't close connection: ", err)
-	//	}
-	//}()
-	dbc.db.SetConnMaxLifetime(time.Minute * 5)
-	err = dbc.db.Ping()
+	db.SetConnMaxLifetime(time.Minute * 5)
+	err = db.Ping()
 	if err != nil {
 		return fmt.Errorf("error pinging db: %w", err)
 	}
 
-	log.Println("Connect to db successful!")
+	switch dbe {
+	case Oracle:
+		dbc.dbOra = db
+	case Postgres:
+		dbc.dbPg = db
+	default:
+		break
+	}
+	log.Println("Connected to Oracle and Postgres!")
 	return nil
 }
 
@@ -365,7 +395,7 @@ func (dbc *dbConnector) fetchRawLfcAce(rt models.ReportType) ([]models.LfcAce, e
 	fmt.Println(statement)
 
 	// fetching multiple rows
-	dataRows, err := dbc.db.Query(statement)
+	dataRows, err := dbc.dbPg.Query(statement)
 	if err != nil {
 		return []models.LfcAce{}, err
 	}
@@ -374,11 +404,17 @@ func (dbc *dbConnector) fetchRawLfcAce(rt models.ReportType) ([]models.LfcAce, e
 	var lfcAce []models.LfcAce
 
 	for dataRows.Next() {
-		var lfc models.LfcAce
-		err = dataRows.Scan(&lfc.AvgTime, &lfc.SaveTime, &lfc.AvgName, &lfc.AvgValue, &lfc.AvgStatus, &lfc.SystemSite)
+		var (
+			lfc      models.LfcAce
+			avgTime  time.Time
+			saveTime time.Time
+		)
+		err = dataRows.Scan(&avgTime, &saveTime, &lfc.AvgName, &lfc.AvgValue, &lfc.AvgStatus, &lfc.SystemSite)
 		if err != nil {
 			return []models.LfcAce{}, err
 		}
+		lfc.AvgTime = avgTime.Local()
+		lfc.SaveTime = saveTime.Local()
 		lfcAce = append(lfcAce, lfc)
 	}
 	fmt.Printf("len(%s): %d\n", rt.Shortly(), len(lfcAce))
@@ -425,7 +461,7 @@ func (dbc *dbConnector) callPutTestReport() (models.ReportData, error) {
 
 	var reportId int64
 	statement := models.GetPutReportBody(data, dbc.data.ReportType)
-	if _, err := dbc.db.Exec(statement, sql.Out{Dest: &reportId}); err != nil {
+	if _, err := dbc.dbOra.Exec(statement, sql.Out{Dest: &reportId}); err != nil {
 		return data, err
 	}
 
@@ -434,7 +470,7 @@ func (dbc *dbConnector) callPutTestReport() (models.ReportData, error) {
 		report := models.GetTestKjczReportBody(reportId, data)
 		for _, payload := range report.GetAllPayloads() {
 			statement = models.GetAddPayloadEntryBody(payload)
-			_, err := dbc.db.Exec(statement)
+			_, err := dbc.dbOra.Exec(statement)
 			if err != nil {
 				return data, err
 			}
@@ -443,7 +479,7 @@ func (dbc *dbConnector) callPutTestReport() (models.ReportData, error) {
 		report := models.GetTestPzrrReportBody(reportId, data)
 		for _, payload := range report.GetAllPayloads() {
 			statement = models.GetAddPayloadEntryBody(payload)
-			_, err := dbc.db.Exec(statement)
+			_, err := dbc.dbOra.Exec(statement)
 			if err != nil {
 				return data, err
 			}
@@ -452,7 +488,7 @@ func (dbc *dbConnector) callPutTestReport() (models.ReportData, error) {
 		report := models.GetTestPzfrrReportBody(reportId, data)
 		for _, payload := range report.GetAllPayloads() {
 			statement = models.GetAddPayloadEntryBody(payload)
-			_, err := dbc.db.Exec(statement)
+			_, err := dbc.dbOra.Exec(statement)
 			if err != nil {
 				return data, err
 			}
@@ -473,39 +509,39 @@ func (dbc *dbConnector) callPutReport(report any) error {
 	case models.PR_SO_KJCZ:
 		r := report.(models.KjczReport)
 		statement := models.GetPutReportBody(r.Data, dbc.data.ReportType)
-		if _, err := dbc.db.Exec(statement, sql.Out{Dest: &reportId}); err != nil {
+		if _, err := dbc.dbOra.Exec(statement, sql.Out{Dest: &reportId}); err != nil {
 			return err
 		}
 		for _, payload := range r.GetAllPayloads() {
 			payload.ReportId = reportId
 			statement = models.GetAddPayloadEntryBody2(payload)
-			if _, err := dbc.db.Exec(statement); err != nil {
+			if _, err := dbc.dbOra.Exec(statement); err != nil {
 				return err
 			}
 		}
 	case models.PD_BI_PZRR:
 		r := report.(models.PzrrReport)
 		statement := models.GetPutReportBody(r.Data, dbc.data.ReportType)
-		if _, err := dbc.db.Exec(statement, sql.Out{Dest: &reportId}); err != nil {
+		if _, err := dbc.dbOra.Exec(statement, sql.Out{Dest: &reportId}); err != nil {
 			return err
 		}
 		for _, payload := range r.GetAllPayloads() {
 			payload.ReportId = reportId
 			statement = models.GetAddPayloadEntryBody(payload)
-			if _, err := dbc.db.Exec(statement); err != nil {
+			if _, err := dbc.dbOra.Exec(statement); err != nil {
 				return err
 			}
 		}
 	case models.PD_BI_PZFRR:
 		r := report.(models.PzfrrReport)
 		statement := models.GetPutReportBody(r.Data, dbc.data.ReportType)
-		if _, err := dbc.db.Exec(statement, sql.Out{Dest: &reportId}); err != nil {
+		if _, err := dbc.dbOra.Exec(statement, sql.Out{Dest: &reportId}); err != nil {
 			return err
 		}
 		for _, payload := range r.GetAllPayloads() {
 			payload.ReportId = reportId
 			statement = models.GetAddPayloadEntryBody(payload)
-			if _, err := dbc.db.Exec(statement); err != nil {
+			if _, err := dbc.dbOra.Exec(statement); err != nil {
 				return err
 			}
 		}
@@ -513,7 +549,7 @@ func (dbc *dbConnector) callPutReport(report any) error {
 
 	if dbc.data.Publish {
 		statement := models.GetSetReported(reportId)
-		if _, err := dbc.db.Exec(statement); err != nil {
+		if _, err := dbc.dbOra.Exec(statement); err != nil {
 			return err
 		}
 	}
@@ -528,7 +564,7 @@ func (dbc *dbConnector) callInicjujPozyskanie(rdata models.ReportData) error {
 
 	statement := models.GetInicjujPozyskanie(rdata, dbc.data.ReportType)
 	fmt.Println(statement)
-	_, err := dbc.db.Exec(statement)
+	_, err := dbc.dbOra.Exec(statement)
 	if err != nil {
 		return err
 	}
@@ -582,7 +618,7 @@ func (dbc *dbConnector) callSaveReport() error {
 
 	//get last report
 	statement := models.GetLastReport(dbc.data.ReportData, dbc.data.ReportType)
-	if _, err := dbc.db.Exec(statement, sql.Out{Dest: &cursorReport}, sql.Out{Dest: &cursorPayload}); err != nil {
+	if _, err := dbc.dbOra.Exec(statement, sql.Out{Dest: &cursorReport}, sql.Out{Dest: &cursorPayload}); err != nil {
 		return err
 	}
 	defer cursorReport.Close()
@@ -644,7 +680,7 @@ func (dbc *dbConnector) callSaveReport() error {
 		if dbc.data.Publish {
 			if reportId > 0 {
 				statement = models.GetSetReported(reportId)
-				if _, err = dbc.db.Exec(statement); err != nil {
+				if _, err = dbc.dbOra.Exec(statement); err != nil {
 					return err
 				}
 			}
@@ -680,7 +716,7 @@ func (dbc *dbConnector) callSaveReport() error {
 		if dbc.data.Publish {
 			if reportId > 0 {
 				statement = models.GetSetReported(reportId)
-				if _, err = dbc.db.Exec(statement); err != nil {
+				if _, err = dbc.dbOra.Exec(statement); err != nil {
 					return err
 				}
 			}
@@ -716,7 +752,7 @@ func (dbc *dbConnector) callSaveReport() error {
 		if dbc.data.Publish {
 			if reportId > 0 {
 				statement = models.GetSetReported(reportId)
-				if _, err = dbc.db.Exec(statement); err != nil {
+				if _, err = dbc.dbOra.Exec(statement); err != nil {
 					return err
 				}
 			}
@@ -751,7 +787,7 @@ func (dbc *dbConnector) callGetReport() error {
 
 	//get last report
 	statement := models.GetLastReport(dbc.data.ReportData, dbc.data.ReportType)
-	if _, err := dbc.db.Exec(statement, sql.Out{Dest: &cursorReport}, sql.Out{Dest: &cursorPayload}); err != nil {
+	if _, err := dbc.dbOra.Exec(statement, sql.Out{Dest: &cursorReport}, sql.Out{Dest: &cursorPayload}); err != nil {
 		return err
 	}
 	defer cursorReport.Close()
