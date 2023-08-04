@@ -160,9 +160,11 @@ linux:
 				panic(err)
 			}
 
+			return
+
 			pwd, _ := os.Getwd()
 			avg15m := "2023_1_15"
-			avg1m := "2023_1_1m"
+			avg1m := "data_3_2023_1m.txt" //"2023_1_1m"
 
 			p15 := Parser{}
 			p15.Parse2(filepath.Join(pwd, "bin", avg15m))

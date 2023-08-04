@@ -161,11 +161,18 @@ func (p *Parser) parseLine2(line string, rt models.ReportType) {
 		var err error
 		switch models.LfcAceIndex(idx) {
 		case 0:
-			measure.AvgTime, err = time.Parse(time.DateTime, val)
+			log.Println(len(val))
+			layout := time.DateTime
+			if len(val) == 16 {
+				val = val + ":00"
+				layout = "02.01.2006 15:04:05"
+			}
+			measure.AvgTime, err = time.Parse(layout, val)
 			if err != nil {
 				log.Fatal("Could not parse avg time:", err)
 			}
 		case 1:
+			val = strings.Replace(val, ",", ".", -1)
 			measure.AvgValue, err = strconv.ParseFloat(val, 64)
 			if err != nil {
 				log.Fatal("Could not parse float value:", val, err)
