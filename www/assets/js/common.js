@@ -148,3 +148,13 @@ const getItemsRow = function (jsonObjArray, itemName) {
     let itemsRow = row.join(',');
     return itemsRow;
 }
+
+function monthsInRange(months, range) {
+    for (let i = 0; i < months.length; i++) {
+        if (months[i].quantity === range.start || months[i].quantity === range.end) {
+            return true;
+        }
+    }
+
+    return false;
+}

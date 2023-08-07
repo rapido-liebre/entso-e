@@ -76,11 +76,12 @@ function jsonObjToCsv(jsonObj) {
     const frceExceeded60PercOfFRRCapacityUp = jsonObj["frceExceeded60PercOfFRRCapacityUp"];
     const frceExceeded60PercOfFRRCapacityDown = jsonObj["frceExceeded60PercOfFRRCapacityDown"];
 
+    let range = jsonObj["data"];
 
     const csv = [
         "\r\n",
         getDataRows(jsonObj, "data"),
-        getItemsRow(headers, "Months"),
+        monthsInRange(headers, range)? getItemsRow(headers, "Months") : "--, --, --",
         getItemsRow(meanValue, "Mean Value"),
         getItemsRow(standardDeviation, "Standard Deviation"),
         getItemsRow(percentile1, "1 - Percentile"),
@@ -154,36 +155,41 @@ function exportYearKjczReport() {
         dateTo: quarters[0].dateTo,
     }).then(respData => {
         console.log(respData);
-        fillKjczForm(respData);
+        // fillKjczForm(respData);
         document.getElementById("kjcz_quarter").value = 1;
-        quarters[0].csv = jsonObjToCsv(getJsonObjectFromKjczForm());
+        // quarters[0].csv = jsonObjToCsv(getJsonObjectFromKjczForm());
+        quarters[0].csv = jsonObjToCsv( fillKjczForm(respData)? getJsonObjectFromKjczForm() : getDummyJsonObjectFromKjczForm() );
 
         get('http://'+ host + ':' + port + '/api/get_kjcz', {
             dateFrom: quarters[1].dateFrom,
             dateTo: quarters[1].dateTo,
-        }).then(respData => {
-            console.log(respData);
-            fillKjczForm(respData);
+        }).then(respData2 => {
+            console.log(respData2);
+            // if (!fillKjczForm(respData2)) {
+            //     getDummyJsonObjectFromKjczForm()
+            // }
             document.getElementById("kjcz_quarter").value = 2;
-            quarters[1].csv = jsonObjToCsv(getJsonObjectFromKjczForm());
+            quarters[1].csv = jsonObjToCsv( fillKjczForm(respData2)? getJsonObjectFromKjczForm() : getDummyJsonObjectFromKjczForm() );
 
             get('http://'+ host + ':' + port + '/api/get_kjcz', {
                 dateFrom: quarters[2].dateFrom,
                 dateTo: quarters[2].dateTo,
-            }).then(respData => {
-                console.log(respData);
-                fillKjczForm(respData);
+            }).then(respData3 => {
+                console.log(respData3);
+                // fillKjczForm(respData3);
                 document.getElementById("kjcz_quarter").value = 3;
-                quarters[2].csv = jsonObjToCsv(getJsonObjectFromKjczForm());
+                // quarters[2].csv = jsonObjToCsv(getJsonObjectFromKjczForm());
+                quarters[2].csv = jsonObjToCsv( fillKjczForm(respData3)? getJsonObjectFromKjczForm() : getDummyJsonObjectFromKjczForm() );
 
                 get('http://'+ host + ':' + port + '/api/get_kjcz', {
                     dateFrom: quarters[3].dateFrom,
                     dateTo: quarters[3].dateTo,
-                }).then(respData => {
-                    console.log(respData);
-                    fillKjczForm(respData);
+                }).then(respData4 => {
+                    console.log(respData4);
+                    // fillKjczForm(respData4);
                     document.getElementById("kjcz_quarter").value = 4;
-                    quarters[3].csv = jsonObjToCsv(getJsonObjectFromKjczForm());
+                    // quarters[3].csv = jsonObjToCsv(getJsonObjectFromKjczForm());
+                    quarters[3].csv = jsonObjToCsv( fillKjczForm(respData4)? getJsonObjectFromKjczForm() : getDummyJsonObjectFromKjczForm() );
 
                     const csv = [
                         "Article: 185.4 - Values of frequency quality evaluation (Part B)",
@@ -352,8 +358,9 @@ function fillKjczForm(respData) {
             showKjczMessage("Błąd autoryzacji dostępu do bazy danych, niepoprawna nazwa użytkownika/hasło", MessageType.Warning);
         }
         else {
-            showKjczMessage("Brak zapisanego raportu KJCZ dla tego zakresu dat", MessageType.Warning);
+            showKjczMessage("Brak danych dla tego zakresu dat", MessageType.Warning);
         }
+        return false
     }
 
     let meanValue = respData["MeanValue"];
@@ -387,6 +394,8 @@ function fillKjczForm(respData) {
     fillKjczTableValues("kjcz_frce_out_level2_down_", frceOutsideLevel2RangeDown);
     fillKjczTableValues("kjcz_frce_exc60_cap_up_", frceExceeded60PercOfFRRCapacityUp);
     fillKjczTableValues("kjcz_frce_exc60_cap_down_", frceExceeded60PercOfFRRCapacityDown);
+
+    return true;
 }
 
 function fillKjczData(data) {
@@ -521,6 +530,16 @@ function kjczTableValuesToJson(field) {
     return array;
 }
 
+function kjczTableDummyValuesToJson() {
+    let array = [];
+
+    for (let i = 1; i <= 3; i++) {
+        array[i-1] = { position: i, quantity: 0};
+    }
+
+    return array;
+}
+
 function kjczTableHeadersToJson(field) {
     let array = [];
 
@@ -532,6 +551,34 @@ function kjczTableHeadersToJson(field) {
     }
 
     return array;
+}
+
+function getDummyJsonObjectFromKjczForm() {
+    //convert object to json string
+    const [dateFrom, dateTo] = getDates();
+    let data = {};
+    data.creator = "Brak danych";
+    data.start = dateFrom;
+    data.end = dateTo;
+
+    const obj = {};
+    obj.data = data;
+    obj.meanValue = kjczTableDummyValuesToJson();
+    obj.standardDeviation = kjczTableDummyValuesToJson();
+    obj.percentile1 = kjczTableDummyValuesToJson();
+    obj.percentile5 = kjczTableDummyValuesToJson();
+    obj.percentile10 = kjczTableDummyValuesToJson();
+    obj.percentile90 = kjczTableDummyValuesToJson();
+    obj.percentile95 = kjczTableDummyValuesToJson();
+    obj.percentile99 = kjczTableDummyValuesToJson();
+    obj.frceOutsideLevel1RangeUp = kjczTableDummyValuesToJson();
+    obj.frceOutsideLevel1RangeDown = kjczTableDummyValuesToJson();
+    obj.frceOutsideLevel2RangeUp = kjczTableDummyValuesToJson();
+    obj.frceOutsideLevel2RangeDown = kjczTableDummyValuesToJson();
+    obj.frceExceeded60PercOfFRRCapacityUp = kjczTableDummyValuesToJson();
+    obj.frceExceeded60PercOfFRRCapacityDown = kjczTableDummyValuesToJson();
+
+    return obj;
 }
 
 function validateKjcz() {
